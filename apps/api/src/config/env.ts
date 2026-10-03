@@ -37,8 +37,10 @@ export function validateEnv(customEnv: Record<string, string | undefined> = proc
       customEnv.DATABASE_URL !== undefined
         ? customEnv.DATABASE_URL
         : isTest
-          ? 'postgresql://verso:verso@localhost:5432/verso_test'
+          ? process.env.DATABASE_URL ||
+            'postgresql://normanxcat@localhost/verso_test?host=/var/run/postgresql'
           : undefined,
+
     SESSION_SECRET:
       customEnv.SESSION_SECRET !== undefined
         ? customEnv.SESSION_SECRET

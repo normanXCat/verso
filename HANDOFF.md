@@ -12,6 +12,8 @@
   - **Phase 1 (Base du projet, Docker, CI, schéma Prisma) 100% implémentée et testée (T001 à T009)**.
   - **Phase 2 (Authentification email et sessions)** :
     - T010 : Schémas Zod d'authentification (`registerSchema`, `loginSchema`, `resetPasswordSchema`, `forgotPasswordSchema`, `verifyEmailSchema`) et types inférés dans `packages/shared/src/schemas/auth.ts`, exportés dans `@verso/shared` avec suite de tests unitaires Vitest.
+    - T011 : Suite de tests d'intégration complète pour l'authentification et les sessions dans `apps/api/tests/integration/auth.test.ts` (couvrant register, login, me, logout, verify-email, forgot/reset password, sessions).
+
   - Branche `dev` active et synchronisée.
 - **Ce qui est en cours** :
   - Phase 2 : Authentification email et sessions (T011 à T018 en cours).
@@ -24,8 +26,9 @@
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de T010 (schémas Zod d'authentification et tests unitaires complets).
-- **Résultat** : Validation Zod robuste pour inscription, connexion, réinitialisation et validation d'email.
+- **Action exécutée** : Implémentation de T011 (suite de tests d'intégration complète pour l'authentification et les sessions).
+- **Résultat** : Scénarios d'intégration TDD définis pour l'ensemble des flux d'authentification de l'API REST.
+
 
 ## Décisions prises
 
