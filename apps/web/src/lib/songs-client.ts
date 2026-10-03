@@ -3,6 +3,7 @@ import {
   SongFilter,
   SongDetail,
   SongSort,
+  SongVersionItem,
   UpdateSongInput,
   type CreateSongInput,
 } from '@verso/shared';
@@ -92,5 +93,16 @@ export const songsClient = {
 
   async remove(id: string): Promise<void> {
     await request<void>(`/songs/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  },
+
+  async versions(id: string): Promise<SongVersionItem[]> {
+    return request<SongVersionItem[]>(`/songs/${encodeURIComponent(id)}/versions`);
+  },
+
+  async restoreVersion(id: string, versionId: string): Promise<SongDetail> {
+    return request<SongDetail>(
+      `/songs/${encodeURIComponent(id)}/versions/${encodeURIComponent(versionId)}/restore`,
+      { method: 'POST' },
+    );
   },
 };

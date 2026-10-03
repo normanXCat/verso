@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Trash2 } from 'lucide-react';
-import type { SongListItem, UpdateSongInput } from '@verso/shared';
+import { ArrowLeft, History, Trash2 } from 'lucide-react';
+import type { SongDetail, SongListItem, UpdateSongInput } from '@verso/shared';
 import { songsClient, SongsApiError } from '../lib/songs-client.js';
 import { readDraft } from '../lib/draft-storage.js';
 import { useAutoSave } from '../hooks/useAutoSave.js';
@@ -11,6 +11,7 @@ import { LyricEditor } from '../components/editor/LyricEditor.js';
 import { EditorMetricsBar } from '../components/editor/EditorMetricsBar.js';
 import { SaveStatusIndicator } from '../components/editor/SaveStatusIndicator.js';
 import { SongMetadataSidebar } from '../components/editor/SongMetadataSidebar.js';
+import { VersionHistoryDrawer } from '../components/editor/VersionHistoryDrawer.js';
 
 /**
  * Espace d'écriture d'un texte : éditeur épuré avec sauvegarde automatique,
@@ -36,6 +37,7 @@ export function EditorPage(): React.ReactElement {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [initialised, setInitialised] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   // Initialise depuis le serveur, en priorisant un brouillon local non synchronisé.
   useEffect(() => {
@@ -123,6 +125,15 @@ export function EditorPage(): React.ReactElement {
             <SaveStatusIndicator status={autoSave.status} />
             <button
               type="button"
+              onClick={() => setIsHistoryOpen(true)}
+              aria-label="Ouvrir l'historique des versions"
+              title="Historique des versions"
+              className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+            >
+              <History className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
               aria-label="Supprimer le texte"
@@ -186,6 +197,19 @@ export function EditorPage(): React.ReactElement {
           </div>
         )}
       </main>
+
+      {song && (
+        <VersionHistoryDrawer
+          songId={song.id}
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+          onRestored={(restored) => {
+            setTitle(restored.title);
+            setContent(restored.content);
+            queryClient.setQueryData<SongDetail>(['songs', 'detail', id], restored);
+          }}
+        />
+      )}
     </div>
   );
 }
