@@ -44,6 +44,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { songsRoutes } = await import('./modules/songs/songs.routes.js');
   await app.register(songsRoutes, { prefix: '/api/songs' });
 
+  // Routes des albums et de leurs tracklists
+  const { albumsRoutes } = await import('./modules/albums/albums.routes.js');
+  await app.register(albumsRoutes, { prefix: '/api/albums' });
+
   // Route de contrôle de santé
   app.get('/health', async () => {
     return {

@@ -182,10 +182,7 @@ describe("Tests d'intégration : albums et réorganisation de tracklist (/api/al
 
       expect(response.statusCode).toBe(200);
       const detail = response.json();
-      expect(detail.tracks.map((t: { title: string }) => t.title)).toEqual([
-        'Première',
-        'Seconde',
-      ]);
+      expect(detail.tracks.map((t: { title: string }) => t.title)).toEqual(['Première', 'Seconde']);
       expect(detail.tracks.map((t: { position: number }) => t.position)).toEqual([1, 2]);
     });
 
