@@ -41,7 +41,8 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 - [X] T016 [P] [US1] [P1] Implémenter le client API typé et le hook d'état d'authentification dans `apps/web/src/lib/auth-client.ts` et `apps/web/src/hooks/useAuth.ts`. *Commit: `feat: client et hook d authentification frontend`*
 
-- [ ] T017 [US1] [P1] Créer les formulaires d'inscription, connexion, réinitialisation de mot de passe et vue des sessions actives dans `apps/web/src/pages/auth/`. *Commit: `feat: interfaces d inscription connexion et gestion des sessions`*
+- [X] T017 [US1] [P1] Créer les formulaires d'inscription, connexion, réinitialisation de mot de passe et vue des sessions actives dans `apps/web/src/pages/auth/`. *Commit: `feat: interfaces d inscription connexion et gestion des sessions`*
+
 - [ ] T018 [US1] [P1] Implémenter la bannière d'avertissement persistante de vérification d'email dans `apps/web/src/components/common/EmailVerificationBanner.tsx`. *Commit: `feat: bannière persistante de rappel de vérification d email`*
 
 ---
