@@ -25,6 +25,9 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **Socle** | **Spécification Fonctionnelle Verso Core** | ✅ Fait | Spécification complète et clarifiée ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) |
 | **Socle** | **Planification Technique Verso Core** | ✅ Fait | Architecture monorepo, schéma Prisma, contrats d'API et quickstart ([specs/001-verso-core/plan.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/plan.md)) |
 | **Socle** | **Découpage des Tâches d'Implémentation** | ✅ Fait | 62 tâches en 13 phases ordonnancées, testables et priorisées ([specs/001-verso-core/tasks.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/tasks.md)) |
+| **Socle** | **Monorepo & Outillage Qualité (Phase 1)** | ✅ Fait | Monorepo pnpm (`apps/api`, `apps/web`, `packages/shared`), TS strict, ESLint/Prettier zéro warning |
+| **Socle** | **Docker & Base PostgreSQL (Phase 1)** | ✅ Fait | Docker Compose (PostgreSQL 16, MinIO S3), schéma Prisma et migration initiale appliquée (13 tables) |
+| **Socle** | **CI GitHub Actions (Phase 1)** | ✅ Fait | Pipeline CI automatisé (`.github/workflows/ci.yml`) testant lint, format, typecheck et tests |
 | **P1** | **Authentification sécurisée & Sessions** | ⏳ Prévu | Mots de passe Argon2id, sessions PostgreSQL en cookies HttpOnly/Secure/SameSite=Lax, rate limiting |
 | **P1** | **Éditeur d'écriture résilient** | ⏳ Prévu | Typographie soignée, sauvegarde automatique en continu, zéro perte de texte |
 | **P1** | **Organisation des textes (Privés par défaut)** | ⏳ Prévu | Cloisonnement strict multi-tenant, vérification d'appartenance systématique |
@@ -79,13 +82,24 @@ L'architecture technique conçue lors du plan d'implémentation repose sur :
 
 ---
 
-## Lancement
-
-### Vérification des outils du dépôt
+## Commandes et Scripts Disponibles
 
 ```bash
-# Vérifier la syntaxe des scripts bash
-bash -n .specify/scripts/bash/*.sh
+# Installation des dépendances du monorepo
+pnpm install
+
+# Contrôle qualité (ESLint 10 zéro warning et Prettier)
+pnpm run lint
+pnpm run format:check
+
+# Vérification du typage TypeScript strict sur l'ensemble du monorepo
+pnpm run typecheck
+
+# Exécution des tests automatisés (Vitest)
+pnpm test
+
+# Lancement des serveurs de développement en parallèle (API + Web)
+pnpm dev
 ```
 
 ---
@@ -96,33 +110,42 @@ Voici l'arborescence actuellement présente dans le dépôt :
 
 ```text
 verso/
-├── .agents/                    # Compétences et agents d'automatisation (Spec Kit)
-│   └── skills/                 # Définitions des compétences (specify, plan, tasks, implement, etc.)
-├── .specify/                   # Configuration, modèles et mémoire de gouvernance
-│   ├── memory/
-│   │   └── constitution.md     # Constitution du projet (v1.1.0)
-│   ├── scripts/bash/           # Scripts d'automatisation bash
-│   ├── templates/              # Gabarits de spécification, plan, tâches et checklists
-│   └── workflows/              # Définitions des flux de travail Spec Kit
+├── .github/
+│   └── workflows/
+│       └── ci.yml              # Pipeline CI GitHub Actions (lint, format, typecheck, tests)
+├── apps/
+│   ├── api/                    # Backend Fastify + Prisma ORM
+│   │   ├── prisma/             # Schéma Prisma et migrations PostgreSQL
+│   │   └── src/                # Serveur HTTP, validation Zod env, modules
+│   └── web/                    # Frontend React 18 + Vite + Tailwind CSS
+│       ├── public/             # Assets statiques
+│       └── src/                # App React, routage et styles
+├── packages/
+│   └── shared/                 # Bibliothèque partagée (@verso/shared)
+│       └── src/                # Schémas Zod, types et moteur poétique
 ├── specs/                      # Spécifications fonctionnelles et techniques
 │   └── 001-verso-core/         # Spécification complète et plan de la plateforme Verso
-│       ├── checklists/         # Checklists de qualité des spécifications
-│       │   └── requirements.md # Checklist de conformité de la spécification (16/16)
+│       ├── checklists/         # Checklist de qualité (16/16)
 │       ├── contracts/          # Contrats d'API REST Zod
-│       │   ├── albums-api.md   # Gestion des albums et réordonnancement de tracklist
-│       │   ├── audio-api.md    # Instrumentales S3, boucles et mémos vocaux
-│       │   ├── auth-api.md     # Inscription, connexion, sessions et OAuth
-│       │   └── songs-api.md    # CRUD textes, versions, export PDF et partages
 │       ├── data-model.md       # Modèle relationnel détaillé Prisma / PostgreSQL
 │       ├── plan.md             # Plan d'implémentation technique global
-│       ├── quickstart.md       # Scénarios de validation exécutables de bout en bout
-│       ├── research.md         # Décisions d'architecture et technologies validées
-│       ├── spec.md             # Spécification fonctionnelle validée et clarifiée
-│       └── tasks.md            # Découpage des 62 tâches ordonnancées en 13 phases (P1, P2, P3)
-├── .gitignore                  # Exclusion des dépendances, secrets, fichiers .env et médias audio
+│       ├── quickstart.md       # Scénarios de validation exécutables
+│       ├── research.md         # Décisions d'architecture
+│       ├── spec.md             # Spécification fonctionnelle validée
+│       └── tasks.md            # Découpage des 62 tâches ordonnancées
+├── .dockerignore               # Exclusion Docker
+├── .env.example                # Modèle de variables d'environnement
+├── .gitignore                  # Exclusion des dépendances, secrets et médias audio
+├── .prettierignore             # Exclusion Prettier
+├── .prettierrc                 # Configuration Prettier
+├── docker-compose.yml          # Services locaux PostgreSQL 16 et MinIO S3
+├── eslint.config.js            # Configuration ESLint Flat Config zéro warning
 ├── HANDOFF.md                  # Journal de passation et suivi d'état du projet
 ├── LICENSE                     # Licence du projet (MIT)
-└── README.md                   # Documentation principale du projet
+├── package.json                # Configuration racine du monorepo
+├── pnpm-workspace.yaml         # Configuration du workspace pnpm
+├── README.md                   # Documentation principale du projet
+└── tsconfig.base.json          # Configuration TypeScript stricte commune
 ```
 
 ---

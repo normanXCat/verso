@@ -2,40 +2,37 @@
 
 ## État actuel
 
-- **Phase en cours** : Phase 3 — Tâches Planifiées & Démarrage de l'Implémentation (`speckit-implement` / Phase 1).
+- **Phase en cours** : Phase 1 Achevée (100%) — Prêt pour la Phase 2 (Authentification email & sessions).
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
   - Clarification interactive (`/speckit-clarify`) sur les 5 points critiques (bannière email non bloquante, liaison OAuth sécurisée par mot de passe, quotas audio 75 Mo / 3 pistes, gestion des conflits hors ligne par duplication, rétention permanente des versions).
-  - Planification d'implémentation technique complète (`/speckit-plan`) comprenant :
-    - [plan.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/plan.md) : Plan d'implémentation global, Technical Context et Constitution Check (100% conforme).
-    - [research.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/research.md) : Choix technologiques validés (CodeMirror 6, Fastify, Argon2id, Arctic, MinIO/R2, PWA IndexedDB, lyrics-engine).
-    - [data-model.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/data-model.md) : Schéma Prisma complet pour PostgreSQL (User, Account, Session, EmailToken, Album, Song, SongVersion, Tag, SongTag, Instrumental, ShareLink, VoiceNote).
-    - [contracts/](file:///home/normanxcat/Lab/verso/specs/001-verso-core/contracts/) : Contrats d'API REST Zod exhaustifs (`auth-api.md`, `songs-api.md`, `albums-api.md`, `audio-api.md`).
-    - [quickstart.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/quickstart.md) : 5 scénarios de validation exécutables de bout en bout et commandes de test.
-  - Découpage complet des tâches d'implémentation ([specs/001-verso-core/tasks.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/tasks.md)) en 13 phases testables isolément (62 tâches, priorités P1, P2, P3, commits prévus pour chaque tâche).
+  - Planification d'implémentation technique complète (`/speckit-plan`) et analyse de cohérence (`/speckit-analyze`).
+  - Découpage complet des tâches d'implémentation ([specs/001-verso-core/tasks.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/tasks.md)) en 13 phases testables isolément (62 tâches).
+  - **Phase 1 (Base du projet, Docker, CI, schéma Prisma) 100% implémentée et testée (T001 à T009)** :
+    - Monorepo pnpm initialisé (`package.json`, `pnpm-workspace.yaml`, `.npmrc`).
+    - Services locaux dans `docker-compose.yml` (PostgreSQL 16, MinIO S3 avec bucket `verso-audio`) et `.dockerignore`.
+    - Pipeline CI GitHub Actions (`.github/workflows/ci.yml`) automatisant lint, format, typecheck et tests.
+    - Outillage de qualité zéro warning (`eslint.config.js` Flat Config, `.prettierrc`, `.prettierignore`, `tsconfig.base.json`).
+    - Package logique partagée `packages/shared` (`@verso/shared`) avec support Zod.
+    - Application backend Fastify `apps/api` (`@verso/api`) avec plugins de sécurité (cookie, cors, helmet, rate-limit).
+    - Application frontend React 18 `apps/web` (`@verso/web`) avec Vite, Tailwind CSS, TanStack Query et React Router.
+    - Schéma Prisma complet et migration initiale PostgreSQL appliquée (`20261003134155_init`, 13 tables relationnelles).
+    - Validateur Zod des variables d'environnement (`apps/api/src/config/env.ts`), tests unitaires Vitest et `.env.example`.
   - Branche `dev` active et synchronisée avec `origin/dev`.
 - **Ce qui est en cours** :
-  - Démarrage de l'implémentation du Socle P1 (Phase 1 : T001 à T009).
+  - Phase 1 terminée avec succès, arrêt pour validation utilisateur avant passage à la Phase 2.
 - **Ce qui reste à faire** :
-  - **[P1 - Socle Indispensable]** (Phases 1 à 6, T001 à T037) :
-    - Phase 1 : Base du projet, Docker compose, CI GitHub Actions, outillage qualité, schéma Prisma initial.
-    - Phase 2 : Authentification email et gestion des sessions en base avec cookies `HttpOnly`.
-    - Phase 3 : OAuth Google et ORCID avec liaison sécurisée par mot de passe.
-    - Phase 4 : Espace personnel, recherche plein texte et filtres combinables.
-    - Phase 5 : Éditeur CodeMirror 6, brouillons, sauvegarde continue (< 500 ms), favoris, tags.
-    - Phase 6 : Albums et réorganisation par glisser-déposer (dnd-kit) avec détachement automatique.
-  - **[P2 - Confort d'Écriture & Musique]** (Phases 7 à 10, T038 à T054, après stabilisation complète de P1) :
-    - Historique des versions immuable, instrus S3 / boucle / BPM / métronome Web Audio API, analyse syllabes et rimes, export PDF et liens de partage privés révocables.
-  - **[P3 - Mobilité & Bonus]** (Phases 11 à 12, T055 à T059, après stabilisation complète de P2) :
-    - PWA installable offline avec synchronisation et duplication de conflit, mémos vocaux freestyle, dictionnaire de rimes.
-  - **[Finitions & Sécurité]** (Phase 13, T060 à T062) :
-    - Harmonisation esthétique frontend-design, audit sécurité, validation complète des tests.
+  - **Phase 2 : Authentification email et sessions (T010 à T018)** :
+    - Schémas Zod d'auth (`packages/shared`), tests d'intégration, service Argon2id, service sessions PostgreSQL en cookies HttpOnly, service email, routes Fastify, interfaces React et bannière persistante.
+  - **Phases 3 à 6 (Socle P1)** : OAuth Google/ORCID, Espace personnel, Éditeur CodeMirror 6, Albums et dnd-kit.
+  - **Phases 7 à 10 (Confort P2)** : Historique des versions, Audio S3/Boucle/BPM/Métronome, Syllabes/Rimes, Export PDF/Partages.
+  - **Phases 11 à 13 (P3 & Finitions)** : PWA hors ligne, Freestyle vocal, Dictionnaire de rimes, Polissage et audit sécurité.
 
 ## Dernière action
 
-- **Action exécutée** : Exécution de `/speckit-tasks` découpant l'implémentation en 62 tâches ordonnancées sur 13 phases testables avec priorités P1/P2/P3 et convention de commit.
-- **Résultat** : [tasks.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/tasks.md) produit, structuré et validé selon la constitution.
+- **Action exécutée** : Implémentation et validation complète de la Phase 1 (T001 à T009) avec passage de tous les tests (`vitest`), vérification de typage (`tsc --noEmit`), lint zéro warning (`eslint .`) et formatage Prettier.
+- **Résultat** : Socle monorepo, Docker, CI, bases de données PostgreSQL/Prisma et configurations opérationnels.
 
 ## Décisions prises
 
@@ -121,8 +118,8 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Prochaine étape
 
-- **Commande recommandée** : `/speckit-implement` ou démarrage direct de la Phase 1 (T001-T009 : Initialisation du monorepo pnpm, Docker compose, CI GitHub Actions, outillage qualité, shared package, backend Fastify, frontend React/Vite/Tailwind et schéma Prisma).
+- **Commande recommandée** : `/speckit-implement` pour la Phase 2 (Authentification email et sessions, T010 à T018).
 - **Prompt recommandé** :
   ```text
-  /speckit-implement Démarrer l'implémentation de la Phase 1 (T001 à T009) : initialisation du monorepo pnpm, Docker compose (PostgreSQL 16, MinIO), CI, outillage qualité et schéma Prisma
+  /speckit-implement Implémente la phase 2 (authentification email et sessions, T010 à T018). Lance lint et tests. Commite après chaque tâche terminée avec un message Conventional Commits en français, pousse sur dev, puis résume pour validation.
   ```

@@ -1,10 +1,8 @@
-import dotenv from 'dotenv';
 import { buildApp } from './app.js';
+import { env } from './config/env.js';
 
-dotenv.config();
-
-const port = Number(process.env.PORT) || 4000;
-const host = process.env.HOST || '0.0.0.0';
+const port = env.PORT;
+const host = env.HOST;
 
 async function main() {
   const app = await buildApp();
