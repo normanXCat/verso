@@ -33,6 +33,8 @@ export const updateSongSchema = z
     isFavorite: z.boolean().optional(),
     albumId: z.string().uuid("Identifiant d'album invalide").nullable().optional(),
     tags: z.array(tagNameSchema).max(MAX_TAGS_PER_SONG).optional(),
+    // Force l'archivage d'un instantané immuable même sans intervalle d'inactivité.
+    createVersion: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: 'Aucune modification fournie',
