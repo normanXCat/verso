@@ -36,6 +36,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { authRoutes } = await import('./modules/auth/auth.routes.js');
   await app.register(authRoutes, { prefix: '/api/auth' });
 
+  // Routes OAuth (Google & ORCID)
+  const { oauthRoutes } = await import('./modules/auth/oauth.routes.js');
+  await app.register(oauthRoutes, { prefix: '/api/auth/oauth' });
+
   // Route de contrôle de santé
   app.get('/health', async () => {
     return {

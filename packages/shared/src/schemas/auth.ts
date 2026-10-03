@@ -47,11 +47,17 @@ export const verifyEmailSchema = z.object({
   token: z.string().min(1, 'Le jeton de vérification est requis'),
 });
 
+export const linkOAuthAccountSchema = z.object({
+  linkToken: z.string().min(1, 'Le jeton de liaison est requis'),
+  password: z.string().min(1, 'Le mot de passe est requis'),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type LinkOAuthAccountInput = z.infer<typeof linkOAuthAccountSchema>;
 
 export interface UserPublic {
   id: string;
