@@ -10,6 +10,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL est requise'),
   SESSION_SECRET: z.string().min(32, 'SESSION_SECRET doit comporter au moins 32 caractères'),
   CLIENT_URL: z.string().url().default('http://localhost:5173'),
+  API_URL: z.string().url().default('http://localhost:4000'),
 
   // Stockage d'objets compatible S3
   S3_ENDPOINT: z.string().default('http://localhost:9000'),
