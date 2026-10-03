@@ -17,19 +17,21 @@
     - T013 : Service de gestion des sessions PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax dans `apps/api/src/modules/auth/session.service.ts` avec tests unitaires.
     - T014 : Service d'envoi d'emails transactionnels (Resend en prod / simulateur local et test) pour vérification et réinitialisation de mot de passe dans `apps/api/src/modules/auth/email.service.ts` avec tests unitaires.
     - T015 : Routes Fastify complètes pour l'authentification et les sessions (`/register`, `/login`, `/me`, `/logout`, `/verify-email`, `/forgot-password`, `/reset-password`, `/sessions`) avec rate limiting dans `apps/api/src/modules/auth/auth.routes.ts` et tests d'intégration tous validés.
+    - T016 : Client API typé (`apps/web/src/lib/auth-client.ts`), contexte et hook React `useAuth` avec TanStack Query (`apps/web/src/hooks/useAuth.tsx`), et configuration proxy Vite pour `/api`.
   - Branche `dev` active et synchronisée.
 - **Ce qui est en cours** :
-  - Phase 2 : Authentification email et sessions (T016 à T018 en cours).
+  - Phase 2 : Authentification email et sessions (T017 à T018 en cours).
 - **Ce qui reste à faire** :
-  - **Phase 2 (T016 à T018)** : Client et hooks d'auth web, formulaires React et bannière persistante.
+  - **Phase 2 (T017 à T018)** : Formulaires React d'auth/sessions et bannière persistante.
   - **Phases 3 à 6 (Socle P1)** : OAuth Google/ORCID, Espace personnel, Éditeur CodeMirror 6, Albums et dnd-kit.
   - **Phases 7 à 10 (Confort P2)** : Historique des versions, Audio S3/Boucle/BPM/Métronome, Syllabes/Rimes, Export PDF/Partages.
   - **Phases 11 à 13 (P3 & Finitions)** : PWA hors ligne, Freestyle vocal, Dictionnaire de rimes, Polissage et audit sécurité.
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de T015 (routes d'API Fastify pour auth et sessions avec rate limiting et validation des 11 tests d'intégration).
-- **Résultat** : Backend d'authentification 100% opérationnel, testé de bout en bout contre PostgreSQL.
+- **Action exécutée** : Implémentation de T016 (client API typé et hook useAuth avec TanStack Query).
+- **Résultat** : Gestion réactive de la session utilisateur côté frontend avec gestion du cache et typage strict.
+
 
 
 
