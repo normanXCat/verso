@@ -43,7 +43,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **P2** | **Gestion des médias audio (Compatible S3)** | ⏳ Prévu | Fichiers audio stockés hors base, stockage de la clé uniquement en base |
 | **P2** | **Organisation avancée des œuvres** | ⏳ Prévu | Structuration par albums, morceaux, couplets et annotations |
 | **P3** | **Liens de partage privés révocables** | ⏳ Prévu | Partage explicite en lecture seule, tokens hachés révocables avec expiration et rate limiting |
-| **P3** | **OAuth (Google & ORCID)** | ⏳ Prévu | Authentification tierce sécurisée avec state et PKCE |
+| **P3** | **OAuth (Google & ORCID)** | ✅ Fait | Flux OAuth avec `state` et PKCE (arctic), création/connexion de compte, et liaison sécurisée par confirmation du mot de passe |
 
 *(Règle : une fonctionnalité n'est marquée ✅ que si elle est effectivement implémentée et testée dans le code).*
 
@@ -125,7 +125,8 @@ verso/
 ├── apps/
 │   ├── api/                    # Backend Fastify + Prisma ORM
 │   │   ├── prisma/             # Schéma Prisma et migrations PostgreSQL
-│   │   └── src/                # Serveur HTTP, validation Zod env, modules
+│   │   ├── src/                # Serveur HTTP, validation Zod env, modules (auth, OAuth)
+│   │   └── vitest.config.ts    # Configuration Vitest du package API
 │   └── web/                    # Frontend React 18 + Vite + Tailwind CSS
 │       ├── public/             # Assets statiques
 │       └── src/                # App React, routage et styles
@@ -154,7 +155,8 @@ verso/
 ├── package.json                # Configuration racine du monorepo
 ├── pnpm-workspace.yaml         # Configuration du workspace pnpm
 ├── README.md                   # Documentation principale du projet
-└── tsconfig.base.json          # Configuration TypeScript stricte commune
+├── tsconfig.base.json          # Configuration TypeScript stricte commune
+└── vitest.config.ts            # Configuration Vitest (exécution séquentielle des tests)
 ```
 
 ---
@@ -170,6 +172,7 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 | `PORT` | Port d'écoute du serveur backend Fastify |
 | `NODE_ENV` | Environnement d'exécution (`development`, `test`, `production`) |
 | `CLIENT_URL` | Origine autorisée pour la politique CORS et les redirections d'authentification |
+| `API_URL` | URL publique du serveur API, utilisée pour construire les URI de redirection OAuth |
 | `S3_ENDPOINT` | Point de terminaison du service de stockage d'objets compatible S3 |
 | `S3_REGION` | Région géographique du stockage S3 |
 | `S3_BUCKET_NAME` | Nom du compartiment de stockage pour les fichiers audio |

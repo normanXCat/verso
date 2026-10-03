@@ -2,107 +2,82 @@
 
 ## État actuel
 
-- **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée.
+- **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
+- **Phase d'implémentation Spec Kit** : **Phase 3 (Google et ORCID, T019 à T022) terminée**.
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
-  - Clarification interactive (`/speckit-clarify`) sur les 5 points critiques (bannière email non bloquante, liaison OAuth sécurisée par mot de passe, quotas audio 75 Mo / 3 pistes, gestion des conflits hors ligne par duplication, rétention permanente des versions).
+  - Clarification interactive (`/speckit-clarify`) sur les 5 points critiques.
   - Planification d'implémentation technique complète (`/speckit-plan`) et analyse de cohérence (`/speckit-analyze`).
   - Découpage complet des tâches d'implémentation ([specs/001-verso-core/tasks.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/tasks.md)) en 13 phases testables isolément (62 tâches).
   - **Phase 1 (Base du projet, Docker, CI, schéma Prisma) 100% implémentée et testée (T001 à T009)**.
   - **Phase 2 (Authentification email et sessions) 100% implémentée et testée (T010 à T018)**.
-  - **Refonte Design "Encre & Papier" — Étape 1 (Design System) 100% implémentée et validée** :
-    - Tokens complets clair & sombre (`--color-bg`, `--color-surface`, `--color-text`, `--color-border`, `--color-accent`, marge rouge cahier, réglures) dans `index.css` et `tailwind.config.js`.
-    - Polices auto-hébergées avec Fontsource : `Instrument Serif` (titres), `Geist Sans` (interface), `Geist Mono` (BPM, métrique).
-    - Texture papier SVG sans dépendance réseau et réglures de cahier.
-    - Composants de base : `Button`, `Input`, `Card`, `Tag`, `Modal`, `Toast`, `ThemeSwitch`, et page de démonstration `/design`.
-  - **Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) 100% implémentée et testée** :
-    - Navigation fine et sticky avec réduction fluide au scroll (`Navbar.tsx`).
-    - Hero asymétrique avec grand titre Instrument Serif et feuille signature de rap animée (`RapSheetSignature.tsx`) avec numéros de ligne, décompte syllabique mono et révélation progressive des rimes en vermillon.
-    - Section "Écrire" (`EditorSection.tsx`) avec mockup d'éditeur interactif où l'on peut taper en direct, compteur syllabique poétique français en temps réel et sauvegarde automatique visible.
-    - Section "Organiser" (`OrganizeSection.tsx`) avec pile d'albums déployable au survol et réorganisation interactive de tracklist animée.
-    - Section "Instrus" (`InstrumentalsSection.tsx`) avec lecteur audio stylisé, forme d'onde animée synchronisée au tempo, BPM et tonalité en Geist Mono.
-    - Section "Protéger" (`ProtectSection.tsx`) avec frise chronologique verticale d'antériorité certifiée et hachages SHA-256.
-    - Section "Comment ça marche" (`HowItWorksSection.tsx`) avec 3 grandes étapes en chiffres Instrument Serif.
-    - CTA final pleine largeur sur fond encre profond (`FinalCtaSection.tsx`) et footer éditorial sobre (`Footer.tsx`).
-  - Branche `dev` active et synchronisée.
+  - **Refonte Design "Encre & Papier" — Étape 1 (Design System)** : tokens clair/sombre, polices Fontsource, texture papier, composants de base et page `/design`.
+  - **Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`)** : navigation sticky, hero asymétrique, feuille signature animée, sections interactives, CTA et footer éditorial.
+  - **Refonte Design "Encre & Papier" — Étape 3 (Pages d'authentification)** : mise en page éditoriale en deux colonnes, saisies animées, états de chargement/erreur (`AuthLayout`, `LoginPage`, `RegisterPage`, `ForgotPasswordPage`).
+  - **Phase 3 (Google et ORCID, T019 à T022) implémentée et testée** :
+    - Service OAuth avec `arctic` (state + PKCE S256 pour Google et ORCID) dans `apps/api/src/modules/auth/oauth.service.ts`.
+    - Jetons temporaires de liaison de compte signés en HMAC (aucun stockage en base, expiration 10 minutes).
+    - Routes `/api/auth/oauth/:provider`, `/api/auth/oauth/:provider/callback` et `/api/auth/oauth/link-confirm` dans `apps/api/src/modules/auth/oauth.routes.ts`.
+    - Flux exposés : connexion d'un compte OAuth déjà associé, création de compte au premier passage, et liaison sécurisée par confirmation du mot de passe si l'adresse email existe déjà.
+    - Composants frontend `OAuthButtons.tsx` (Google & ORCID) et `LinkAccountModal.tsx` (confirmation par mot de passe).
+    - Tests d'intégration dans `apps/api/tests/integration/oauth.test.ts` (9 tests).
+    - **Suite de tests : 39 tests au vert** (7 fichiers) ; lint, format, typecheck et build de production validés.
+  - Branche `dev` active.
 - **Ce qui est en cours** :
-  - Étape 2 terminée avec succès (lint, tests 30/30, build de production validés), arrêt pour validation avant Étape 3 (Pages d'authentification).
+  - Phase 3 terminée : arrêt pour validation avant la **Phase 4 (Espace personnel, recherche, filtres — T023 à T026)**.
 - **Ce qui reste à faire** :
-  - **Étape 3** : Refonte Pages d'authentification (2 colonnes, inputs animés, panneau éditorial).
-  - **Étape 4** : Refonte Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
-  - Reprise de la **Phase 3 : Google et ORCID (T019 à T022)**.
+  - **Phase 4** : Espace personnel, recherche plein texte et filtres (T023 à T026).
+  - **Phase 5** : Textes, brouillons, sauvegarde auto, favoris, tags (T027 à T033).
+  - **Refonte Design Étape 4** : Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation complète de l'Étape 2 de la refonte design "Encre & Papier" (Landing page `/`, feuille signature animée, sections interactives).
-- **Résultat** : Landing page éditoriale complète, builds et tests au vert, disponible sur `/`.
-
-
-
-
-
-
-
-
-
+- **Action exécutée** : Implémentation de la Phase 3 (Connexion avec Google et ORCID, T019 à T022) en respectant la constitution, la spec, le plan et la liste des tâches.
+- **Résultat** : Service et routes OAuth opérationnels avec `state` + PKCE, liaison de compte confirmée par mot de passe, composants frontend intégrés, tests d'intégration verts sur la branche `dev`.
 
 ## Décisions prises
 
-- **Structure Monorepo (`apps/web`, `apps/api`, `packages/shared`)** : Permet de partager les schémas Zod, les types et le moteur poétique sans duplication de code.
-- **Backend Fastify + Prisma + PostgreSQL** : Performance brute supérieure, écosystème de plugins sécurisé (`@fastify/cookie`, `@fastify/rate-limit`, `@fastify/csrf-protection`).
-- **Éditeur CodeMirror 6** : Architecture basée sur des décorations d'état asynchrones idéales pour les gouttières de syllabes et le surlignage de rimes sans bloquer la saisie.
-- **Stockage S3 découplé avec URLs présignées** : MinIO en local, Cloudflare R2 en production, téléversement direct sans transiter par la mémoire du serveur applicatif.
-- **Persistance locale IndexedDB + Service Worker** : Garantit une écriture continue sans risque de perte même en mode hors ligne.
-- **Direction artistique "Encre & Papier"** : Univers éditorial haut de gamme inspiré d'un cahier de rappeur (surfaces papier chaleureuses, accent vermillon unique, typographie Instrument Serif & Geist, aucun dégradé violet/bleu ni effet néon).
-- **Découpage en 13 phases strictement isolées** : Chaque phase dispose de son propre critère de test indépendant pour une progression incrémentale vérifiable.
+- **Structure Monorepo (`apps/web`, `apps/api`, `packages/shared`)** : mutualise les schémas Zod, les types et le moteur poétique.
+- **Backend Fastify + Prisma + PostgreSQL** : performance et écosystème de plugins sécurisés.
+- **Éditeur CodeMirror 6** : décorations asynchrones adaptées aux gouttières de syllabes et au surlignage de rimes.
+- **Stockage S3 découplé avec URLs présignées** : MinIO en local, Cloudflare R2 en production.
+- **Persistance locale IndexedDB + Service Worker** : écriture sans perte même hors ligne.
+- **Direction artistique "Encre & Papier"** : univers éditorial haut de gamme, accent vermillon unique, typographies Instrument Serif & Geist, aucun dégradé néon.
+- **Découpage en 13 phases strictement isolées** : progression incrémentale vérifiable.
+- **OAuth avec `arctic`** : `state` cryptographique + PKCE S256, jetons de liaison signés en HMAC (pas de table dédiée). **`arctic` est déprécié (juillet 2026)** : la bibliothèque reste publiée (v3.7.0) et fonctionnelle ; à remplacer par une implémentation native si elle disparaît du registre.
+- **Pas de provider ORCID intégré à `arctic`** : ORCID est implémenté via le `OAuth2Client` générique (endpoints `orcid.org/oauth/authorize`, `/token`, `/userinfo`).
+- **Callback OAuth en redirection navigateur** : contrairement au contrat initial (renvoi d'un `409 JSON`), le callback redirige vers `CLIENT_URL` avec des paramètres (`?oauth=success`, `?oauth=link_required&linkToken=...`, `?oauth=error`). Un utilisateur navigue en haut niveau et ne peut pas consommer une réponse JSON de callback.
+- **Tests d'intégration exécutés séquentiellement** : la base PostgreSQL de test étant partagée, `fileParallelism: false` (configs Vitest racine et `apps/api`) évite les interférences de `deleteMany` entre fichiers.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `6596dbe` — `feat: bannière persistante de rappel de vérification d email`
-
-
+- **Dernier commit** : `04a0a6f` — `feat: composants frontend oauth et modale de liaison de compte`
 
 ## Comment lancer le projet
-
-Le code applicatif sera matérialisé lors de l'implémentation de P1.
-
-### Commandes actuelles disponibles
 
 ```bash
 # Vérifier la branche active (dev ou feature)
 git branch --show-current
 
-# Vérifier la syntaxe des scripts bash
-bash -n .specify/scripts/bash/*.sh
-
-# Consulter le plan d'implémentation et les contrats
-cat specs/001-verso-core/plan.md
-ls -la specs/001-verso-core/contracts
-```
-
-### Commandes cibles (dès l'initialisation du monorepo)
-
-```bash
-# Lancement de la base PostgreSQL et de MinIO en local
-docker compose up -d
-
-# Installation des dépendances du monorepo
+# Installer les dépendances du monorepo
 pnpm install
 
-# Application des migrations Prisma
+# Lancer la base PostgreSQL et MinIO en local
+docker compose up -d
+
+# Appliquer les migrations Prisma
 pnpm --filter @verso/api exec prisma migrate dev
 
-# Lancement des serveurs de développement (API + Web)
+# Lancera les serveurs de développement (API + Web)
 pnpm dev
 
-# Tests unitaires et d'intégration
+# Tests, typage et qualité (le standard est zéro warning)
 pnpm test
-
-# Contrôle qualité (strict TypeScript et zéro warning ESLint)
 pnpm typecheck
 pnpm lint
+pnpm format:check
 ```
 
 ## Variables d'environnement
@@ -110,32 +85,42 @@ pnpm lint
 Seuls les noms des variables prévues par l'architecture sont documentés (aucune valeur ni secret) :
 
 - `DATABASE_URL` : URL de connexion PostgreSQL pour Prisma ORM.
-- `SESSION_SECRET` : Clé secrète de signature et chiffrement des cookies de session HttpOnly.
+- `SESSION_SECRET` : Clé secrète de signature des cookies de session et des jetons de liaison OAuth.
 - `PORT` : Port d'écoute du serveur backend Fastify.
+- `HOST` : Interface d'écoute du serveur backend.
 - `NODE_ENV` : Mode d'exécution (`development`, `test`, `production`).
 - `CLIENT_URL` : Origine autorisée pour la politique CORS et les redirections client.
-- `S3_ENDPOINT` : Point de terminaison du service de stockage d'objets compatible S3 (MinIO/R2).
+- `API_URL` : URL publique du serveur API (construction des URI de redirection OAuth).
+- `S3_ENDPOINT` : Point de terminaison du stockage compatible S3.
 - `S3_REGION` : Région du bucket S3.
-- `S3_BUCKET_NAME` : Nom du compartiment de stockage pour les fichiers audio.
+- `S3_BUCKET_NAME` : Nom du compartiment de stockage audio.
 - `S3_ACCESS_KEY_ID` : Identifiant de la clé d'accès S3.
 - `S3_SECRET_ACCESS_KEY` : Clé secrète d'accès S3.
 - `GOOGLE_CLIENT_ID` : Identifiant client OAuth Google.
 - `GOOGLE_CLIENT_SECRET` : Secret client OAuth Google.
 - `ORCID_CLIENT_ID` : Identifiant client OAuth ORCID.
 - `ORCID_CLIENT_SECRET` : Secret client OAuth ORCID.
+- `RESEND_API_KEY` : Clé API des emails transactionnels (Resend).
+- `EMAIL_FROM` : Expéditeur des emails transactionnels.
 
 ## Problèmes connus et points d'attention
 
-- Le code source applicatif sera généré lors de la phase d'implémentation (`speckit-implement`) ; le dépôt contient actuellement l'outillage Spec Kit, la constitution, la spécification validée et le plan technique complet.
+- **`arctic` est déprécié** (juillet 2026, v3.7.0 encore publiée) : dépendance fonctionnelle mais à surveiller/remplacer à terme.
+- **OAuth non testé contre les vrais fournisseurs** : les tests d'intégration stubent `fetch`. La configuration réelle de Google et ORCID (identifiants, URI de redirection `API_URL/api/auth/oauth/:provider/callback`) reste à valider en environnement de recette.
+- **ORCID et adresse email** : le point de terminaison userinfo d'ORCID peut ne pas renvoyer d'email. Dans ce cas, la création/liaison de compte est refusée proprement (redirection `?oauth=error&reason=email_required`).
+- **ORCID et authentification client** : `arctic` envoie les identifiants via Basic Auth sur le point de terminaison de jeton. À vérifier avec de vrais identifiants ORCID.
+- **Liaison multi-OAuth sans mot de passe** : si un compte a été créé uniquement via un fournisseur OAuth (sans mot de passe) et qu'un second fournisseur arrive avec le même email, la liaison est refusée (aucun mot de passe à confirmer).
+- **Base de test partagée** : les tests d'intégration de l'API partagent une base PostgreSQL unique et s'exécutent séquentiellement.
 - Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification.
 - Ne jamais commiter de fichier `.env`, de secret ni de fichier audio de test.
 - Respecter scrupuleusement le protocole de fin de tâche dans l'ordre strict des 6 étapes.
-- Règle de transition stricte : ne pas entamer P2 tant que P1 n'est pas stable et testé.
 
 ## Prochaine étape
 
-- **Commande recommandée** : `/speckit-implement` pour la Phase 2 (Authentification email et sessions, T010 à T018).
+- **Commande recommandée** : `/speckit-implement` pour la Phase 4 (Espace personnel, recherche et filtres, T023 à T026).
 - **Prompt recommandé** :
   ```text
-  /speckit-implement Implémente la phase 2 (authentification email et sessions, T010 à T018). Lance lint et tests. Commite après chaque tâche terminée avec un message Conventional Commits en français, pousse sur dev, puis résume pour validation.
+  Implémente la phase 4 (espace personnel, recherche plein texte et filtres, T023 à T026).
+  Travaille tâche par tâche, commit par tâche terminée avec un message Conventional
+  Commits en français, lance lint et tests, puis pousse sur dev et résume pour validation.
   ```
