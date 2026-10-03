@@ -1,54 +1,60 @@
 # Verso
 
-Un espace d'écriture minimaliste pour rappeurs : textes, albums, brouillons et instrus au même endroit.
+Un espace d'écriture minimaliste pour rappeurs permettant d'écrire, organiser, protéger et partager leurs textes.
 
 ---
 
 ## Description
 
-**Verso** est une application web conçue spécialement pour les rappeurs et artistes du texte. Elle propose un environnement d'écriture sobre, sans distraction, facilitant l'élaboration de textes, la gestion d'albums, l'organisation de brouillons et l'association directe d'instrumentales et de maquettes audio.
+**Verso** est une application web conçue pour les artistes du texte et rappeurs. Elle offre un environnement d'écriture sobre et sans distraction cognitive, garantissant une continuité absolue d'écriture (sauvegarde automatique en temps réel sans perte de données, support hors ligne complet via PWA), une organisation fluide (textes, albums, brouillons, instrus) et une protection stricte des œuvres (textes privés par défaut, partage exclusif par lien privé révocable en lecture seule).
 
-Le projet est gouverné par des règles strictes de qualité de code, de sécurité des données, de respect de la vie privée et de sobriété ergonomique (mobile-first, modes clair et sombre).
+Le projet est régi par une constitution stricte ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md)) qui impose une haute qualité de code, une sécurité sans compromis, une conception ergonomique soignée, une discipline Git rigoureuse et une mise à jour documentaire permanente.
 
 ---
 
-## Fonctionnalités
+## Fonctionnalités & Feuille de Route
 
-| Fonctionnalité | Statut | Description |
-| :--- | :---: | :--- |
-| **Constitution & Gouvernance du projet** | ✅ Fait | Principes non négociables inscrits dans la constitution (v1.0.1) |
-| **Gestion Git & Protection des secrets** | ✅ Fait | Branche `dev` active, `.gitignore` racine bloquant `.env`, secrets et audio |
-| **Documentation & Suivi de passation** | ✅ Fait | `README.md` et `HANDOFF.md` tenus à jour à chaque étape |
-| **Outillage Spec Kit** | ✅ Fait | Workflows et scripts de spécification, planification et implémentation |
-| **Système d'Authentification sécurisée** | ⏳ Prévu | Mots de passe Argon2id, sessions PostgreSQL en cookies HttpOnly/Secure/SameSite=Lax, rate limiting |
-| **OAuth (Google & ORCID)** | ⏳ Prévu | Authentification tierce avec paramètres state et PKCE |
-| **Éditeur d'écriture minimaliste** | ⏳ Prévu | Interface sobre, contrastes soignés, support mobile-first, dark/light mode |
-| **Organisation des œuvres** | ⏳ Prévu | Classement par albums, morceaux, couplets et brouillons |
-| **Stockage & Lecture des instrumentales** | ⏳ Prévu | Association de maquettes audio hébergées sur stockage compatible S3 |
+Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispensable → **P2** confort d'écriture et musique → **P3** bonus). Une priorité supérieure n'est abordée que lorsque la précédente est totalement stable et testée.
+
+| Priorité | Fonctionnalité | Statut | Description |
+| :---: | :--- | :---: | :--- |
+| **Socle** | **Constitution & Gouvernance v1.1.0** | ✅ Fait | 7 principes non négociables inscrits dans la constitution |
+| **Socle** | **Discipline Git & Protection des données** | ✅ Fait | Branche `dev`, blocage des `.env`, secrets et audio via `.gitignore` |
+| **Socle** | **Documentation & Handoff permanent** | ✅ Fait | `HANDOFF.md` et `README.md` mis à jour avant chaque commit |
+| **Socle** | **Outillage Spec Kit** | ✅ Fait | Workflows et scripts de spécification, planification et tâches |
+| **P1** | **Authentification sécurisée & Sessions** | ⏳ Prévu | Mots de passe Argon2id, sessions PostgreSQL en cookies HttpOnly/Secure/SameSite=Lax, rate limiting |
+| **P1** | **Éditeur d'écriture résilient** | ⏳ Prévu | Typographie soignée, sauvegarde automatique en continu, zéro perte de texte |
+| **P1** | **Organisation des textes (Privés par défaut)** | ⏳ Prévu | Cloisonnement strict multi-tenant, vérification d'appartenance systématique |
+| **P2** | **Application installable (PWA) & Mode Hors Ligne** | ⏳ Prévu | Écriture hors ligne totale (IndexedDB) et synchronisation au retour du réseau |
+| **P2** | **Gestion des médias audio (Compatible S3)** | ⏳ Prévu | Fichiers audio stockés hors base, stockage de la clé uniquement en base |
+| **P2** | **Organisation avancée des œuvres** | ⏳ Prévu | Structuration par albums, morceaux, couplets et annotations |
+| **P3** | **Liens de partage privés révocables** | ⏳ Prévu | Partage explicite en lecture seule, tokens hachés révocables avec expiration et rate limiting |
+| **P3** | **OAuth (Google & ORCID)** | ⏳ Prévu | Authentification tierce sécurisée avec state et PKCE |
+
+*(Règle : une fonctionnalité n'est marquée ✅ que si elle est effectivement implémentée et testée dans le code).*
 
 ---
 
 ## Stack technique
 
-L'architecture validée dans la constitution du projet comprend :
-
 - **Frontend** : React, Tailwind CSS
 - **Backend** : Node.js, Prisma ORM, PostgreSQL
-- **Stockage Objets** : Solution compatible S3 pour les médias audio
+- **Stockage Objets** : Solution compatible S3 pour les instrumentales et fichiers audio
+- **PWA & Offline** : Service Workers, IndexedDB pour la persistance locale et synchronisation
 - **Typage & Validation** : TypeScript (mode strict intégral), Zod (validation serveur obligatoire)
-- **Sécurité** : Argon2id, sessions sécurisées en base, protection CSRF, headers Helmet, CORS restrictif
-- **Qualité & Tests** : ESLint, Prettier (politique zéro warning), tests unitaires et d'intégration
+- **Sécurité** : Argon2id, sessions sécurisées en base PostgreSQL, CSRF, Helmet, CORS restrictif, rate limiting
+- **Qualité & Tests** : ESLint, Prettier (zéro warning toléré), tests unitaires et d'intégration
 
-*(Note : le dépôt se trouve actuellement en phase initiale de spécification et outillage Spec Kit ; le code source applicatif sera initialisé lors des prochaines étapes).*
+*(Note : le dépôt est actuellement en phase de cadrage et outillage Spec Kit ; le code applicatif sera généré lors des phases d'implémentation).*
 
 ---
 
 ## Prérequis
 
 - **Git** (v2.30+)
-- **Bash** (pour l'exécution des scripts d'outillage sous `.specify/scripts/bash/`)
+- **Bash** (pour l'outillage Spec Kit sous `.specify/scripts/bash/`)
 - **Node.js** (v20+ LTS recommandé pour le socle applicatif à venir)
-- **PostgreSQL** (v15+ prévu pour le stockage des données et des sessions)
+- **PostgreSQL** (v15+ prévu pour les données et sessions)
 
 ---
 
@@ -65,7 +71,7 @@ L'architecture validée dans la constitution du projet comprend :
    git checkout dev
    ```
 
-*(L'installation des dépendances avec `npm install` sera disponible dès la mise en place du fichier `package.json` applicatif).*
+*(L'installation via `npm install` sera effective dès la création du `package.json` applicatif).*
 
 ---
 
@@ -73,12 +79,12 @@ L'architecture validée dans la constitution du projet comprend :
 
 ### Vérification des outils du dépôt
 
-Pour vérifier l'environnement d'outillage Spec Kit :
 ```bash
-.specify/scripts/bash/check-prerequisites.sh
+# Vérifier la syntaxe des scripts bash
+bash -n .specify/scripts/bash/*.sh
 ```
 
-*(Les commandes de démarrage applicatif telles que `npm run dev` seront opérationnelles dès la génération du squelette React / Node.js).*
+*(Les commandes de démarrage applicatif `npm run dev` seront disponibles dès l'implémentation du squelette applicatif).*
 
 ---
 
@@ -104,7 +110,7 @@ verso/
 │   └── skills/                 # Définitions des compétences (specify, plan, tasks, implement, etc.)
 ├── .specify/                   # Configuration, modèles et mémoire de gouvernance
 │   ├── memory/
-│   │   └── constitution.md     # Constitution du projet (règles non négociables)
+│   │   └── constitution.md     # Constitution du projet (v1.1.0)
 │   ├── scripts/bash/           # Scripts d'automatisation bash
 │   ├── templates/              # Gabarits de spécification, plan, tâches et checklists
 │   └── workflows/              # Définitions des flux de travail Spec Kit
@@ -118,20 +124,20 @@ verso/
 
 ## Variables d'environnement
 
-Seuls les noms des variables d'environnement prévues par l'architecture sont listés ci-dessous (aucune valeur ni secret n'est inclus) :
+Seuls les noms des variables prévues par l'architecture sont documentés (aucun secret ni valeur) :
 
 | Variable | Rôle |
 | :--- | :--- |
-| `DATABASE_URL` | Chaîne de connexion à la base de données PostgreSQL pour Prisma |
+| `DATABASE_URL` | Chaîne de connexion PostgreSQL pour Prisma ORM |
 | `SESSION_SECRET` | Clé secrète pour le chiffrement et la signature des cookies de session |
 | `PORT` | Port d'écoute du serveur backend HTTP |
 | `NODE_ENV` | Environnement d'exécution (`development`, `test`, `production`) |
 | `CLIENT_URL` | Origine autorisée pour la politique CORS et les redirections d'authentification |
 | `S3_ENDPOINT` | Point de terminaison du service de stockage d'objets compatible S3 |
 | `S3_REGION` | Région géographique du stockage S3 |
-| `S3_BUCKET_NAME` | Nom du bucket dédié au stockage des fichiers audio |
-| `S3_ACCESS_KEY_ID` | Identifiant d'accès au service compatible S3 |
-| `S3_SECRET_ACCESS_KEY` | Clé secrète d'accès au service compatible S3 |
+| `S3_BUCKET_NAME` | Nom du compartiment de stockage pour les fichiers audio |
+| `S3_ACCESS_KEY_ID` | Identifiant d'accès au stockage compatible S3 |
+| `S3_SECRET_ACCESS_KEY` | Clé secrète d'accès au stockage compatible S3 |
 | `GOOGLE_CLIENT_ID` | Identifiant client de l'application OAuth Google |
 | `GOOGLE_CLIENT_SECRET` | Secret client de l'application OAuth Google |
 | `ORCID_CLIENT_ID` | Identifiant client de l'application OAuth ORCID |
