@@ -2,7 +2,7 @@
 
 ## État actuel
 
-- **Phase en cours** : Phase 2 Achevée (100%) — Prêt pour la Phase 3 (Google et ORCID).
+- **Phase en cours** : Refonte Design "Encre & Papier" — Étape 1 (Design System & Composants) terminée.
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
@@ -10,29 +10,27 @@
   - Planification d'implémentation technique complète (`/speckit-plan`) et analyse de cohérence (`/speckit-analyze`).
   - Découpage complet des tâches d'implémentation ([specs/001-verso-core/tasks.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/tasks.md)) en 13 phases testables isolément (62 tâches).
   - **Phase 1 (Base du projet, Docker, CI, schéma Prisma) 100% implémentée et testée (T001 à T009)**.
-  - **Phase 2 (Authentification email et sessions) 100% implémentée et testée (T010 à T018)** :
-    - T010 : Schémas Zod d'authentification (`registerSchema`, `loginSchema`, `resetPasswordSchema`, `forgotPasswordSchema`, `verifyEmailSchema`) et types inférés dans `packages/shared/src/schemas/auth.ts`, exportés dans `@verso/shared` avec suite de tests unitaires Vitest.
-    - T011 : Suite de tests d'intégration complète pour l'authentification et les sessions dans `apps/api/tests/integration/auth.test.ts` (couvrant register, login, me, logout, verify-email, forgot/reset password, sessions).
-    - T012 : Service de hachage de mot de passe Argon2id (`@node-rs/argon2`) et générateur/hachage SHA-256 de jetons d'email sécurisés dans `apps/api/src/modules/auth/password.service.ts` avec tests unitaires.
-    - T013 : Service de gestion des sessions PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax dans `apps/api/src/modules/auth/session.service.ts` avec tests unitaires.
-    - T014 : Service d'envoi d'emails transactionnels (Resend en prod / simulateur local et test) pour vérification et réinitialisation de mot de passe dans `apps/api/src/modules/auth/email.service.ts` avec tests unitaires.
-    - T015 : Routes Fastify complètes pour l'authentification et les sessions (`/register`, `/login`, `/me`, `/logout`, `/verify-email`, `/forgot-password`, `/reset-password`, `/sessions`) avec rate limiting dans `apps/api/src/modules/auth/auth.routes.ts` et tests d'intégration tous validés.
-    - T016 : Client API typé (`apps/web/src/lib/auth-client.ts`), contexte et hook React `useAuth` avec TanStack Query (`apps/web/src/hooks/useAuth.tsx`), et configuration proxy Vite pour `/api`.
-    - T017 : Interfaces utilisateur complètes dans `apps/web/src/pages/auth/` (connexion, inscription, mot de passe oublié, réinitialisation, vérification d'email, gestion des sessions actives) intégrées dans le routeur principal.
-    - T018 : Bannière d'avertissement persistante et non bloquante de vérification d'email dans `apps/web/src/components/common/EmailVerificationBanner.tsx` avec renvoi d'email en un clic.
+  - **Phase 2 (Authentification email et sessions) 100% implémentée et testée (T010 à T018)**.
+  - **Refonte Design "Encre & Papier" — Étape 1 (Design System) 100% implémentée et validée** :
+    - Tokens complets clair & sombre (`--color-bg`, `--color-surface`, `--color-text`, `--color-border`, `--color-accent`, marge rouge cahier, réglures) dans `index.css` et `tailwind.config.js`.
+    - Polices auto-hébergées avec Fontsource : `Instrument Serif` (titres), `Geist Sans` (interface), `Geist Mono` (BPM, métrique).
+    - Texture papier SVG sans dépendance réseau et réglures de cahier.
+    - Composants de base : `Button` (variantes, tailles, spinner, micro-tap), `Input` (label flottant, ligne animée focus, icône morphing, force mot de passe), `Card` (effet feuille/cahier avec réglures, marge et rotation au hover), `Tag` (statuts et métriques mono), `Modal` (accessible et animée), `Toast` (contexte & hook useToast), `ThemeSwitch` (clair/sombre persistant).
+    - Page de démonstration `/design` avec prévisualisation complète de tous les tokens et composants.
   - Branche `dev` active et synchronisée.
 - **Ce qui est en cours** :
-  - Phase 2 terminée avec succès (30/30 tests passants), arrêt pour validation utilisateur avant démarrage de la Phase 3.
+  - Étape 1 terminée avec succès, arrêt pour validation avant Étape 2 (Landing page `/`).
 - **Ce qui reste à faire** :
-  - **Phase 3 : Google et ORCID (T019 à T022)** : Flux OAuth avec Arctic sous PKCE et confirmation de liaison par mot de passe.
-  - **Phases 4 à 6 (Socle P1)** : Espace personnel, Éditeur CodeMirror 6, Albums et dnd-kit.
-  - **Phases 7 à 10 (Confort P2)** : Historique des versions, Audio S3/Boucle/BPM/Métronome, Syllabes/Rimes, Export PDF/Partages.
-  - **Phases 11 à 13 (P3 & Finitions)** : PWA hors ligne, Freestyle vocal, Dictionnaire de rimes, Polissage et audit sécurité.
+  - **Étape 2** : Refonte Landing page (Hero asymétrique, feuille de rap animée avec rimes et syllabes, sections interactives).
+  - **Étape 3** : Refonte Pages d'authentification (2 colonnes, inputs animés, panneau éditorial).
+  - **Étape 4** : Refonte Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
+  - Reprise de la **Phase 3 : Google et ORCID (T019 à T022)**.
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de T018 (bannière persistante de vérification d'email avec support de renvoi de jeton).
-- **Résultat** : Phase 2 (Authentification email et sessions) 100% achevée, tous les quality gates au vert.
+- **Action exécutée** : Implémentation complète de l'Étape 1 de la refonte design "Encre & Papier" (tokens, polices, composants de base, page `/design`).
+- **Résultat** : Socle de design éditorial opérationnel, builds et tests au vert, disponible sur `/design`.
+
 
 
 
@@ -49,12 +47,14 @@
 - **Éditeur CodeMirror 6** : Architecture basée sur des décorations d'état asynchrones idéales pour les gouttières de syllabes et le surlignage de rimes sans bloquer la saisie.
 - **Stockage S3 découplé avec URLs présignées** : MinIO en local, Cloudflare R2 en production, téléversement direct sans transiter par la mémoire du serveur applicatif.
 - **Persistance locale IndexedDB + Service Worker** : Garantit une écriture continue sans risque de perte même en mode hors ligne.
+- **Direction artistique "Encre & Papier"** : Univers éditorial haut de gamme inspiré d'un cahier de rappeur (surfaces papier chaleureuses, accent vermillon unique, typographie Instrument Serif & Geist, aucun dégradé violet/bleu ni effet néon).
 - **Découpage en 13 phases strictement isolées** : Chaque phase dispose de son propre critère de test indépendant pour une progression incrémentale vérifiable.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `cc3da78` — `feat: validation zod des variables d environnement api`
+- **Dernier commit** : `6596dbe` — `feat: bannière persistante de rappel de vérification d email`
+
 
 
 ## Comment lancer le projet
