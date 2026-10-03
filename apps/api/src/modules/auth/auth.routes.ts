@@ -1,5 +1,4 @@
-import { FastifyInstance, FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
-import { User, Session } from '@prisma/client';
+import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import {
   registerSchema,
   loginSchema,
@@ -15,7 +14,6 @@ import {
 } from './password.service.js';
 import {
   createSession,
-  validateSession,
   deleteSession,
   revokeAllUserSessions,
   listUserSessions,
@@ -24,31 +22,7 @@ import {
   SESSION_COOKIE_NAME,
 } from './session.service.js';
 import { sendVerificationEmail, sendPasswordResetEmail } from './email.service.js';
-
-declare module 'fastify' {
-  interface FastifyRequest {
-    user?: User;
-    session?: Session;
-  }
-}
-
-async function authenticate(request: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const sessionId = request.cookies[SESSION_COOKIE_NAME];
-  if (!sessionId) {
-    reply.status(401).send({ message: 'Non authentifié' });
-    return;
-  }
-
-  const result = await validateSession(sessionId);
-  if (!result) {
-    clearSessionCookie(reply);
-    reply.status(401).send({ message: 'Session invalide ou expirée' });
-    return;
-  }
-
-  request.user = result.user;
-  request.session = result.session;
-}
+import { requireAuth } from './auth.guard.js';
 
 export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   // Inscription
@@ -198,7 +172,7 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   );
 
   // Profil connecté
-  app.get('/me', { preHandler: authenticate }, async (request, reply) => {
+  app.get('/me', { preHandler: requireAuth }, async (request, reply) => {
     const user = request.user!;
     return reply.status(200).send({
       user: {
@@ -273,7 +247,7 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   app.post(
     '/resend-verification',
     {
-      preHandler: authenticate,
+      preHandler: requireAuth,
       config: {
         rateLimit:
           process.env.NODE_ENV === 'test'
@@ -423,7 +397,7 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   });
 
   // Sessions actives
-  app.get('/sessions', { preHandler: authenticate }, async (request, reply) => {
+  app.get('/sessions', { preHandler: requireAuth }, async (request, reply) => {
     const user = request.user!;
     const session = request.session!;
 
@@ -432,7 +406,7 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   });
 
   // Révocation d'une session distante
-  app.delete('/sessions/:id', { preHandler: authenticate }, async (request, reply) => {
+  app.delete('/sessions/:id', { preHandler: requireAuth }, async (request, reply) => {
     const user = request.user!;
     const { id: targetSessionId } = request.params as { id: string };
 
@@ -453,7 +427,7 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   });
 
   // Révocation de toutes les sessions distantes
-  app.delete('/sessions', { preHandler: authenticate }, async (request, reply) => {
+  app.delete('/sessions', { preHandler: requireAuth }, async (request, reply) => {
     const user = request.user!;
     const currentSession = request.session!;
     const query = request.query as { allExceptCurrent?: string };

@@ -40,6 +40,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { oauthRoutes } = await import('./modules/auth/oauth.routes.js');
   await app.register(oauthRoutes, { prefix: '/api/auth/oauth' });
 
+  // Routes de l'espace personnel (recherche et filtres des textes)
+  const { songsRoutes } = await import('./modules/songs/songs.routes.js');
+  await app.register(songsRoutes, { prefix: '/api/songs' });
+
   // Route de contrôle de santé
   app.get('/health', async () => {
     return {
