@@ -2,7 +2,7 @@
 
 ## État actuel
 
-- **Phase en cours** : Refonte Design "Encre & Papier" — Étape 1 (Design System & Composants) terminée.
+- **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée.
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
@@ -15,21 +15,28 @@
     - Tokens complets clair & sombre (`--color-bg`, `--color-surface`, `--color-text`, `--color-border`, `--color-accent`, marge rouge cahier, réglures) dans `index.css` et `tailwind.config.js`.
     - Polices auto-hébergées avec Fontsource : `Instrument Serif` (titres), `Geist Sans` (interface), `Geist Mono` (BPM, métrique).
     - Texture papier SVG sans dépendance réseau et réglures de cahier.
-    - Composants de base : `Button` (variantes, tailles, spinner, micro-tap), `Input` (label flottant, ligne animée focus, icône morphing, force mot de passe), `Card` (effet feuille/cahier avec réglures, marge et rotation au hover), `Tag` (statuts et métriques mono), `Modal` (accessible et animée), `Toast` (contexte & hook useToast), `ThemeSwitch` (clair/sombre persistant).
-    - Page de démonstration `/design` avec prévisualisation complète de tous les tokens et composants.
+    - Composants de base : `Button`, `Input`, `Card`, `Tag`, `Modal`, `Toast`, `ThemeSwitch`, et page de démonstration `/design`.
+  - **Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) 100% implémentée et testée** :
+    - Navigation fine et sticky avec réduction fluide au scroll (`Navbar.tsx`).
+    - Hero asymétrique avec grand titre Instrument Serif et feuille signature de rap animée (`RapSheetSignature.tsx`) avec numéros de ligne, décompte syllabique mono et révélation progressive des rimes en vermillon.
+    - Section "Écrire" (`EditorSection.tsx`) avec mockup d'éditeur interactif où l'on peut taper en direct, compteur syllabique poétique français en temps réel et sauvegarde automatique visible.
+    - Section "Organiser" (`OrganizeSection.tsx`) avec pile d'albums déployable au survol et réorganisation interactive de tracklist animée.
+    - Section "Instrus" (`InstrumentalsSection.tsx`) avec lecteur audio stylisé, forme d'onde animée synchronisée au tempo, BPM et tonalité en Geist Mono.
+    - Section "Protéger" (`ProtectSection.tsx`) avec frise chronologique verticale d'antériorité certifiée et hachages SHA-256.
+    - Section "Comment ça marche" (`HowItWorksSection.tsx`) avec 3 grandes étapes en chiffres Instrument Serif.
+    - CTA final pleine largeur sur fond encre profond (`FinalCtaSection.tsx`) et footer éditorial sobre (`Footer.tsx`).
   - Branche `dev` active et synchronisée.
 - **Ce qui est en cours** :
-  - Étape 1 terminée avec succès, arrêt pour validation avant Étape 2 (Landing page `/`).
+  - Étape 2 terminée avec succès (lint, tests 30/30, build de production validés), arrêt pour validation avant Étape 3 (Pages d'authentification).
 - **Ce qui reste à faire** :
-  - **Étape 2** : Refonte Landing page (Hero asymétrique, feuille de rap animée avec rimes et syllabes, sections interactives).
   - **Étape 3** : Refonte Pages d'authentification (2 colonnes, inputs animés, panneau éditorial).
   - **Étape 4** : Refonte Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
   - Reprise de la **Phase 3 : Google et ORCID (T019 à T022)**.
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation complète de l'Étape 1 de la refonte design "Encre & Papier" (tokens, polices, composants de base, page `/design`).
-- **Résultat** : Socle de design éditorial opérationnel, builds et tests au vert, disponible sur `/design`.
+- **Action exécutée** : Implémentation complète de l'Étape 2 de la refonte design "Encre & Papier" (Landing page `/`, feuille signature animée, sections interactives).
+- **Résultat** : Landing page éditoriale complète, builds et tests au vert, disponible sur `/`.
 
 
 
