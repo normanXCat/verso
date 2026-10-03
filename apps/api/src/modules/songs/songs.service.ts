@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import type { CreateSongInput, SongListItem, UpdateSongInput } from '@verso/shared';
+import type { CreateSongInput, SongDetail, UpdateSongInput } from '@verso/shared';
 import { prisma } from '../../config/prisma.js';
 import { findSongById } from './songs.repository.js';
 
@@ -56,7 +56,7 @@ async function assertAlbum(userId: string, albumId: string | null | undefined): 
   }
 }
 
-export async function createSong(userId: string, input: CreateSongInput): Promise<SongListItem> {
+export async function createSong(userId: string, input: CreateSongInput): Promise<SongDetail> {
   await assertAlbum(userId, input.albumId);
 
   const song = await prisma.song.create({
@@ -79,7 +79,7 @@ export async function createSong(userId: string, input: CreateSongInput): Promis
   return created;
 }
 
-export function getSong(userId: string, songId: string): Promise<SongListItem | null> {
+export function getSong(userId: string, songId: string): Promise<SongDetail | null> {
   return findSongById(userId, songId);
 }
 
@@ -87,7 +87,7 @@ export async function updateSong(
   userId: string,
   songId: string,
   input: UpdateSongInput,
-): Promise<SongListItem | null> {
+): Promise<SongDetail | null> {
   const existing = await prisma.song.findFirst({
     where: { id: songId, userId },
     select: { id: true },

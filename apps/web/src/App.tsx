@@ -14,6 +14,7 @@ import { SessionsPage } from './pages/auth/SessionsPage.js';
 import { DesignSystemPage } from './pages/DesignSystemPage.js';
 import { LandingPage } from './pages/LandingPage.js';
 import { DashboardPage } from './pages/DashboardPage.js';
+import { EditorPage } from './pages/EditorPage.js';
 import { useAuth } from './hooks/useAuth.js';
 
 const queryClient = new QueryClient();
@@ -54,6 +55,14 @@ export function App(): React.ReactElement {
                   element={
                     <RequireAuth>
                       <DashboardPage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/songs/:id"
+                  element={
+                    <RequireAuth>
+                      <EditorPage />
                     </RequireAuth>
                   }
                 />

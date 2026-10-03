@@ -1,7 +1,7 @@
 import {
   SearchSongsResult,
   SongFilter,
-  SongListItem,
+  SongDetail,
   SongSort,
   UpdateSongInput,
   type CreateSongInput,
@@ -72,19 +72,19 @@ export const songsClient = {
     return request<SearchSongsResult>(`/songs${query ? `?${query}` : ''}`);
   },
 
-  async get(id: string): Promise<SongListItem> {
-    return request<SongListItem>(`/songs/${encodeURIComponent(id)}`);
+  async get(id: string): Promise<SongDetail> {
+    return request<SongDetail>(`/songs/${encodeURIComponent(id)}`);
   },
 
-  async create(payload: CreateSongPayload = {}): Promise<SongListItem> {
-    return request<SongListItem>('/songs', {
+  async create(payload: CreateSongPayload = {}): Promise<SongDetail> {
+    return request<SongDetail>('/songs', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
   },
 
-  async update(id: string, payload: UpdateSongInput): Promise<SongListItem> {
-    return request<SongListItem>(`/songs/${encodeURIComponent(id)}`, {
+  async update(id: string, payload: UpdateSongInput): Promise<SongDetail> {
+    return request<SongDetail>(`/songs/${encodeURIComponent(id)}`, {
       method: 'PATCH',
       body: JSON.stringify(payload),
     });

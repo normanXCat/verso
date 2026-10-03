@@ -46,6 +46,11 @@ export interface SongListItem {
   createdAt: Date | string;
 }
 
+/** Texte complet (édition) : la liste n'expose qu'un extrait, le détail expose le contenu intégral. */
+export interface SongDetail extends SongListItem {
+  content: string;
+}
+
 /** Réponse de l'API de recherche des textes. */
 export interface SearchSongsResult {
   items: SongListItem[];

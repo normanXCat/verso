@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { PenLine, Search } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { PenLine, Plus, Search } from 'lucide-react';
 import type { SongFilter } from '@verso/shared';
 import { songsClient } from '../lib/songs-client.js';
+import { Button } from '../components/ui/Button.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
 import { ThemeSwitch } from '../components/common/ThemeSwitch.js';
@@ -45,6 +46,8 @@ function EmptyState({ hasQuery }: { hasQuery: boolean }): React.ReactElement {
  */
 export function DashboardPage(): React.ReactElement {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<SongFilter>('all');
   const debouncedTerm = useDebouncedValue(searchTerm, 200);
@@ -57,6 +60,14 @@ export function DashboardPage(): React.ReactElement {
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
+
+  const createSong = useMutation({
+    mutationFn: () => songsClient.create({}),
+    onSuccess: (song) => {
+      void queryClient.invalidateQueries({ queryKey: ['songs', 'search'] });
+      navigate(`/app/songs/${song.id}`);
+    },
+  });
 
   return (
     <div className="paper-grain min-h-screen bg-paper-bg text-paper-text">
@@ -84,19 +95,32 @@ export function DashboardPage(): React.ReactElement {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-10 md:px-10">
-        <div className="mb-8 flex flex-col gap-2">
-          <p className="text-xs font-mono uppercase tracking-[0.2em] text-paper-accent">
-            Espace personnel
-          </p>
-          <h1 className="font-serif text-4xl leading-tight tracking-tight md:text-5xl">
-            Mon carnet
-          </h1>
-          <p className="max-w-xl text-sm leading-relaxed text-paper-muted">
-            Retrouvez, filtrez et relisez vos textes. La recherche parcourt les titres et les
-            paroles en direct.
-          </p>
+        {' '}
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-mono uppercase tracking-[0.2em] text-paper-accent">
+              Espace personnel
+            </p>
+            <h1 className="font-serif text-4xl leading-tight tracking-tight md:text-5xl">
+              Mon carnet
+            </h1>
+            <p className="max-w-xl text-sm leading-relaxed text-paper-muted">
+              Retrouvez, filtrez et relisez vos textes. La recherche parcourt les titres et les
+              paroles en direct.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="primary"
+            size="md"
+            onClick={() => createSong.mutate()}
+            isLoading={createSong.isPending}
+            loadingText="Création…"
+          >
+            <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
+            Nouveau texte
+          </Button>
         </div>
-
         {/* Recherche plein texte en direct */}
         <div className="mb-5 flex items-center gap-3 border-b border-paper-border pb-2 transition-colors focus-within:border-paper-accent">
           <Search className="h-4 w-4 shrink-0 text-paper-muted" aria-hidden="true" />
@@ -114,14 +138,12 @@ export function DashboardPage(): React.ReactElement {
             </span>
           )}
         </div>
-
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <FilterBar value={filter} onChange={setFilter} />
           <span className="text-xs font-mono text-paper-muted" aria-live="polite">
             {total} texte{total > 1 ? 's' : ''}
           </span>
         </div>
-
         {isLoading ? (
           <SkeletonGrid />
         ) : isError ? (

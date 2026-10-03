@@ -12,6 +12,8 @@ interface UseAutoSaveOptions {
   enabled?: boolean;
   /** Délai de debounce ; doit rester sous 500 ms (exigence de sauvegarde continue). */
   delayMs?: number;
+  /** Contenu connu côté serveur au chargement, pour détecter un brouillon local à synchroniser. */
+  baselineContent?: string;
 }
 
 interface UseAutoSaveResult {
@@ -31,6 +33,7 @@ export function useAutoSave({
   content,
   enabled = true,
   delayMs = 400,
+  baselineContent,
 }: UseAutoSaveOptions): UseAutoSaveResult {
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
@@ -43,10 +46,10 @@ export function useAutoSave({
     contentRef.current = content;
   }, [content]);
 
-  // Réinitialise la référence lorsqu'on change de texte.
+  // Réinitialise la référence lorsqu'on change de texte ou de référence serveur.
   useEffect(() => {
-    lastSavedContentRef.current = null;
-  }, [songId]);
+    lastSavedContentRef.current = baselineContent ?? null;
+  }, [songId, baselineContent]);
 
   const persist = useCallback(
     async (value: string): Promise<void> => {

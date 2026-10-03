@@ -1,5 +1,10 @@
 import { Prisma } from '@prisma/client';
-import { SONG_EXCERPT_MAX_LENGTH, type SearchSongsQuery, type SongListItem } from '@verso/shared';
+import {
+  SONG_EXCERPT_MAX_LENGTH,
+  type SearchSongsQuery,
+  type SongDetail,
+  type SongListItem,
+} from '@verso/shared';
 import { prisma } from '../../config/prisma.js';
 
 export const SONG_INCLUDE = {
@@ -63,6 +68,10 @@ function buildExcerpt(content: string): string {
   return `${normalized.slice(0, SONG_EXCERPT_MAX_LENGTH).trimEnd()}…`;
 }
 
+export function toSongDetail(song: SongWithRelations): SongDetail {
+  return { ...toSongListItem(song), content: song.content };
+}
+
 export function toSongListItem(song: SongWithRelations): SongListItem {
   return {
     id: song.id,
@@ -105,10 +114,10 @@ export async function searchSongs(
 /**
  * Récupère un texte par son identifiant en imposant l'appartenance à l'utilisateur.
  */
-export async function findSongById(userId: string, songId: string): Promise<SongListItem | null> {
+export async function findSongById(userId: string, songId: string): Promise<SongDetail | null> {
   const song = await prisma.song.findFirst({
     where: { id: songId, userId },
     include: SONG_INCLUDE,
   });
-  return song ? toSongListItem(song) : null;
+  return song ? toSongDetail(song) : null;
 }

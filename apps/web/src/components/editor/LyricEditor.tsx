@@ -20,7 +20,7 @@ const editorTheme = EditorView.theme({
   },
   '.cm-scroller': {
     fontFamily: "'Geist Sans', system-ui, sans-serif",
-    lineHeight: '1.9rem',
+    lineHeight: '1.75rem',
     overflow: 'visible',
   },
   '.cm-content': {
