@@ -12,6 +12,7 @@ import { useAuth } from '../hooks/useAuth.js';
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
 import { useToast } from '../components/ui/Toast.js';
 import { ThemeSwitch } from '../components/common/ThemeSwitch.js';
+import { Logo } from '../components/common/Logo.js';
 import { FilterBar } from '../components/dashboard/FilterBar.js';
 import { SongCard } from '../components/dashboard/SongCard.js';
 import { AlbumCard } from '../components/album/AlbumCard.js';
@@ -104,11 +105,12 @@ export function DashboardPage(): React.ReactElement {
     <div className="paper-grain min-h-screen bg-paper-bg text-paper-text">
       <header className="border-b border-paper-border bg-paper-surface/70 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 md:px-10">
-          <Link to="/" className="group flex items-baseline gap-1">
-            <span className="font-serif text-2xl text-paper-text transition-colors group-hover:text-paper-accent">
-              Verso
-            </span>
-            <span className="inline-block h-1.5 w-1.5 translate-y-[-2px] rounded-full bg-paper-accent" />
+          <Link
+            to="/"
+            aria-label="Verso — retour à l'accueil"
+            className="group text-paper-text transition-colors hover:text-paper-accent"
+          >
+            <Logo size="md" title="Verso" />
           </Link>
           <div className="flex items-center gap-3">
             <span className="hidden text-xs font-mono text-paper-muted sm:inline">

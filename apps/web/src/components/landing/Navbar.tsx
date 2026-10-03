@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { ThemeSwitch } from '../common/ThemeSwitch.js';
+import { Logo } from '../common/Logo.js';
 import { Button } from '../ui/Button.js';
 import { useAuth } from '../../hooks/useAuth.js';
 
@@ -41,11 +42,12 @@ export function Navbar(): React.ReactElement {
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
         {/* Logo Verso */}
-        <Link to="/" className="flex items-baseline gap-1 group">
-          <span className="font-serif text-3xl font-normal tracking-tight text-paper-text transition-colors group-hover:text-paper-accent">
-            Verso
-          </span>
-          <span className="inline-block w-2 h-2 rounded-full bg-paper-accent translate-y-[-2px]" />
+        <Link
+          to="/"
+          aria-label="Verso — retour à l'accueil"
+          className="group text-paper-text transition-colors hover:text-paper-accent"
+        >
+          <Logo size="lg" title="Verso" />
         </Link>
 
         {/* Liens Desktop */}

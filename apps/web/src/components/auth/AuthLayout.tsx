@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { ThemeSwitch } from '../common/ThemeSwitch.js';
+import { Logo } from '../common/Logo.js';
 import { OAuthButtons } from './OAuthButtons.js';
 
 interface AuthQuote {
@@ -55,11 +56,12 @@ export function AuthLayout({
           className="lg:col-span-6 flex flex-col justify-center max-w-md mx-auto w-full space-y-6"
         >
           <div className="space-y-2">
-            <Link to="/" className="inline-flex items-baseline gap-1 group">
-              <span className="font-serif text-3xl text-paper-text group-hover:text-paper-accent transition-colors">
-                Verso
-              </span>
-              <span className="inline-block w-2 h-2 rounded-full bg-paper-accent translate-y-[-2px]" />
+            <Link
+              to="/"
+              aria-label="Verso — retour à l'accueil"
+              className="inline-flex text-paper-text transition-colors group-hover:text-paper-accent"
+            >
+              <Logo size="lg" title="Verso" />
             </Link>
             <h1 className="text-3xl font-serif text-paper-text tracking-tight font-normal">
               {title}
