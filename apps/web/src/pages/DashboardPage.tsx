@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { PenLine, Plus, Search } from 'lucide-react';
+import { Disc3, PenLine, Plus, Search } from 'lucide-react';
 import type { SongFilter } from '@verso/shared';
 import { songsClient } from '../lib/songs-client.js';
+import { albumsClient } from '../lib/albums-client.js';
 import { Button } from '../components/ui/Button.js';
+import { Input } from '../components/ui/Input.js';
+import { Modal } from '../components/ui/Modal.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
+import { useToast } from '../components/ui/Toast.js';
 import { ThemeSwitch } from '../components/common/ThemeSwitch.js';
 import { FilterBar } from '../components/dashboard/FilterBar.js';
 import { SongCard } from '../components/dashboard/SongCard.js';
+import { AlbumCard } from '../components/album/AlbumCard.js';
 
 function SkeletonGrid(): React.ReactElement {
   return (
@@ -48,13 +53,23 @@ export function DashboardPage(): React.ReactElement {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<SongFilter>('all');
+  const [isAlbumModalOpen, setIsAlbumModalOpen] = useState(false);
+  const [albumTitle, setAlbumTitle] = useState('');
+  const [albumDescription, setAlbumDescription] = useState('');
   const debouncedTerm = useDebouncedValue(searchTerm, 200);
 
   const { data, isLoading, isFetching, isError } = useQuery({
     queryKey: ['songs', 'search', { q: debouncedTerm, filter }],
     queryFn: () => songsClient.search({ q: debouncedTerm, filter, sort: 'recent' }),
+    staleTime: 30_000,
+  });
+
+  const { data: albums } = useQuery({
+    queryKey: ['albums', 'list'],
+    queryFn: () => albumsClient.list(),
     staleTime: 30_000,
   });
 
@@ -67,6 +82,22 @@ export function DashboardPage(): React.ReactElement {
       void queryClient.invalidateQueries({ queryKey: ['songs', 'search'] });
       navigate(`/app/songs/${song.id}`);
     },
+  });
+
+  const createAlbum = useMutation({
+    mutationFn: () =>
+      albumsClient.create({
+        title: albumTitle.trim(),
+        description: albumDescription.trim() || undefined,
+      }),
+    onSuccess: (album) => {
+      void queryClient.invalidateQueries({ queryKey: ['albums', 'list'] });
+      setIsAlbumModalOpen(false);
+      setAlbumTitle('');
+      setAlbumDescription('');
+      navigate(`/app/albums/${album.id}`);
+    },
+    onError: () => toast("Impossible de créer l'album.", 'error'),
   });
 
   return (
@@ -109,18 +140,44 @@ export function DashboardPage(): React.ReactElement {
               paroles en direct.
             </p>
           </div>
-          <Button
-            type="button"
-            variant="primary"
-            size="md"
-            onClick={() => createSong.mutate()}
-            isLoading={createSong.isPending}
-            loadingText="Création…"
-          >
-            <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            Nouveau texte
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              onClick={() => setIsAlbumModalOpen(true)}
+            >
+              <Disc3 className="mr-1.5 h-4 w-4" aria-hidden="true" />
+              Nouvel album
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="md"
+              onClick={() => createSong.mutate()}
+              isLoading={createSong.isPending}
+              loadingText="Création…"
+            >
+              <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
+              Nouveau texte
+            </Button>
+          </div>
         </div>
+        {/* Albums */}
+        {albums && albums.length > 0 && (
+          <section className="mb-10">
+            <h2 className="mb-4 text-xs font-mono uppercase tracking-[0.2em] text-paper-muted">
+              Albums
+            </h2>
+            <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {albums.map((album) => (
+                <li key={album.id} className="h-full">
+                  <AlbumCard album={album} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         {/* Recherche plein texte en direct */}
         <div className="mb-5 flex items-center gap-3 border-b border-paper-border pb-2 transition-colors focus-within:border-paper-accent">
           <Search className="h-4 w-4 shrink-0 text-paper-muted" aria-hidden="true" />
@@ -162,6 +219,69 @@ export function DashboardPage(): React.ReactElement {
           </ul>
         )}
       </main>
+
+      <Modal
+        isOpen={isAlbumModalOpen}
+        onClose={() => setIsAlbumModalOpen(false)}
+        title="Nouvel album"
+        description="Regroupez plusieurs textes sous une même œuvre."
+      >
+        <form
+          className="space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (albumTitle.trim().length === 0) {
+              return;
+            }
+            createAlbum.mutate();
+          }}
+        >
+          <Input
+            label="Titre de l'album"
+            value={albumTitle}
+            onChange={(event) => setAlbumTitle(event.target.value)}
+            maxLength={200}
+            autoFocus
+          />
+          <div className="space-y-1.5">
+            <label
+              htmlFor="album-description"
+              className="text-xs font-mono uppercase tracking-wide text-paper-muted"
+            >
+              Description (optionnelle)
+            </label>
+            <textarea
+              id="album-description"
+              value={albumDescription}
+              onChange={(event) => setAlbumDescription(event.target.value)}
+              rows={3}
+              maxLength={2000}
+              placeholder="Projet, intention, date…"
+              className="w-full resize-none rounded-paper border border-paper-border bg-paper-bg px-3 py-2 text-sm text-paper-text placeholder:text-paper-muted/60 focus:border-paper-accent focus:outline-none"
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsAlbumModalOpen(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              disabled={albumTitle.trim().length === 0}
+              isLoading={createAlbum.isPending}
+              loadingText="Création…"
+            >
+              Créer l'album
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

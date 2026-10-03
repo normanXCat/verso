@@ -15,6 +15,7 @@ import { DesignSystemPage } from './pages/DesignSystemPage.js';
 import { LandingPage } from './pages/LandingPage.js';
 import { DashboardPage } from './pages/DashboardPage.js';
 import { EditorPage } from './pages/EditorPage.js';
+import { AlbumDetailPage } from './pages/AlbumDetailPage.js';
 import { useAuth } from './hooks/useAuth.js';
 
 const queryClient = new QueryClient();
@@ -63,6 +64,14 @@ export function App(): React.ReactElement {
                   element={
                     <RequireAuth>
                       <EditorPage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/albums/:id"
+                  element={
+                    <RequireAuth>
+                      <AlbumDetailPage />
                     </RequireAuth>
                   }
                 />
