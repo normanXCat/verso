@@ -35,6 +35,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **P1** | **Espace personnel, recherche & filtres** | ✅ Fait | Tableau de bord `/app`, recherche plein texte en direct (titre et paroles), filtres brouillons/terminés/favoris, cloisonnement par utilisateur |
 | **P1** | **Éditeur, sauvegarde auto, favoris & tags** | ✅ Fait | Éditeur CodeMirror 6, sauvegarde automatique (< 500 ms, brouillon local), compteurs mots/lignes en direct, statut brouillon/terminé, favoris et tags personnalisés |
 | **P1** | **Albums & réorganisation de tracklist** | ✅ Fait | Création d'albums, rattachement de textes existants, tracklist réordonnable par glisser-déposer (`@dnd-kit`) et détachement automatique à la suppression (aucun texte jamais supprimé) |
+| **P2** | **Historique des versions** | ✅ Fait | Archivage horodaté immuable à chaque modification (conservé indéfiniment, sans purge ni plafond), aperçu comparatif et restauration d'une révision antérieure sans écrasement de l'historique |
 
 
 

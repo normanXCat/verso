@@ -3,7 +3,7 @@
 ## État actuel
 
 - **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
-- **Phase d'implémentation Spec Kit** : **Phase 6 (Albums et réorganisation de tracklist — T034 à T037) terminée** → **jalon MVP P1 complet**.
+- **Phase d'implémentation Spec Kit** : **Phase 7 (Historique des versions — T038 à T041) terminée** (première phase P2).
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
@@ -44,17 +44,24 @@
     - **Règle stricte FR-027** : la suppression d'un album détache tous ses textes (`albumId` et `positionInAlbum` remis à `null`) sans jamais en supprimer un seul.
     - Interface : page `/app/albums/:id` (`AlbumDetailPage.tsx`) avec métadonnées éditables, rattachement de textes existants et tracklist triable `@dnd-kit` (`SortableTracklist.tsx`, souris/tactile/clavier), carte d'album (`AlbumCard.tsx`) et création d'album depuis le tableau de bord.
     - **Suite de tests totale : 83 tests au vert** (11 fichiers) ; lint, format, typecheck et build de production validés.
+  - **Phase 7 (Historique des versions — T038 à T041) implémentée et testée** :
+    - Schémas Zod de l'historique (`packages/shared/src/schemas/version.ts`) : `versionIdParamSchema`, type `SongVersionItem`, et option `createVersion` sur la mise à jour d'un texte.
+    - Archivage immuable automatique avant chaque modification du contenu ou du titre (ou après 5 minutes d'inactivité) dans `apps/api/src/modules/songs/versions.service.ts`.
+    - Routes `GET /api/songs/:id/versions` (liste antichronologique) et `POST /api/songs/:id/versions/:versionId/restore` (restauration sans écrasement) dans `versions.routes.ts`, cloisonnées par utilisateur.
+    - **Conservation intégrale FR-029** : aucune purge, aucun plafond sur le nombre de versions ; la restauration archive d'abord l'état courant (zéro perte).
+    - Interface : tiroir latéral `VersionHistoryDrawer.tsx` (liste horodatée, aperçu complet, restauration) ouvert depuis l'éditeur, et méthodes `versions()`/`restoreVersion()` du client API.
+    - **Suite de tests totale : 92 tests au vert** (12 fichiers) ; lint, format, typecheck et build de production validés.
   - Branche `dev` active.
 - **Ce qui est en cours** :
-  - Phase 6 terminée (jalon MVP P1 atteint) : arrêt pour validation avant les phases P2.
+  - Phase 7 terminée : arrêt pour validation avant les phases P2 restantes.
 - **Ce qui reste à faire** :
-  - **Phase 7** : Historique des versions (T038 à T041).
+  - **Phase 8** : Instrus S3, lecteur, BPM, boucle et métronome (T042 à T046).
   - **Refonte Design Étape 4** : Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de la Phase 6 (Albums et réorganisation de tracklist — T034 à T037) en respectant la constitution, la spec, le contrat `albums-api.md` et la liste des tâches.
-- **Résultat** : API albums complète avec réordonnancement et détachement automatique (zéro suppression de textes), page d'album avec tracklist `@dnd-kit`, création d'album depuis le tableau de bord, 83 tests verts sur la branche `dev`.
+- **Action exécutée** : Implémentation de la Phase 7 (Historique des versions — T038 à T041) en respectant la constitution, la spec, le contrat `songs-api.md` et la liste des tâches.
+- **Résultat** : archivage immuable sans purge ni plafond, routes de consultation et de restauration cloisonnées, tiroir d'historique dans l'éditeur avec aperçu et restauration, 92 tests verts sur la branche `dev`.
 
 ## Décisions prises
 
@@ -79,11 +86,13 @@
 - **Détachement avant suppression** : `deleteAlbum` exécute en transaction la remise à `null` de `albumId`/`positionInAlbum` de tous les textes puis la suppression de l'album, garantissant qu'aucun texte n'est jamais perdu.
 - **Tracklist optimiste** : le glisser-déposer réordonne immédiatement l'interface (`arrayMove`) puis persiste l'ordre ; en cas d'échec serveur, la tracklist est rechargée depuis l'API.
 - **Pochette d'album non exposée** : `coverImageUrl` est renvoyé à `null` en attendant la signature des URLs S3 (Phase 8) ; la clé `coverImageKey` est bien stockée en base.
+- **Archivage des versions côté serveur** : l'instantané est créé dans `updateSong` avant modification, si `createVersion` est demandé, si le contenu/le titre change, ou si la dernière version remonte à plus de 5 minutes. La restauration archive toujours l'état courant avant d'appliquer la révision choisie.
+- **Restauration appliquée au contenu local** : l'éditeur met à jour son titre et son contenu depuis la réponse de restauration, puis invalide les caches des versions et de la recherche.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `71fb566` — `feat: interface album avec réorganisation de tracklist par glisser-déposer`
+- **Dernier commit** : `b2b2443` — `feat: panneau d historique des versions avec aperçu et restauration`
 
 ## Comment lancer le projet
 
@@ -152,10 +161,10 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Prochaine étape
 
-- **Commande recommandée** : `/speckit-implement` pour la Phase 7 (Historique des versions — T038 à T041).
+- **Commande recommandée** : `/speckit-implement` pour la Phase 8 (Instrus S3, lecteur, BPM, boucle et métronome — T042 à T046).
 - **Prompt recommandé** :
   ```text
-  Implémente la phase 7 (historique des versions — T038 à T041).
+  Implémente la phase 8 (instrus S3, lecteur, BPM, boucle et métronome — T042 à T046).
   Travaille tâche par tâche, commit par tâche terminée avec un message Conventional
   Commits en français, lance lint et tests, puis pousse sur dev et résume pour validation.
   ```
