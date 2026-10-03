@@ -1,0 +1,15 @@
+{
+  "name": "verso-root",
+  "private": true,
+  "packageManager": "pnpm@12.8.1",
+  "scripts": {
+    "dev": "pnpm --filter \"@verso/*\" --parallel dev",
+    "build": "pnpm --filter \"@verso/*\" build",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm --filter \"@verso/*\" typecheck"
+  },
+  "devDependencies": {}
+}

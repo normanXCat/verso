@@ -11,7 +11,7 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 **Objectif** : Initialiser le monorepo TypeScript (`apps/api`, `apps/web`, `packages/shared`), les conteneurs locaux (PostgreSQL 16, MinIO), la CI GitHub Actions et le schéma Prisma initial.
 **Test indépendant** : Exécuter `docker compose up -d`, valider `pnpm install`, générer la migration Prisma `pnpm --filter @verso/api exec prisma migrate dev` et exécuter le check de typage `pnpm typecheck`.
 
-- [ ] T001 [P1] Initialiser la structure racine du monorepo pnpm avec `package.json`, `pnpm-workspace.yaml` et `.npmrc`. *Commit: `chore: initialisation de la racine du monorepo pnpm`*
+- [X] T001 [P1] Initialiser la structure racine du monorepo pnpm avec `package.json`, `pnpm-workspace.yaml` et `.npmrc`. *Commit: `chore: initialisation de la racine du monorepo pnpm`*
 - [ ] T002 [P] [P1] Configurer les services locaux dans `docker-compose.yml` (PostgreSQL 16, MinIO S3 avec initialisation du bucket `verso-audio`). *Commit: `chore: configuration docker compose pour postgresql et minio`*
 - [ ] T003 [P] [P1] Configurer le pipeline CI dans `.github/workflows/ci.yml` (lint, typecheck, tests unitaires et intégration). *Commit: `ci: configuration du workflow github actions`*
 - [ ] T004 [P] [P1] Mettre en place l'outillage de qualité racine dans `eslint.config.js`, `.prettierrc` et `tsconfig.base.json` avec politique zéro warning. *Commit: `chore: configuration eslint et prettier zero warning`*
