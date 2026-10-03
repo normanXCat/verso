@@ -6,6 +6,7 @@ export interface BaseEntity {
   updatedAt?: Date | string;
 }
 
+export * from './schemas/album.js';
 export * from './schemas/auth.js';
 export * from './schemas/search.js';
 export * from './schemas/song.js';
