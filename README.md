@@ -22,7 +22,8 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **Socle** | **Discipline Git & Protection des données** | ✅ Fait | Branche `dev`, blocage des `.env`, secrets et audio via `.gitignore` |
 | **Socle** | **Documentation & Handoff permanent** | ✅ Fait | `HANDOFF.md` et `README.md` mis à jour avant chaque commit |
 | **Socle** | **Outillage Spec Kit** | ✅ Fait | Workflows et scripts de spécification, planification et tâches |
-| **Socle** | **Spécification Fonctionnelle Verso Core** | ✅ Fait | Spécification complète, clarifiée et validée ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) |
+| **Socle** | **Spécification Fonctionnelle Verso Core** | ✅ Fait | Spécification complète et clarifiée ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) |
+| **Socle** | **Planification Technique Verso Core** | ✅ Fait | Architecture monorepo, schéma Prisma, contrats d'API et quickstart ([specs/001-verso-core/plan.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/plan.md)) |
 | **P1** | **Authentification sécurisée & Sessions** | ⏳ Prévu | Mots de passe Argon2id, sessions PostgreSQL en cookies HttpOnly/Secure/SameSite=Lax, rate limiting |
 | **P1** | **Éditeur d'écriture résilient** | ⏳ Prévu | Typographie soignée, sauvegarde automatique en continu, zéro perte de texte |
 | **P1** | **Organisation des textes (Privés par défaut)** | ⏳ Prévu | Cloisonnement strict multi-tenant, vérification d'appartenance systématique |
@@ -38,24 +39,25 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 
 ## Stack technique
 
-- **Frontend** : React, Tailwind CSS
-- **Backend** : Node.js, Prisma ORM, PostgreSQL
-- **Stockage Objets** : Solution compatible S3 pour les instrumentales et fichiers audio
-- **PWA & Offline** : Service Workers, IndexedDB pour la persistance locale et synchronisation
-- **Typage & Validation** : TypeScript (mode strict intégral), Zod (validation serveur obligatoire)
-- **Sécurité** : Argon2id, sessions sécurisées en base PostgreSQL, CSRF, Helmet, CORS restrictif, rate limiting
-- **Qualité & Tests** : ESLint, Prettier (zéro warning toléré), tests unitaires et d'intégration
+L'architecture technique conçue lors du plan d'implémentation repose sur :
 
-*(Note : le dépôt est actuellement en phase de cadrage et outillage Spec Kit ; le code applicatif sera généré lors des phases d'implémentation).*
+- **Architecture** : Monorepo TypeScript (`apps/web`, `apps/api`, `packages/shared`)
+- **Frontend** : React 18+, TypeScript, Vite, Tailwind CSS, React Router, TanStack Query, React Hook Form avec Zod, CodeMirror 6 (éditeur poétique réactif), dnd-kit (glisser-déposer)
+- **PWA & Offline** : `vite-plugin-pwa`, Service Workers, IndexedDB (`idb`)
+- **Backend** : Node.js (LTS), TypeScript, Fastify v4+ (API REST haute performance)
+- **Base de données & ORM** : PostgreSQL 16, Prisma ORM v5+ avec migrations versionnées
+- **Stockage Audio** : Compatible S3 (MinIO en développement local, Cloudflare R2 en production) via URLs présignées
+- **Sécurité** : Hachage Argon2id, sessions PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax, Arctic (OAuth Google/ORCID avec PKCE), `@fastify/rate-limit`, `@fastify/csrf-protection`
+- **Métrique & Rimes** : Module partagé `lyrics-engine` adapté aux spécificités de la langue française
+- **Qualité & Tests** : Vitest, React Testing Library, ESLint et Prettier (zéro warning toléré)
 
 ---
 
 ## Prérequis
 
 - **Git** (v2.30+)
-- **Bash** (pour l'outillage Spec Kit sous `.specify/scripts/bash/`)
-- **Node.js** (v20+ LTS recommandé pour le socle applicatif à venir)
-- **PostgreSQL** (v15+ prévu pour les données et sessions)
+- **Node.js** (v20+ LTS) et **pnpm** (v9+)
+- **Docker & Docker Compose** (pour PostgreSQL et MinIO locaux)
 
 ---
 
@@ -72,7 +74,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
    git checkout dev
    ```
 
-*(L'installation via `npm install` sera effective dès la création du `package.json` applicatif).*
+*(L'installation via `pnpm install` sera opérationnelle dès l'initialisation du monorepo dans l'étape d'implémentation).*
 
 ---
 
@@ -84,20 +86,6 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 # Vérifier la syntaxe des scripts bash
 bash -n .specify/scripts/bash/*.sh
 ```
-
-*(Les commandes de démarrage applicatif `npm run dev` seront disponibles dès l'implémentation du squelette applicatif).*
-
----
-
-## Scripts disponibles
-
-Les scripts actuellement présents dans le dépôt sont situés dans [.specify/scripts/bash/](file:///home/normanxcat/Lab/verso/.specify/scripts/bash/) :
-
-- `check-prerequisites.sh` : Vérifie la disponibilité des outils nécessaires au workflow de spécification.
-- `create-new-feature.sh` : Initialise une nouvelle branche et un dossier de spécification pour une fonctionnalité.
-- `resolve-template.sh` : Résout les modèles de documents Spec Kit.
-- `setup-plan.sh` : Prépare l'espace de planification d'une fonctionnalité.
-- `setup-tasks.sh` : Prépare l'espace des tâches d'une fonctionnalité.
 
 ---
 
@@ -116,10 +104,19 @@ verso/
 │   ├── templates/              # Gabarits de spécification, plan, tâches et checklists
 │   └── workflows/              # Définitions des flux de travail Spec Kit
 ├── specs/                      # Spécifications fonctionnelles et techniques
-│   └── 001-verso-core/         # Spécification complète de la plateforme Verso
+│   └── 001-verso-core/         # Spécification complète et plan de la plateforme Verso
 │       ├── checklists/         # Checklists de qualité des spécifications
-│       │   └── requirements.md # Checklist de conformité de la spécification
-│       └── spec.md             # Spécification fonctionnelle validée
+│       │   └── requirements.md # Checklist de conformité de la spécification (16/16)
+│       ├── contracts/          # Contrats d'API REST Zod
+│       │   ├── albums-api.md   # Gestion des albums et réordonnancement de tracklist
+│       │   ├── audio-api.md    # Instrumentales S3, boucles et mémos vocaux
+│       │   ├── auth-api.md     # Inscription, connexion, sessions et OAuth
+│       │   └── songs-api.md    # CRUD textes, versions, export PDF et partages
+│       ├── data-model.md       # Modèle relationnel détaillé Prisma / PostgreSQL
+│       ├── plan.md             # Plan d'implémentation technique global
+│       ├── quickstart.md       # Scénarios de validation exécutables de bout en bout
+│       ├── research.md         # Décisions d'architecture et technologies validées
+│       └── spec.md             # Spécification fonctionnelle validée et clarifiée
 ├── .gitignore                  # Exclusion des dépendances, secrets, fichiers .env et médias audio
 ├── HANDOFF.md                  # Journal de passation et suivi d'état du projet
 ├── LICENSE                     # Licence du projet (MIT)
@@ -136,7 +133,7 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 | :--- | :--- |
 | `DATABASE_URL` | Chaîne de connexion PostgreSQL pour Prisma ORM |
 | `SESSION_SECRET` | Clé secrète pour le chiffrement et la signature des cookies de session |
-| `PORT` | Port d'écoute du serveur backend HTTP |
+| `PORT` | Port d'écoute du serveur backend Fastify |
 | `NODE_ENV` | Environnement d'exécution (`development`, `test`, `production`) |
 | `CLIENT_URL` | Origine autorisée pour la politique CORS et les redirections d'authentification |
 | `S3_ENDPOINT` | Point de terminaison du service de stockage d'objets compatible S3 |
