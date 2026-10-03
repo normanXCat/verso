@@ -10,3 +10,4 @@ export * from './schemas/auth.js';
 export * from './schemas/search.js';
 export * from './schemas/song.js';
 export * from './schemas/tag.js';
+export * from './text-metrics.js';
