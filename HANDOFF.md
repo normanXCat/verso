@@ -13,21 +13,21 @@
   - **Phase 2 (Authentification email et sessions)** :
     - T010 : Schémas Zod d'authentification (`registerSchema`, `loginSchema`, `resetPasswordSchema`, `forgotPasswordSchema`, `verifyEmailSchema`) et types inférés dans `packages/shared/src/schemas/auth.ts`, exportés dans `@verso/shared` avec suite de tests unitaires Vitest.
     - T011 : Suite de tests d'intégration complète pour l'authentification et les sessions dans `apps/api/tests/integration/auth.test.ts` (couvrant register, login, me, logout, verify-email, forgot/reset password, sessions).
-
+    - T012 : Service de hachage de mot de passe Argon2id (`@node-rs/argon2`) et générateur/hachage SHA-256 de jetons d'email sécurisés dans `apps/api/src/modules/auth/password.service.ts` avec tests unitaires.
   - Branche `dev` active et synchronisée.
 - **Ce qui est en cours** :
-  - Phase 2 : Authentification email et sessions (T011 à T018 en cours).
+  - Phase 2 : Authentification email et sessions (T013 à T018 en cours).
 - **Ce qui reste à faire** :
-  - **Phase 2 (T011 à T018)** : Tests d'intégration auth, services Argon2id/tokens, sessions PostgreSQL HttpOnly, service email, routes Fastify, interfaces React et bannière persistante.
+  - **Phase 2 (T013 à T018)** : Service sessions PostgreSQL HttpOnly, service email, routes Fastify, interfaces React et bannière persistante.
   - **Phases 3 à 6 (Socle P1)** : OAuth Google/ORCID, Espace personnel, Éditeur CodeMirror 6, Albums et dnd-kit.
   - **Phases 7 à 10 (Confort P2)** : Historique des versions, Audio S3/Boucle/BPM/Métronome, Syllabes/Rimes, Export PDF/Partages.
   - **Phases 11 à 13 (P3 & Finitions)** : PWA hors ligne, Freestyle vocal, Dictionnaire de rimes, Polissage et audit sécurité.
 
-
 ## Dernière action
 
-- **Action exécutée** : Implémentation de T011 (suite de tests d'intégration complète pour l'authentification et les sessions).
-- **Résultat** : Scénarios d'intégration TDD définis pour l'ensemble des flux d'authentification de l'API REST.
+- **Action exécutée** : Implémentation de T012 (service Argon2id et empreinte SHA-256 des jetons email).
+- **Résultat** : Hachage de mot de passe et génération de tokens sécurisés selon les principes de la constitution.
+
 
 
 ## Décisions prises

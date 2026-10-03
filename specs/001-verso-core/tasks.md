@@ -31,7 +31,8 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 - [X] T010 [P] [US1] [P1] Définir les schémas de validation Zod d'authentification (`registerSchema`, `loginSchema`, `resetPasswordSchema`) dans `packages/shared/src/schemas/auth.ts`. *Commit: `feat: schémas zod d authentification`*
 - [X] T011 [P] [US1] [P1] Écrire la suite de tests d'intégration pour l'authentification et les sessions dans `apps/api/tests/integration/auth.test.ts`. *Commit: `test: tests d intégration pour l authentification email et sessions`*
 
-- [ ] T012 [US1] [P1] Implémenter le service de hachage Argon2id et de génération/hachage des tokens d'email dans `apps/api/src/modules/auth/password.service.ts`. *Commit: `feat: service de hachage argon2id et tokens email`*
+- [X] T012 [US1] [P1] Implémenter le service de hachage Argon2id et de génération/hachage des tokens d'email dans `apps/api/src/modules/auth/password.service.ts`. *Commit: `feat: service de hachage argon2id et tokens email`*
+
 - [ ] T013 [US1] [P1] Implémenter le service de gestion des sessions en base PostgreSQL avec émission de cookies `HttpOnly/Secure/SameSite=Lax` dans `apps/api/src/modules/auth/session.service.ts`. *Commit: `feat: gestionnaire de sessions en base postgresql avec cookies httponly`*
 - [ ] T014 [US1] [P1] Implémenter le service d'envoi d'emails transactionnels (Resend en prod / SMTP en local) dans `apps/api/src/modules/auth/email.service.ts`. *Commit: `feat: service d envoi d emails pour vérification et reset mot de passe`*
 - [ ] T015 [US1] [P1] Enregistrer le plugin Fastify de rate limiting et les routes d'API d'authentification (`/register`, `/login`, `/logout`, `/verify-email`, `/forgot-password`, `/reset-password`, `/sessions`) dans `apps/api/src/modules/auth/auth.routes.ts`. *Commit: `feat: routes d api d authentification et sessions`*
