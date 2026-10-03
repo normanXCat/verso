@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import { AuthApiError } from '../../lib/auth-client.js';
+import { AuthLayout } from '../../components/auth/AuthLayout.js';
+import { Input } from '../../components/ui/Input.js';
+import { Button } from '../../components/ui/Button.js';
 
 export function RegisterPage(): React.ReactElement {
   const { register } = useAuth();
@@ -12,10 +15,24 @@ export function RegisterPage(): React.ReactElement {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [shake, setShake] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Validation en direct
+  const isEmailValid = email.length > 0 ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) : undefined;
+  const isPasswordValid =
+    password.length > 0
+      ? password.length >= 8 &&
+        /[A-Z]/.test(password) &&
+        /[a-z]/.test(password) &&
+        /[0-9]/.test(password) &&
+        /[^A-Za-z0-9]/.test(password)
+      : undefined;
+
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setError(null);
+    setShake(false);
     setIsLoading(true);
 
     try {
@@ -24,105 +41,110 @@ export function RegisterPage(): React.ReactElement {
         password,
         displayName: displayName.trim() || undefined,
       });
-      navigate('/');
+      setIsSuccess(true);
+      setTimeout(() => {
+        navigate('/');
+      }, 600);
     } catch (err) {
+      setShake(true);
       if (err instanceof AuthApiError) {
         setError(err.message);
       } else {
-        setError("Une erreur inattendue est survenue lors de l'inscription.");
+        setError("Une erreur inattendue est survenue lors de l'ouverture du carnet.");
       }
+      setTimeout(() => setShake(false), 500);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-slate-950 text-slate-100">
-      <div className="w-full max-w-md p-8 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl space-y-6">
-        <div className="text-center space-y-2">
+    <AuthLayout
+      title="Ouvrir un carnet d'artiste"
+      subtitle="Chaque mesure est pesée, sauvegardée et protégée dès le premier mot."
+      showSocial
+      quote={{
+        lines: [
+          'Tout commence par une page vierge,',
+          'une mesure nue et le courage d’y graver sa propre voix.',
+          'Rien ne s’efface quand l’encre est sincère.',
+        ],
+        author: 'Genèse d’Atelier',
+        detail: 'Cahier N° 01 • Règle d’écriture',
+      }}
+      footer={
+        <span>
+          Vous avez déjà un compte ?{' '}
           <Link
-            to="/"
-            className="text-3xl font-extrabold font-mono tracking-wider text-emerald-400"
+            to="/login"
+            className="text-paper-accent font-medium hover:underline transition-all"
           >
-            VERSO
+            Se connecter
           </Link>
-          <h1 className="text-xl font-semibold text-slate-200">Créer un compte d'artiste</h1>
-          <p className="text-sm text-slate-400">
-            Écrivez en continu, organisez vos œuvres en toute intimité.
-          </p>
-        </div>
+        </span>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Adresse email avec validation en direct */}
+        <Input
+          label="Adresse email"
+          type="email"
+          required
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="artiste@verso.fr"
+          isValid={isEmailValid}
+        />
 
+        {/* Nom d'artiste / Nom de plume */}
+        <Input
+          label="Nom de plume ou nom d'artiste (optionnel)"
+          type="text"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          placeholder="MC Plume"
+          maxLength={50}
+        />
+
+        {/* Mot de passe avec jauge de force segmentée */}
+        <Input
+          label="Mot de passe"
+          type="password"
+          required
+          autoComplete="new-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••••••"
+          showPasswordStrength
+          isValid={isPasswordValid}
+          hint="8 caractères minimum, 1 majuscule, 1 chiffre et 1 symbole."
+        />
+
+        {/* Message d'erreur */}
         {error && (
-          <div className="p-3 text-sm rounded-lg bg-rose-950/60 border border-rose-800 text-rose-300">
+          <div className="p-3 rounded-lg border border-paper-accent/40 bg-paper-accent/10 text-xs font-mono text-paper-accent">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="email">
-              Adresse email <span className="text-emerald-400">*</span>
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="artiste@verso.fr"
-              className="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors text-sm"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="displayName">
-              Nom d'artiste / Pseudo <span className="text-slate-500">(optionnel)</span>
-            </label>
-            <input
-              id="displayName"
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="MC Plume"
-              maxLength={50}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors text-sm"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="password">
-              Mot de passe <span className="text-emerald-400">*</span>
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••••"
-              className="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors text-sm"
-            />
-            <p className="mt-1 text-[11px] text-slate-400">
-              Min. 8 car. avec 1 majuscule, 1 minuscule, 1 chiffre et 1 symbole.
-            </p>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-medium text-sm transition-colors shadow-lg shadow-emerald-950"
-          >
-            {isLoading ? 'Création du compte...' : 'Commencer à écrire'}
-          </button>
-        </form>
-
-        <div className="pt-4 border-t border-slate-800/80 text-center text-xs text-slate-400">
-          Vous avez déjà un compte ?{' '}
-          <Link to="/login" className="text-emerald-400 hover:text-emerald-300 font-medium">
-            Se connecter
-          </Link>
-        </div>
-      </div>
-    </div>
+        {/* Bouton de soumission */}
+        <Button
+          type="submit"
+          variant="primary"
+          size="md"
+          className="w-full mt-2"
+          isLoading={isLoading}
+          loadingText="Création de votre carnet..."
+          isSuccess={isSuccess}
+          successText="Carnet initialisé avec succès"
+          shake={shake}
+        >
+          Créer mon carnet d'écriture
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }
+
+export default RegisterPage;

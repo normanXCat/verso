@@ -10,6 +10,9 @@ export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'>
   size?: ButtonSize;
   isLoading?: boolean;
   loadingText?: string;
+  isSuccess?: boolean;
+  successText?: string;
+  shake?: boolean;
   children: React.ReactNode;
 }
 
@@ -20,6 +23,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       size = 'md',
       isLoading = false,
       loadingText,
+      isSuccess = false,
+      successText,
+      shake = false,
       disabled,
       className = '',
       children,
@@ -51,12 +57,31 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <motion.button
         ref={ref}
         whileTap={{ scale: disabled || isLoading ? 1 : 0.98 }}
-        disabled={disabled || isLoading}
-        className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+        animate={shake ? { x: [-6, 6, -4, 4, -2, 2, 0] } : { x: 0 }}
+        transition={{ duration: 0.4 }}
+        disabled={disabled || isLoading || isSuccess}
+        className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${
+          isSuccess ? 'bg-emerald-600 border-emerald-500 text-white' : ''
+        } ${className}`}
         {...props}
       >
         {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin text-current" />}
-        <span>{isLoading && loadingText ? loadingText : children}</span>
+        {isSuccess && (
+          <motion.span
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="mr-2 inline-flex"
+          >
+            ✓
+          </motion.span>
+        )}
+        <span>
+          {isSuccess && successText
+            ? successText
+            : isLoading && loadingText
+              ? loadingText
+              : children}
+        </span>
       </motion.button>
     );
   },
