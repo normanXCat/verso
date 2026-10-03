@@ -1,4 +1,11 @@
-import { SearchSongsResult, SongFilter, SongSort } from '@verso/shared';
+import {
+  SearchSongsResult,
+  SongFilter,
+  SongListItem,
+  SongSort,
+  UpdateSongInput,
+  type CreateSongInput,
+} from '@verso/shared';
 
 const API_BASE_URL = '/api';
 
@@ -22,12 +29,21 @@ export interface SearchSongsParams {
   offset?: number;
 }
 
-async function request<T>(endpoint: string): Promise<T> {
+export type CreateSongPayload = Partial<CreateSongInput>;
+
+async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: 'GET',
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
   });
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
 
   const data = await response.json().catch(() => ({}));
 
@@ -54,5 +70,27 @@ export const songsClient = {
 
     const query = search.toString();
     return request<SearchSongsResult>(`/songs${query ? `?${query}` : ''}`);
+  },
+
+  async get(id: string): Promise<SongListItem> {
+    return request<SongListItem>(`/songs/${encodeURIComponent(id)}`);
+  },
+
+  async create(payload: CreateSongPayload = {}): Promise<SongListItem> {
+    return request<SongListItem>('/songs', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async update(id: string, payload: UpdateSongInput): Promise<SongListItem> {
+    return request<SongListItem>(`/songs/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async remove(id: string): Promise<void> {
+    await request<void>(`/songs/${encodeURIComponent(id)}`, { method: 'DELETE' });
   },
 };
