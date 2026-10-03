@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { ThemeSwitch } from '../common/ThemeSwitch.js';
+import { OAuthButtons } from './OAuthButtons.js';
 
 interface AuthQuote {
   lines: string[];
@@ -70,7 +71,7 @@ export function AuthLayout({
           <div className="rounded-xl border border-paper-border bg-paper-surface p-6 sm:p-8 shadow-paper-md paper-grain space-y-5">
             {children}
 
-            {/* Séparateur et boutons sociaux désactivés (Phase 3 à venir) */}
+            {/* Séparateur et authentification tierce (Google & ORCID) */}
             {showSocial && (
               <div className="space-y-4 pt-4 border-t border-paper-border/60">
                 <div className="relative flex items-center justify-center">
@@ -82,29 +83,7 @@ export function AuthLayout({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    disabled
-                    className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-paper-border/60 bg-paper-bg/40 text-xs font-mono text-paper-muted/60 cursor-not-allowed select-none opacity-60"
-                    title="Connexion Google bientôt disponible (Phase 3)"
-                  >
-                    <svg className="w-4 h-4 fill-current opacity-70" viewBox="0 0 24 24">
-                      <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
-                    </svg>
-                    <span>Google (Phase 3)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled
-                    className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border border-paper-border/60 bg-paper-bg/40 text-xs font-mono text-paper-muted/60 cursor-not-allowed select-none opacity-60"
-                    title="Authentification ORCID bientôt disponible (Phase 3)"
-                  >
-                    <span className="font-serif font-bold text-sm text-paper-muted/70">iD</span>
-                    <span>ORCID (Phase 3)</span>
-                  </button>
-                </div>
+                <OAuthButtons />
               </div>
             )}
 

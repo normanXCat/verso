@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import { AuthApiError } from '../../lib/auth-client.js';
 import { AuthLayout } from '../../components/auth/AuthLayout.js';
+import { LinkAccountModal } from '../../components/auth/LinkAccountModal.js';
 import { Input } from '../../components/ui/Input.js';
 import { Button } from '../../components/ui/Button.js';
 
 export function LoginPage(): React.ReactElement {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const oauthError = searchParams.get('oauth') === 'error';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -72,6 +75,14 @@ export function LoginPage(): React.ReactElement {
         </span>
       }
     >
+      <LinkAccountModal />
+
+      {oauthError && (
+        <div className="mb-5 p-3 rounded-lg border border-paper-accent/40 bg-paper-accent/10 text-xs font-mono text-paper-accent">
+          La connexion via le fournisseur a échoué. Réessayez ou utilisez votre adresse email.
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Adresse email avec label flottant et icône de validation */}
         <Input

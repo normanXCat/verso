@@ -3,6 +3,7 @@ import {
   LoginInput,
   ForgotPasswordInput,
   ResetPasswordInput,
+  LinkOAuthAccountInput,
   UserPublic,
   SessionInfo,
 } from '@verso/shared';
@@ -92,6 +93,18 @@ export const authClient = {
 
   async resetPassword(data: ResetPasswordInput): Promise<{ message: string }> {
     return request<{ message: string }>('/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /** URL de démarrage du flux OAuth (redirection navigateur vers le fournisseur). */
+  oauthStartUrl(provider: 'google' | 'orcid'): string {
+    return `${API_BASE_URL}/oauth/${provider}`;
+  },
+
+  async linkOAuthAccount(data: LinkOAuthAccountInput): Promise<{ user: UserPublic }> {
+    return request<{ user: UserPublic }>('/oauth/link-confirm', {
       method: 'POST',
       body: JSON.stringify(data),
     });
