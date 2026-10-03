@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './hooks/useAuth.js';
 import { ThemeProvider } from './context/ThemeContext.js';
@@ -13,8 +13,24 @@ import { VerifyEmailPage } from './pages/auth/VerifyEmailPage.js';
 import { SessionsPage } from './pages/auth/SessionsPage.js';
 import { DesignSystemPage } from './pages/DesignSystemPage.js';
 import { LandingPage } from './pages/LandingPage.js';
+import { DashboardPage } from './pages/DashboardPage.js';
+import { useAuth } from './hooks/useAuth.js';
 
 const queryClient = new QueryClient();
+
+function RequireAuth({ children }: { children: React.ReactElement }): React.ReactElement {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div className="paper-grain min-h-screen bg-paper-bg" aria-busy="true" />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
 
 export function App(): React.ReactElement {
   return (
@@ -33,6 +49,14 @@ export function App(): React.ReactElement {
                 <Route path="/verify-email" element={<VerifyEmailPage />} />
                 <Route path="/sessions" element={<SessionsPage />} />
                 <Route path="/design" element={<DesignSystemPage />} />
+                <Route
+                  path="/app"
+                  element={
+                    <RequireAuth>
+                      <DashboardPage />
+                    </RequireAuth>
+                  }
+                />
               </Routes>
             </BrowserRouter>
           </AuthProvider>

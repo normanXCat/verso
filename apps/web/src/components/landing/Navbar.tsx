@@ -68,12 +68,12 @@ export function Navbar(): React.ReactElement {
           {isAuthenticated && user ? (
             <div className="flex items-center gap-3">
               <Link
-                to="/sessions"
+                to="/app"
                 className="text-xs font-mono text-paper-muted hover:text-paper-text transition-colors px-2 py-1 border border-paper-border rounded"
               >
                 {user.displayName || user.email}
               </Link>
-              <Link to="/sessions">
+              <Link to="/app">
                 <Button variant="secondary" size="sm">
                   Mon espace
                 </Button>
@@ -126,7 +126,7 @@ export function Navbar(): React.ReactElement {
             ))}
             <div className="pt-4 flex flex-col gap-3">
               {isAuthenticated && user ? (
-                <Link to="/sessions" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/app" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="primary" className="w-full">
                     Mon espace ({user.displayName || user.email})
                   </Button>

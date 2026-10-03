@@ -43,7 +43,7 @@ export function RegisterPage(): React.ReactElement {
       });
       setIsSuccess(true);
       setTimeout(() => {
-        navigate('/');
+        navigate('/app');
       }, 600);
     } catch (err) {
       setShake(true);

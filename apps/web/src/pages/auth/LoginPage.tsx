@@ -34,7 +34,7 @@ export function LoginPage(): React.ReactElement {
       await login({ email, password, rememberMe });
       setIsSuccess(true);
       setTimeout(() => {
-        navigate('/');
+        navigate('/app');
       }, 600);
     } catch (err) {
       setShake(true);
