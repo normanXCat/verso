@@ -16,7 +16,8 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Support des cookies HttpOnly sécurisés
   await app.register(cookie, {
-    secret: process.env.SESSION_SECRET || 'dev_cookie_secret_at_least_32_characters_long_for_security',
+    secret:
+      process.env.SESSION_SECRET || 'dev_cookie_secret_at_least_32_characters_long_for_security',
   });
 
   // CORS restrictif

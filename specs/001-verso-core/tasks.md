@@ -17,7 +17,7 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 - [X] T004 [P] [P1] Mettre en place l'outillage de qualité racine dans `eslint.config.js`, `.prettierrc` et `tsconfig.base.json` avec politique zéro warning. *Commit: `chore: configuration eslint et prettier zero warning`*
 - [X] T005 [P1] Configurer le package de logique partagée dans `packages/shared/package.json` et `packages/shared/tsconfig.json`. *Commit: `chore: initialisation du package shared`*
 - [X] T006 [P1] Initialiser l'application backend Fastify dans `apps/api/package.json`, `apps/api/tsconfig.json` et `apps/api/src/server.ts`. *Commit: `chore: initialisation du backend fastify`*
-- [ ] T007 [P1] Initialiser l'application frontend React avec Vite et Tailwind CSS dans `apps/web/package.json`, `apps/web/vite.config.ts`, `apps/web/tailwind.config.js` et `apps/web/src/main.tsx`. *Commit: `chore: initialisation du frontend react avec vite et tailwind`*
+- [X] T007 [P1] Initialiser l'application frontend React avec Vite et Tailwind CSS dans `apps/web/package.json`, `apps/web/vite.config.ts`, `apps/web/tailwind.config.js` et `apps/web/src/main.tsx`. *Commit: `chore: initialisation du frontend react avec vite et tailwind`*
 - [ ] T008 [P1] Définir le schéma Prisma complet (User, Account, Session, EmailToken, Album, Song, SongVersion, Tag, SongTag, Instrumental, ShareLink, VoiceNote) dans `apps/api/prisma/schema.prisma` et appliquer la migration initiale. *Commit: `feat: schéma prisma et migration initiale postgresql`*
 - [ ] T009 [P1] Mettre en place le chargeur et validateur Zod des variables d'environnement dans `apps/api/src/config/env.ts` et mettre à jour `.env.example`. *Commit: `feat: validation zod des variables d environnement api`*
 
