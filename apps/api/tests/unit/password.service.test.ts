@@ -20,7 +20,7 @@ describe('Service de mot de passe et jetons email (password.service)', () => {
     expect(await verifyPassword('invalid-hash', 'Password123!')).toBe(false);
   });
 
-  it('doit générer un token d\'email brut et son empreinte SHA-256 cohérente', () => {
+  it("doit générer un token d'email brut et son empreinte SHA-256 cohérente", () => {
     const { rawToken, tokenHash } = generateEmailToken();
 
     expect(rawToken).toHaveLength(64);
