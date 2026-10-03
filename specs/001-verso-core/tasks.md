@@ -13,7 +13,7 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 - [X] T001 [P1] Initialiser la structure racine du monorepo pnpm avec `package.json`, `pnpm-workspace.yaml` et `.npmrc`. *Commit: `chore: initialisation de la racine du monorepo pnpm`*
 - [X] T002 [P] [P1] Configurer les services locaux dans `docker-compose.yml` (PostgreSQL 16, MinIO S3 avec initialisation du bucket `verso-audio`). *Commit: `chore: configuration docker compose pour postgresql et minio`*
-- [ ] T003 [P] [P1] Configurer le pipeline CI dans `.github/workflows/ci.yml` (lint, typecheck, tests unitaires et intégration). *Commit: `ci: configuration du workflow github actions`*
+- [X] T003 [P] [P1] Configurer le pipeline CI dans `.github/workflows/ci.yml` (lint, typecheck, tests unitaires et intégration). *Commit: `ci: configuration du workflow github actions`*
 - [ ] T004 [P] [P1] Mettre en place l'outillage de qualité racine dans `eslint.config.js`, `.prettierrc` et `tsconfig.base.json` avec politique zéro warning. *Commit: `chore: configuration eslint et prettier zero warning`*
 - [ ] T005 [P1] Configurer le package de logique partagée dans `packages/shared/package.json` et `packages/shared/tsconfig.json`. *Commit: `chore: initialisation du package shared`*
 - [ ] T006 [P1] Initialiser l'application backend Fastify dans `apps/api/package.json`, `apps/api/tsconfig.json` et `apps/api/src/server.ts`. *Commit: `chore: initialisation du backend fastify`*
