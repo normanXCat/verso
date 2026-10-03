@@ -24,7 +24,7 @@ describe("Tests d'intégration : Authentification et Sessions (/api/auth)", () =
   });
 
   describe('POST /api/auth/register', () => {
-    it.skip('doit créer un nouvel utilisateur et retourner 201 avec un cookie de session HttpOnly', async () => {
+    it('doit créer un nouvel utilisateur et retourner 201 avec un cookie de session HttpOnly', async () => {
       const response = await app.inject({
         method: 'POST',
         url: '/api/auth/register',
@@ -51,7 +51,7 @@ describe("Tests d'intégration : Authentification et Sessions (/api/auth)", () =
       expect(sessionCookie?.sameSite).toBe('Lax');
     });
 
-    it.skip('doit retourner 400 si le mot de passe ne respecte pas les critères de sécurité', async () => {
+    it('doit retourner 400 si le mot de passe ne respecte pas les critères de sécurité', async () => {
       const response = await app.inject({
         method: 'POST',
         url: '/api/auth/register',
@@ -64,7 +64,7 @@ describe("Tests d'intégration : Authentification et Sessions (/api/auth)", () =
       expect(response.statusCode).toBe(400);
     });
 
-    it.skip('doit retourner 409 si un compte existe déjà avec cette adresse email', async () => {
+    it('doit retourner 409 si un compte existe déjà avec cette adresse email', async () => {
       await app.inject({
         method: 'POST',
         url: '/api/auth/register',
@@ -89,7 +89,7 @@ describe("Tests d'intégration : Authentification et Sessions (/api/auth)", () =
   });
 
   describe('POST /api/auth/login', () => {
-    it.skip("doit authentifier l'utilisateur avec les bons identifiants et émettre un cookie", async () => {
+    it("doit authentifier l'utilisateur avec les bons identifiants et émettre un cookie", async () => {
       // Inscription préalable
       await app.inject({
         method: 'POST',
@@ -120,7 +120,7 @@ describe("Tests d'intégration : Authentification et Sessions (/api/auth)", () =
       expect(sessionCookie).toBeDefined();
     });
 
-    it.skip('doit retourner 401 avec message générique si le mot de passe est erroné', async () => {
+    it('doit retourner 401 avec message générique si le mot de passe est erroné', async () => {
       await app.inject({
         method: 'POST',
         url: '/api/auth/register',
@@ -145,7 +145,7 @@ describe("Tests d'intégration : Authentification et Sessions (/api/auth)", () =
   });
 
   describe('GET /api/auth/me et POST /api/auth/logout', () => {
-    it.skip("doit retourner l'utilisateur connecté puis interdire l'accès après déconnexion", async () => {
+    it("doit retourner l'utilisateur connecté puis interdire l'accès après déconnexion", async () => {
       // Inscription
       const regRes = await app.inject({
         method: 'POST',
@@ -194,7 +194,7 @@ describe("Tests d'intégration : Authentification et Sessions (/api/auth)", () =
       expect(meAfterLogout.statusCode).toBe(401);
     });
 
-    it.skip("doit rejeter /api/auth/me si aucun cookie de session n'est fourni", async () => {
+    it("doit rejeter /api/auth/me si aucun cookie de session n'est fourni", async () => {
       const response = await app.inject({
         method: 'GET',
         url: '/api/auth/me',
@@ -205,7 +205,7 @@ describe("Tests d'intégration : Authentification et Sessions (/api/auth)", () =
   });
 
   describe('GET /api/auth/verify-email', () => {
-    it.skip("doit marquer l'email comme vérifié avec un token valide", async () => {
+    it("doit marquer l'email comme vérifié avec un token valide", async () => {
       await app.inject({
         method: 'POST',
         url: '/api/auth/register',
@@ -232,7 +232,7 @@ describe("Tests d'intégration : Authentification et Sessions (/api/auth)", () =
       expect(user?.emailVerified).not.toBeNull();
     });
 
-    it.skip('doit rejeter un token invalide avec un statut 400', async () => {
+    it('doit rejeter un token invalide avec un statut 400', async () => {
       const response = await app.inject({
         method: 'GET',
         url: '/api/auth/verify-email?token=invalid-token',
@@ -243,7 +243,7 @@ describe("Tests d'intégration : Authentification et Sessions (/api/auth)", () =
   });
 
   describe('POST /api/auth/forgot-password et /api/auth/reset-password', () => {
-    it.skip('doit envoyer un lien générique puis réinitialiser le mot de passe avec le token', async () => {
+    it('doit envoyer un lien générique puis réinitialiser le mot de passe avec le token', async () => {
       await app.inject({
         method: 'POST',
         url: '/api/auth/register',
@@ -299,7 +299,7 @@ describe("Tests d'intégration : Authentification et Sessions (/api/auth)", () =
   });
 
   describe('GET /api/auth/sessions et DELETE /api/auth/sessions/:id', () => {
-    it.skip('doit lister les sessions actives et révoquer une session distante', async () => {
+    it('doit lister les sessions actives et révoquer une session distante', async () => {
       const regRes = await app.inject({
         method: 'POST',
         url: '/api/auth/register',

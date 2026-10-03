@@ -32,6 +32,10 @@ export async function buildApp(): Promise<FastifyInstance> {
     timeWindow: '1 minute',
   });
 
+  // Routes d'authentification et de sessions
+  const { authRoutes } = await import('./modules/auth/auth.routes.js');
+  await app.register(authRoutes, { prefix: '/api/auth' });
+
   // Route de contrôle de santé
   app.get('/health', async () => {
     return {

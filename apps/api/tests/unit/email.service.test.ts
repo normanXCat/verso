@@ -6,7 +6,7 @@ import {
   clearSentEmailsForTesting,
 } from '../../src/modules/auth/email.service.js';
 
-describe('Service d\'emails transactionnels (email.service)', () => {
+describe("Service d'emails transactionnels (email.service)", () => {
   beforeEach(() => {
     clearSentEmailsForTesting();
   });

@@ -37,7 +37,8 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 - [X] T014 [US1] [P1] Implémenter le service d'envoi d'emails transactionnels (Resend en prod / SMTP en local) dans `apps/api/src/modules/auth/email.service.ts`. *Commit: `feat: service d envoi d emails pour vérification et reset mot de passe`*
 
-- [ ] T015 [US1] [P1] Enregistrer le plugin Fastify de rate limiting et les routes d'API d'authentification (`/register`, `/login`, `/logout`, `/verify-email`, `/forgot-password`, `/reset-password`, `/sessions`) dans `apps/api/src/modules/auth/auth.routes.ts`. *Commit: `feat: routes d api d authentification et sessions`*
+- [X] T015 [US1] [P1] Enregistrer le plugin Fastify de rate limiting et les routes d'API d'authentification (`/register`, `/login`, `/logout`, `/verify-email`, `/forgot-password`, `/reset-password`, `/sessions`) dans `apps/api/src/modules/auth/auth.routes.ts`. *Commit: `feat: routes d api d authentification et sessions`*
+
 - [ ] T016 [P] [US1] [P1] Implémenter le client API typé et le hook d'état d'authentification dans `apps/web/src/lib/auth-client.ts` et `apps/web/src/hooks/useAuth.ts`. *Commit: `feat: client et hook d authentification frontend`*
 - [ ] T017 [US1] [P1] Créer les formulaires d'inscription, connexion, réinitialisation de mot de passe et vue des sessions actives dans `apps/web/src/pages/auth/`. *Commit: `feat: interfaces d inscription connexion et gestion des sessions`*
 - [ ] T018 [US1] [P1] Implémenter la bannière d'avertissement persistante de vérification d'email dans `apps/web/src/components/common/EmailVerificationBanner.tsx`. *Commit: `feat: bannière persistante de rappel de vérification d email`*
