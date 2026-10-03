@@ -24,6 +24,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **Socle** | **Outillage Spec Kit** | ✅ Fait | Workflows et scripts de spécification, planification et tâches |
 | **Socle** | **Spécification Fonctionnelle Verso Core** | ✅ Fait | Spécification complète et clarifiée ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) |
 | **Socle** | **Planification Technique Verso Core** | ✅ Fait | Architecture monorepo, schéma Prisma, contrats d'API et quickstart ([specs/001-verso-core/plan.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/plan.md)) |
+| **Socle** | **Découpage des Tâches d'Implémentation** | ✅ Fait | 62 tâches en 13 phases ordonnancées, testables et priorisées ([specs/001-verso-core/tasks.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/tasks.md)) |
 | **P1** | **Authentification sécurisée & Sessions** | ⏳ Prévu | Mots de passe Argon2id, sessions PostgreSQL en cookies HttpOnly/Secure/SameSite=Lax, rate limiting |
 | **P1** | **Éditeur d'écriture résilient** | ⏳ Prévu | Typographie soignée, sauvegarde automatique en continu, zéro perte de texte |
 | **P1** | **Organisation des textes (Privés par défaut)** | ⏳ Prévu | Cloisonnement strict multi-tenant, vérification d'appartenance systématique |
@@ -116,7 +117,8 @@ verso/
 │       ├── plan.md             # Plan d'implémentation technique global
 │       ├── quickstart.md       # Scénarios de validation exécutables de bout en bout
 │       ├── research.md         # Décisions d'architecture et technologies validées
-│       └── spec.md             # Spécification fonctionnelle validée et clarifiée
+│       ├── spec.md             # Spécification fonctionnelle validée et clarifiée
+│       └── tasks.md            # Découpage des 62 tâches ordonnancées en 13 phases (P1, P2, P3)
 ├── .gitignore                  # Exclusion des dépendances, secrets, fichiers .env et médias audio
 ├── HANDOFF.md                  # Journal de passation et suivi d'état du projet
 ├── LICENSE                     # Licence du projet (MIT)
