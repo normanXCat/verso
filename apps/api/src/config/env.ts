@@ -25,6 +25,10 @@ const envSchema = z.object({
   // OAuth ORCID (Optionnel en développement initial)
   ORCID_CLIENT_ID: z.string().optional(),
   ORCID_CLIENT_SECRET: z.string().optional(),
+
+  // Emails transactionnels (Optionnel en développement / local)
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().default('Verso <noreply@verso.fr>'),
 });
 
 export type Env = z.infer<typeof envSchema>;

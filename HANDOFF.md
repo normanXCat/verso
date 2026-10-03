@@ -15,19 +15,21 @@
     - T011 : Suite de tests d'intégration complète pour l'authentification et les sessions dans `apps/api/tests/integration/auth.test.ts` (couvrant register, login, me, logout, verify-email, forgot/reset password, sessions).
     - T012 : Service de hachage de mot de passe Argon2id (`@node-rs/argon2`) et générateur/hachage SHA-256 de jetons d'email sécurisés dans `apps/api/src/modules/auth/password.service.ts` avec tests unitaires.
     - T013 : Service de gestion des sessions PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax dans `apps/api/src/modules/auth/session.service.ts` avec tests unitaires.
+    - T014 : Service d'envoi d'emails transactionnels (Resend en prod / simulateur local et test) pour vérification et réinitialisation de mot de passe dans `apps/api/src/modules/auth/email.service.ts` avec tests unitaires.
   - Branche `dev` active et synchronisée.
 - **Ce qui est en cours** :
-  - Phase 2 : Authentification email et sessions (T014 à T018 en cours).
+  - Phase 2 : Authentification email et sessions (T015 à T018 en cours).
 - **Ce qui reste à faire** :
-  - **Phase 2 (T014 à T018)** : Service email, routes Fastify, interfaces React et bannière persistante.
+  - **Phase 2 (T015 à T018)** : Routes Fastify & rate limiting, interfaces React et bannière persistante.
   - **Phases 3 à 6 (Socle P1)** : OAuth Google/ORCID, Espace personnel, Éditeur CodeMirror 6, Albums et dnd-kit.
   - **Phases 7 à 10 (Confort P2)** : Historique des versions, Audio S3/Boucle/BPM/Métronome, Syllabes/Rimes, Export PDF/Partages.
   - **Phases 11 à 13 (P3 & Finitions)** : PWA hors ligne, Freestyle vocal, Dictionnaire de rimes, Polissage et audit sécurité.
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de T013 (service de gestion des sessions en base PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax).
-- **Résultat** : Gestion complète du cycle de vie des sessions (création, validation, révocation ciblée ou globale, émission de cookies sécurisés).
+- **Action exécutée** : Implémentation de T014 (service d'envoi d'emails transactionnels de vérification et reset mot de passe).
+- **Résultat** : Envoi d'emails via Resend API (ou simulateur sans dépendance en dev/test) avec URLs personnalisées et jetons sécurisés.
+
 
 
 
