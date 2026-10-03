@@ -44,6 +44,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { songsRoutes } = await import('./modules/songs/songs.routes.js');
   await app.register(songsRoutes, { prefix: '/api/songs' });
 
+  // Routes de l'historique des versions des textes
+  const { versionsRoutes } = await import('./modules/songs/versions.routes.js');
+  await app.register(versionsRoutes, { prefix: '/api/songs' });
+
   // Routes des albums et de leurs tracklists
   const { albumsRoutes } = await import('./modules/albums/albums.routes.js');
   await app.register(albumsRoutes, { prefix: '/api/albums' });

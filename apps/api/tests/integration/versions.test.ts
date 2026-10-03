@@ -109,8 +109,9 @@ describe("Tests d'intégration : historique des versions (/api/songs/:id/version
         });
       }
 
+      // 15 mises à jour forcées archivent chacune l'état précédent, sans purge.
       const count = await prisma.songVersion.count({ where: { songId: song.id } });
-      expect(count).toBe(16);
+      expect(count).toBe(15);
     });
   });
 

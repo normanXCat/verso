@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import type { CreateSongInput, SongDetail, UpdateSongInput } from '@verso/shared';
 import { prisma } from '../../config/prisma.js';
 import { findSongById } from './songs.repository.js';
+import { maybeArchiveBeforeUpdate } from './versions.service.js';
 
 export type SongServiceErrorCode = 'album_not_found';
 
@@ -90,13 +91,24 @@ export async function updateSong(
 ): Promise<SongDetail | null> {
   const existing = await prisma.song.findFirst({
     where: { id: songId, userId },
-    select: { id: true },
+    select: { id: true, title: true, content: true },
   });
   if (!existing) {
     return null;
   }
 
   await assertAlbum(userId, input.albumId);
+
+  // Archivage immuable de l'état courant avant toute modification du contenu (FR-029).
+  const contentChanged = input.content !== undefined && input.content !== existing.content;
+  const titleChanged = input.title !== undefined && input.title !== existing.title;
+  if (contentChanged || titleChanged || input.createVersion) {
+    await maybeArchiveBeforeUpdate(
+      songId,
+      { title: existing.title, content: existing.content },
+      input.createVersion,
+    );
+  }
 
   const data: Prisma.SongUncheckedUpdateInput = {};
   if (input.title !== undefined) {
