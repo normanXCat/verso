@@ -3,7 +3,7 @@
 ## État actuel
 
 - **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
-- **Phase d'implémentation Spec Kit** : **Phase 5 (Textes, brouillons, sauvegarde auto, favoris, tags — T027 à T033) terminée**.
+- **Phase d'implémentation Spec Kit** : **Phase 6 (Albums et réorganisation de tracklist — T034 à T037) terminée** → **jalon MVP P1 complet**.
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
@@ -37,17 +37,24 @@
     - Compteurs en direct de mots et de lignes (`text-metrics.ts` partagé et testé, `EditorMetricsBar.tsx`).
     - Métadonnées : statut brouillon/terminé, favori et tags personnalisés (`SongMetadataSidebar.tsx`).
     - **Suite de tests totale : 65 tests au vert** (10 fichiers) ; lint, format, typecheck et build de production validés.
+  - **Phase 6 (Albums et réorganisation de tracklist — T034 à T037) implémentée et testée** :
+    - Schémas Zod des albums, de l'ajout de pistes et du réordonnancement (`packages/shared/src/schemas/album.ts`), avec les types `AlbumListItem`, `AlbumDetail` et `AlbumTrack`.
+    - Repository, service et routes `/api/albums` (`GET`, `POST`, `GET/:id`, `PUT/:id`, `DELETE/:id`) cloisonnés par utilisateur (`albums.repository.ts`, `albums.service.ts`, `albums.routes.ts`).
+    - Gestion de la tracklist : ajout d'un texte existant (`POST /:id/tracks`), retrait sans suppression (`DELETE /:id/tracks/:songId`) et réordonnancement par glisser-déposer (`PUT /:id/tracks/reorder`) avec réattribution de positions contiguës.
+    - **Règle stricte FR-027** : la suppression d'un album détache tous ses textes (`albumId` et `positionInAlbum` remis à `null`) sans jamais en supprimer un seul.
+    - Interface : page `/app/albums/:id` (`AlbumDetailPage.tsx`) avec métadonnées éditables, rattachement de textes existants et tracklist triable `@dnd-kit` (`SortableTracklist.tsx`, souris/tactile/clavier), carte d'album (`AlbumCard.tsx`) et création d'album depuis le tableau de bord.
+    - **Suite de tests totale : 83 tests au vert** (11 fichiers) ; lint, format, typecheck et build de production validés.
   - Branche `dev` active.
 - **Ce qui est en cours** :
-  - Phase 5 terminée : arrêt pour validation avant la **Phase 6 (Albums et réorganisation — T034 à T037)**.
+  - Phase 6 terminée (jalon MVP P1 atteint) : arrêt pour validation avant les phases P2.
 - **Ce qui reste à faire** :
-  - **Phase 6** : Albums et réorganisation de tracklist (T034 à T037).
+  - **Phase 7** : Historique des versions (T038 à T041).
   - **Refonte Design Étape 4** : Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de la Phase 5 (Textes, brouillons, sauvegarde auto, favoris, tags — T027 à T033) en respectant la constitution, la spec, le plan et la liste des tâches.
-- **Résultat** : CRUD textes complet, éditeur CodeMirror 6 avec sauvegarde automatique continue et brouillon local, compteurs en direct, statut/favori/tags, page d'édition `/app/songs/:id`, tests verts sur la branche `dev`.
+- **Action exécutée** : Implémentation de la Phase 6 (Albums et réorganisation de tracklist — T034 à T037) en respectant la constitution, la spec, le contrat `albums-api.md` et la liste des tâches.
+- **Résultat** : API albums complète avec réordonnancement et détachement automatique (zéro suppression de textes), page d'album avec tracklist `@dnd-kit`, création d'album depuis le tableau de bord, 83 tests verts sur la branche `dev`.
 
 ## Décisions prises
 
@@ -68,11 +75,15 @@
 - **Sauvegarde automatique résiliente** : debounce 400 ms vers l'API, écriture immédiate du brouillon dans `localStorage` (zéro perte) et reprise automatique au retour de la connexion. Le support hors ligne complet (IndexedDB + PWA, avec copie de conflit) reste à implémenter ultérieurement.
 - **`SongDetail`** : le détail d'un texte expose son contenu intégral ; la liste ne renvoie qu'un extrait.
 - **Tests d'intégration exécutés séquentiellement** : la base PostgreSQL de test étant partagée, `fileParallelism: false` (configs Vitest racine et `apps/api`) évite les interférences de `deleteMany` entre fichiers.
+- **API albums sous `/api/albums`** : la route de réordonnancement est exposée en `PUT /:id/tracks/reorder` (au lieu de `PUT /:id/reorder` évoqué dans la tâche), conformément au contrat `albums-api.md`.
+- **Détachement avant suppression** : `deleteAlbum` exécute en transaction la remise à `null` de `albumId`/`positionInAlbum` de tous les textes puis la suppression de l'album, garantissant qu'aucun texte n'est jamais perdu.
+- **Tracklist optimiste** : le glisser-déposer réordonne immédiatement l'interface (`arrayMove`) puis persiste l'ordre ; en cas d'échec serveur, la tracklist est rechargée depuis l'API.
+- **Pochette d'album non exposée** : `coverImageUrl` est renvoyé à `null` en attendant la signature des URLs S3 (Phase 8) ; la clé `coverImageKey` est bien stockée en base.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `a88471b` — `feat: gestion des tags et statut brouillon ou termine`
+- **Dernier commit** : `71fb566` — `feat: interface album avec réorganisation de tracklist par glisser-déposer`
 
 ## Comment lancer le projet
 
@@ -130,7 +141,8 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 - **ORCID et authentification client** : `arctic` envoie les identifiants via Basic Auth sur le point de terminaison de jeton. À vérifier avec de vrais identifiants ORCID.
 - **Liaison multi-OAuth sans mot de passe** : si un compte a été créé uniquement via un fournisseur OAuth (sans mot de passe) et qu'un second fournisseur arrive avec le même email, la liaison est refusée (aucun mot de passe à confirmer).
 - **Base de test partagée** : les tests d'intégration de l'API partagent une base PostgreSQL unique et s'exécutent séquentiellement.
-- **Filtres tag/album non exposés dans l'interface** : ils existent côté API, mais la barre de filtres n'affiche que les statuts (tous/brouillons/terminés/favoris). À compléter avec les albums (Phase 6).
+- **Filtres tag/album non exposés dans l'interface** : ils existent côté API, mais la barre de filtres du tableau de bord n'affiche que les statuts (tous/brouillons/terminés/favoris). Les albums disposent en revanche de leur propre section et page de détail.
+- **Pochette d'album sans téléversement** : la clé S3 est stockée mais l'interface ne permet pas encore de téléverser une pochette (module audio prévu en Phase 8).
 - **Hors ligne partiel** : le brouillon local (`localStorage`) évite toute perte, mais la synchronisation IndexedDB complète avec gestion de conflit n'est pas encore implémentée (PWA prévue ultérieurement).
 - **Build web volumineux** : CodeMirror 6 fait dépasser l'avertissement de taille de chunk de Vite (> 500 kB) ; un découpage `manualChunks` sera à prévoir.
 - **Pas de tests de composants frontend** : l'éditeur, la sauvegarde automatique et le tableau de bord reposent sur les tests d'API et sur typecheck/lint ; React Testing Library n'est pas encore configuré.
@@ -140,10 +152,10 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Prochaine étape
 
-- **Commande recommandée** : `/speckit-implement` pour la Phase 6 (Albums et réorganisation de tracklist — T034 à T037).
+- **Commande recommandée** : `/speckit-implement` pour la Phase 7 (Historique des versions — T038 à T041).
 - **Prompt recommandé** :
   ```text
-  Implémente la phase 6 (albums et réorganisation de tracklist — T034 à T037).
+  Implémente la phase 7 (historique des versions — T038 à T041).
   Travaille tâche par tâche, commit par tâche terminée avec un message Conventional
   Commits en français, lance lint et tests, puis pousse sur dev et résume pour validation.
   ```

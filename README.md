@@ -34,6 +34,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **P1** | **Authentification sécurisée & Sessions** | ✅ Fait | Mots de passe Argon2id, sessions PostgreSQL en cookies HttpOnly/Secure/SameSite=Lax, emails transactionnels, rate limiting |
 | **P1** | **Espace personnel, recherche & filtres** | ✅ Fait | Tableau de bord `/app`, recherche plein texte en direct (titre et paroles), filtres brouillons/terminés/favoris, cloisonnement par utilisateur |
 | **P1** | **Éditeur, sauvegarde auto, favoris & tags** | ✅ Fait | Éditeur CodeMirror 6, sauvegarde automatique (< 500 ms, brouillon local), compteurs mots/lignes en direct, statut brouillon/terminé, favoris et tags personnalisés |
+| **P1** | **Albums & réorganisation de tracklist** | ✅ Fait | Création d'albums, rattachement de textes existants, tracklist réordonnable par glisser-déposer (`@dnd-kit`) et détachement automatique à la suppression (aucun texte jamais supprimé) |
 
 
 
@@ -43,7 +44,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **P1** | **Organisation des textes (Privés par défaut)** | ⏳ Prévu | Cloisonnement strict multi-tenant, vérification d'appartenance systématique |
 | **P2** | **Application installable (PWA) & Mode Hors Ligne** | ⏳ Prévu | Écriture hors ligne totale (IndexedDB) et synchronisation au retour du réseau |
 | **P2** | **Gestion des médias audio (Compatible S3)** | ⏳ Prévu | Fichiers audio stockés hors base, stockage de la clé uniquement en base |
-| **P2** | **Organisation avancée des œuvres** | ⏳ Prévu | Structuration par albums, morceaux, couplets et annotations |
+
 | **P3** | **Liens de partage privés révocables** | ⏳ Prévu | Partage explicite en lecture seule, tokens hachés révocables avec expiration et rate limiting |
 | **P3** | **OAuth (Google & ORCID)** | ✅ Fait | Flux OAuth avec `state` et PKCE (arctic), création/connexion de compte, et liaison sécurisée par confirmation du mot de passe |
 
@@ -127,11 +128,11 @@ verso/
 ├── apps/
 │   ├── api/                    # Backend Fastify + Prisma ORM
 │   │   ├── prisma/             # Schéma Prisma et migrations PostgreSQL
-│   │   ├── src/                # Serveur HTTP, validation Zod env, modules (auth, OAuth, songs)
+│   │   ├── src/                # Serveur HTTP, validation Zod env, modules (auth, OAuth, songs, albums)
 │   │   └── vitest.config.ts    # Configuration Vitest du package API
 │   └── web/                    # Frontend React 18 + Vite + Tailwind CSS
 │       ├── public/             # Assets statiques
-│       └── src/                # App React, pages (landing, auth, dashboard, éditeur), composants et styles
+│       └── src/                # App React, pages (landing, auth, dashboard, éditeur, album), composants et styles
 ├── packages/
 │   └── shared/                 # Bibliothèque partagée (@verso/shared)
 │       └── src/                # Schémas Zod, types et moteur poétique
