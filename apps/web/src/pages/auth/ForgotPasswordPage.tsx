@@ -51,10 +51,7 @@ export function ForgotPasswordPage(): React.ReactElement {
         detail: 'Sécurité & Restauration',
       }}
       footer={
-        <Link
-          to="/login"
-          className="text-paper-accent font-medium hover:underline transition-all"
-        >
+        <Link to="/login" className="text-paper-accent font-medium hover:underline transition-all">
           Retour à la page de connexion
         </Link>
       }
