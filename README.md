@@ -22,6 +22,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **Socle** | **Discipline Git & Protection des données** | ✅ Fait | Branche `dev`, blocage des `.env`, secrets et audio via `.gitignore` |
 | **Socle** | **Documentation & Handoff permanent** | ✅ Fait | `HANDOFF.md` et `README.md` mis à jour avant chaque commit |
 | **Socle** | **Outillage Spec Kit** | ✅ Fait | Workflows et scripts de spécification, planification et tâches |
+| **Socle** | **Spécification Fonctionnelle Verso Core** | ✅ Fait | Spécification complète et validée ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) |
 | **P1** | **Authentification sécurisée & Sessions** | ⏳ Prévu | Mots de passe Argon2id, sessions PostgreSQL en cookies HttpOnly/Secure/SameSite=Lax, rate limiting |
 | **P1** | **Éditeur d'écriture résilient** | ⏳ Prévu | Typographie soignée, sauvegarde automatique en continu, zéro perte de texte |
 | **P1** | **Organisation des textes (Privés par défaut)** | ⏳ Prévu | Cloisonnement strict multi-tenant, vérification d'appartenance systématique |
@@ -114,6 +115,11 @@ verso/
 │   ├── scripts/bash/           # Scripts d'automatisation bash
 │   ├── templates/              # Gabarits de spécification, plan, tâches et checklists
 │   └── workflows/              # Définitions des flux de travail Spec Kit
+├── specs/                      # Spécifications fonctionnelles et techniques
+│   └── 001-verso-core/         # Spécification complète de la plateforme Verso
+│       ├── checklists/         # Checklists de qualité des spécifications
+│       │   └── requirements.md # Checklist de conformité de la spécification
+│       └── spec.md             # Spécification fonctionnelle validée
 ├── .gitignore                  # Exclusion des dépendances, secrets, fichiers .env et médias audio
 ├── HANDOFF.md                  # Journal de passation et suivi d'état du projet
 ├── LICENSE                     # Licence du projet (MIT)

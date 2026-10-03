@@ -2,70 +2,65 @@
 
 ## État actuel
 
-- **Phase en cours** : Phase 0 — Cadrage, Gouvernance et Spécification Initiale.
+- **Phase en cours** : Phase 1 — Spécification Fonctionnelle Réalisée & Préparation de la Planification.
 - **Ce qui est terminé** :
-  - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`).
-  - Définition des 7 principes fondamentaux non négociables :
-    1. Qualité du code (TypeScript strict, Zod serveur obligatoire, zero-warning ESLint/Prettier).
-    2. Sécurité & Protection des données (Argon2id, sessions PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax, tokens d'email à usage unique, tokens de partage révocables avec rate limiting, textes privés par défaut).
-    3. Design & Expérience utilisateur (minimaliste, application du skill `frontend-design`, dark/light mode, mobile-first, accessibilité, écriture ininterrompue avec sauvegarde automatique).
-    4. Architecture, Médias & PWA (React + Tailwind CSS, Node.js + Prisma + PostgreSQL, stockage audio compatible S3 externe, PWA installable avec écriture hors ligne et synchronisation).
-    5. Tests & Stratégie de persistance (tests unitaires sur logique/auth, intégration sur routes critiques, migrations Prisma versionnées).
-    6. Workflow Git obligatoire (interdiction de main, branches dev/features, commit Conventional Commits en français et push après chaque commande/phase, zéro secret).
-    7. Documentation & Handoff obligatoire (HANDOFF.md et README.md mis à jour avant chaque commit, autonomie totale pour un nouvel agent, statut ✅ réservé au code implémenté et testé).
-  - Établissement du cadre de priorisation séquentiel : P1 (socle indispensable) → P2 (confort d'écriture & musique) → P3 (partage & bonus). Règle de transition stricte : interdiction de démarrer une priorité supérieure tant que la précédente n'est pas stabilisée.
-  - Configuration du fichier racine [.gitignore](file:///home/normanxcat/Lab/verso/.gitignore) (blocage strict de `.env`, secrets et médias audio).
+  - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
+  - Spécification fonctionnelle complète du projet Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) couvrant l'intégralité du périmètre fonctionnel découpé par priorité :
+    - **P1 (Socle indispensable)** : Compte et authentification maison, vérification email, sessions actives avec révocation, Google/ORCID, espace personnel avec recherche plein texte et filtres, création/modification/suppression de textes avec sauvegarde auto temps réel et compteurs, gestion d'albums avec agencement glisser-déposer.
+    - **P2 (Confort d'écriture et musique)** : Historique des versions horodatées avec restauration, compteur de syllabes par ligne, détection et coloration des rimes, mode concentration zen, téléversement d'instrus audio (MP3/WAV), lecteur avec boucle de travail, BPM, tonalité et métronome, export PDF horodaté comme preuve d'antériorité, lien de partage privé révocable en lecture seule.
+    - **P3 (Bonus)** : PWA installable avec support complet hors ligne et synchronisation automatique, enregistrement vocal d'un freestyle attaché au texte, dictionnaire de rimes françaises.
+  - Validation complète de la checklist de qualité de spécification ([specs/001-verso-core/checklists/requirements.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/checklists/requirements.md)) : zéro ambiguïté, zéro fuite d'implémentation, critères de succès mesurables et agnostiques.
+  - Configuration du fichier [.gitignore](file:///home/normanxcat/Lab/verso/.gitignore) (blocage strict de `.env`, secrets et médias audio).
   - Branche `dev` configurée et synchronisée avec `origin/dev`.
 - **Ce qui est en cours** :
-  - Clôture de la mise à jour constitutionnelle v1.1.0 et préparation de la première spécification (P1).
+  - Préparation de la phase de planification technique du socle P1 (`/speckit-plan`).
 - **Ce qui reste à faire** :
   - **[P1 - Socle Indispensable]** :
-    - Spécification et cadrage de l'authentification sécurisée et de la gestion de sessions via `/speckit-specify`.
-    - Initialisation du squelette applicatif (React + Tailwind, Node.js + Prisma + PostgreSQL).
-    - Mise en place du modèle de données des textes, de l'éditeur minimaliste et de la sauvegarde automatique.
-    - Configuration de la suite de tests unitaires/intégration et de l'outillage de linting.
-  - **[P2 - Confort d'Écriture & Musique]** (après stabilisation P1) :
-    - Configuration PWA installable et persistance locale (IndexedDB) pour écriture hors ligne et synchronisation.
-    - Intégration du stockage compatible S3 pour les instrumentales et maquettes audio.
-  - **[P3 - Partage & Bonus]** (après stabilisation P2) :
-    - Liens de partage privés révocables en lecture seule avec rate limiting.
-    - Fournisseurs OAuth (Google, ORCID) avec state et PKCE.
+    - Exécution de `/speckit-plan` pour concevoir l'architecture technique, le modèle de données Prisma, les contrats d'API et le plan de découpage.
+    - Génération de la liste des tâches ordonnancées (`/speckit-tasks`).
+    - Implémentation du squelette applicatif (React, Tailwind, Node.js, Prisma, PostgreSQL).
+    - Implémentation et tests de l'authentification et de l'éditeur de texte avec sauvegarde continue.
+  - **[P2 - Confort d'Écriture & Musique]** (après stabilisation complète de P1) :
+    - Historique des versions, métrique des syllabes, lecteur audio avec boucle, stockage S3 externe, export PDF et liens de partage privés.
+  - **[P3 - Partage & Bonus]** (après stabilisation complète de P2) :
+    - PWA offline (IndexedDB), enregistrement vocal freestyle, dictionnaire de rimes.
 
 ## Dernière action
 
-- **Action exécutée** : Mise à jour de la constitution en version `1.1.0` via `/speckit-constitution` intégrant les 7 principes fondamentaux, l'architecture PWA hors ligne, la sécurité des liens de partage, les textes privés par défaut et le cadre de priorités P1/P2/P3.
-- **Résultat** : Constitution v1.1.0 enregistrée, validée sans placeholder, et synchronisée avec la gouvernance du projet.
+- **Action exécutée** : Exécution de `/speckit-specify` pour formaliser la spécification fonctionnelle complète de la plateforme Verso (`specs/001-verso-core/spec.md`) et validation de la checklist qualité (`requirements.md`).
+- **Résultat** : Spécification complète prête pour la planification, enregistrée dans `.specify/feature.json` pointant sur `specs/001-verso-core`.
 
 ## Décisions prises
 
-- **PWA installable avec support hors ligne total et synchronisation** : Permet aux rappeurs d'écrire partout (studios sans réseau, transports) sans dépendre d'une connexion Internet.
-- **Continuité absolue de l'écriture et sauvegarde automatique temps réel** : Élimine toute perte de données lors d'une déconnexion brutale du réseau.
-- **Textes privés par défaut et liens de partage révocables en lecture seule** : Sécurité maximale de la propriété intellectuelle des artistes.
-- **Rate limiting sur authentification et liens publics** : Protection contre les attaques par déni de service et force brute.
-- **Cadre séquentiel strict P1 → P2 → P3** : Interdit la dispersion technique et garantit un socle robuste avant tout ajout de confort ou de bonus.
-- **Interdiction formelle de travailler sur main et push obligatoire après chaque étape** : Assure une intégration continue propre et sécurisée.
-- **Documentation systématique avant commit** : Maintient un état projet toujours actionnable pour n'importe quel nouvel agent.
+- **Découpage strict en 3 priorités séquentielles (P1 socle, P2 confort/musique, P3 bonus)** : Permet de sécuriser le noyau vital de l'application avant d'aborder les enrichissements multimédias et mobiles.
+- **Spécification purement fonctionnelle et agnostique** : Description rigoureuse du comportement utilisateur et des flux métiers sans mentionner de frameworks ou de choix d'implémentation technique.
+- **Périmètre v1 délimité** : Exclusion explicite de la collaboration multi-auteurs en temps réel et des partages publics non contrôlés.
+- **Textes privés par défaut et partage strictement en lecture seule révocable** : Protection sans compromis de la propriété intellectuelle des artistes.
+- **Sauvegarde continue avec zéro perte de données garantie** : Sauvegarde en tâche de fond sous 500 ms après la frappe, résiliente aux coupures réseau.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `a20dfd3` — `docs: formalisation des 6 règles de fin de tâche obligatoires`
+- **Dernier commit** : `8a9c0e2` — `docs: mise à jour de la constitution v1.1.0 et cadrage des priorités`
 
 ## Comment lancer le projet
 
-Le projet est actuellement en phase de cadrage et outillage Spec Kit. Le code source applicatif sera généré lors des phases d'implémentation.
+Le projet est actuellement en phase de spécification fonctionnelle. Le code applicatif sera généré lors de la phase d'implémentation du socle P1.
 
 ### Commandes actuelles disponibles
 
 ```bash
-# Vérifier la branche courante (doit être dev ou feature)
+# Vérifier la branche active (dev ou feature)
 git branch --show-current
 
-# Vérifier la syntaxe des scripts bash Spec Kit
+# Vérifier la syntaxe des scripts Spec Kit
 bash -n .specify/scripts/bash/*.sh
+
+# Consulter la spécification courante
+cat specs/001-verso-core/spec.md
 ```
 
-### Commandes cibles (applicables dès l'initialisation du code source)
+### Commandes cibles (prévues dès l'initialisation du code source)
 
 ```bash
 # Installation des dépendances
@@ -109,16 +104,16 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Problèmes connus et points d'attention
 
-- Le code source applicatif (React / Node.js) n'est pas encore initialisé ; le dépôt contient actuellement l'outillage Spec Kit et la documentation de gouvernance.
+- Le code source applicatif (React / Node.js) n'est pas encore initialisé ; le dépôt contient actuellement l'outillage Spec Kit, la constitution et les spécifications sous `specs/`.
 - Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification de fichier.
 - Ne jamais commiter de fichier `.env`, de secret ni de fichier audio de test.
 - Respecter scrupuleusement le protocole de fin de tâche dans l'ordre strict des 6 étapes.
-- Respecter la règle de transition stricte : ne pas entamer P2 tant que P1 n'est pas stable.
+- Règle de transition stricte : ne pas entamer P2 tant que P1 n'est pas stable et testé.
 
 ## Prochaine étape
 
-- **Commande recommandée** : `/speckit-specify` pour définir la spécification du socle indispensable P1 (Authentification sécurisée et gestion des sessions).
+- **Commande recommandée** : `/speckit-plan` pour lancer la planification de l'implémentation technique du socle P1.
 - **Prompt recommandé** :
   ```text
-  /speckit-specify Définir la spécification de la fonctionnalité P1 d'authentification et de gestion de session (inscription, connexion, sessions sécurisées en base PostgreSQL, cookies HttpOnly/Secure/SameSite=Lax, Argon2id, rate limiting)
+  /speckit-plan Planifier l'implémentation technique du socle P1 (Authentification sécurisée, Espace personnel, Éditeur de texte avec sauvegarde continue, Gestion d'albums)
   ```
