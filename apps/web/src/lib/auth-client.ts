@@ -77,6 +77,12 @@ export const authClient = {
     });
   },
 
+  async resendVerification(): Promise<{ message: string }> {
+    return request<{ message: string }>('/resend-verification', {
+      method: 'POST',
+    });
+  },
+
   async forgotPassword(data: ForgotPasswordInput): Promise<{ message: string }> {
     return request<{ message: string }>('/forgot-password', {
       method: 'POST',

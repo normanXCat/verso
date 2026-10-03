@@ -269,6 +269,49 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
     });
   });
 
+  // Renvoi de l'email de vérification (authentifié)
+  app.post(
+    '/resend-verification',
+    {
+      preHandler: authenticate,
+      config: {
+        rateLimit:
+          process.env.NODE_ENV === 'test'
+            ? false
+            : {
+                max: 3,
+                timeWindow: '1 minute',
+              },
+      },
+    },
+    async (request, reply) => {
+      const user = request.user!;
+      if (user.emailVerified) {
+        return reply.status(400).send({
+          message: 'Votre adresse email est déjà vérifiée.',
+        });
+      }
+
+      const { rawToken, tokenHash } = generateEmailToken();
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      await prisma.emailToken.create({
+        data: {
+          email: user.email,
+          tokenHash,
+          type: 'VERIFY_EMAIL',
+          expiresAt,
+        },
+      });
+
+      await sendVerificationEmail(user.email, rawToken);
+
+      return reply.status(200).send({
+        message: 'Un nouvel email de vérification vous a été envoyé.',
+      });
+    },
+  );
+
   // Demande de réinitialisation de mot de passe
   app.post(
     '/forgot-password',

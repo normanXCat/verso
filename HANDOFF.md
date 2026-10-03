@@ -2,7 +2,7 @@
 
 ## État actuel
 
-- **Phase en cours** : Phase 2 (Authentification email et sessions) — T010 complétée.
+- **Phase en cours** : Phase 2 Achevée (100%) — Prêt pour la Phase 3 (Google et ORCID).
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
@@ -10,7 +10,7 @@
   - Planification d'implémentation technique complète (`/speckit-plan`) et analyse de cohérence (`/speckit-analyze`).
   - Découpage complet des tâches d'implémentation ([specs/001-verso-core/tasks.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/tasks.md)) en 13 phases testables isolément (62 tâches).
   - **Phase 1 (Base du projet, Docker, CI, schéma Prisma) 100% implémentée et testée (T001 à T009)**.
-  - **Phase 2 (Authentification email et sessions)** :
+  - **Phase 2 (Authentification email et sessions) 100% implémentée et testée (T010 à T018)** :
     - T010 : Schémas Zod d'authentification (`registerSchema`, `loginSchema`, `resetPasswordSchema`, `forgotPasswordSchema`, `verifyEmailSchema`) et types inférés dans `packages/shared/src/schemas/auth.ts`, exportés dans `@verso/shared` avec suite de tests unitaires Vitest.
     - T011 : Suite de tests d'intégration complète pour l'authentification et les sessions dans `apps/api/tests/integration/auth.test.ts` (couvrant register, login, me, logout, verify-email, forgot/reset password, sessions).
     - T012 : Service de hachage de mot de passe Argon2id (`@node-rs/argon2`) et générateur/hachage SHA-256 de jetons d'email sécurisés dans `apps/api/src/modules/auth/password.service.ts` avec tests unitaires.
@@ -19,19 +19,21 @@
     - T015 : Routes Fastify complètes pour l'authentification et les sessions (`/register`, `/login`, `/me`, `/logout`, `/verify-email`, `/forgot-password`, `/reset-password`, `/sessions`) avec rate limiting dans `apps/api/src/modules/auth/auth.routes.ts` et tests d'intégration tous validés.
     - T016 : Client API typé (`apps/web/src/lib/auth-client.ts`), contexte et hook React `useAuth` avec TanStack Query (`apps/web/src/hooks/useAuth.tsx`), et configuration proxy Vite pour `/api`.
     - T017 : Interfaces utilisateur complètes dans `apps/web/src/pages/auth/` (connexion, inscription, mot de passe oublié, réinitialisation, vérification d'email, gestion des sessions actives) intégrées dans le routeur principal.
+    - T018 : Bannière d'avertissement persistante et non bloquante de vérification d'email dans `apps/web/src/components/common/EmailVerificationBanner.tsx` avec renvoi d'email en un clic.
   - Branche `dev` active et synchronisée.
 - **Ce qui est en cours** :
-  - Phase 2 : Authentification email et sessions (T018 en cours).
+  - Phase 2 terminée avec succès (30/30 tests passants), arrêt pour validation utilisateur avant démarrage de la Phase 3.
 - **Ce qui reste à faire** :
-  - **Phase 2 (T018)** : Bannière persistante d'avertissement de vérification d'email.
-  - **Phases 3 à 6 (Socle P1)** : OAuth Google/ORCID, Espace personnel, Éditeur CodeMirror 6, Albums et dnd-kit.
+  - **Phase 3 : Google et ORCID (T019 à T022)** : Flux OAuth avec Arctic sous PKCE et confirmation de liaison par mot de passe.
+  - **Phases 4 à 6 (Socle P1)** : Espace personnel, Éditeur CodeMirror 6, Albums et dnd-kit.
   - **Phases 7 à 10 (Confort P2)** : Historique des versions, Audio S3/Boucle/BPM/Métronome, Syllabes/Rimes, Export PDF/Partages.
   - **Phases 11 à 13 (P3 & Finitions)** : PWA hors ligne, Freestyle vocal, Dictionnaire de rimes, Polissage et audit sécurité.
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de T017 (pages et formulaires d'authentification et de gestion des sessions).
-- **Résultat** : Parcours utilisateur complet (inscription, connexion, réinitialisation, validation d'email et gestion des appareils connectés) connecté à l'API.
+- **Action exécutée** : Implémentation de T018 (bannière persistante de vérification d'email avec support de renvoi de jeton).
+- **Résultat** : Phase 2 (Authentification email et sessions) 100% achevée, tous les quality gates au vert.
+
 
 
 
