@@ -46,7 +46,11 @@ function installFetchMock(users: {
     const url = input instanceof Request ? input.url : input.toString();
 
     if (url.includes('oauth2.googleapis.com/token')) {
-      return jsonResponse({ access_token: 'google-access', token_type: 'Bearer', expires_in: 3600 });
+      return jsonResponse({
+        access_token: 'google-access',
+        token_type: 'Bearer',
+        expires_in: 3600,
+      });
     }
     if (url.includes('openidconnect.googleapis.com')) {
       return jsonResponse(users.google);
@@ -98,7 +102,8 @@ describe("Tests d'intégration : Flux OAuth Google et ORCID (/api/auth/oauth)", 
   }> {
     const response = await app.inject({ method: 'GET', url: `/api/auth/oauth/${provider}` });
     const state = response.cookies.find((c) => c.name === 'oauth_state')?.value ?? '';
-    const codeVerifier = response.cookies.find((c) => c.name === 'oauth_code_verifier')?.value ?? '';
+    const codeVerifier =
+      response.cookies.find((c) => c.name === 'oauth_code_verifier')?.value ?? '';
     return { response, state, codeVerifier };
   }
 
@@ -149,7 +154,7 @@ describe("Tests d'intégration : Flux OAuth Google et ORCID (/api/auth/oauth)", 
     });
   });
 
-  describe("GET /api/auth/oauth/:provider/callback", () => {
+  describe('GET /api/auth/oauth/:provider/callback', () => {
     it('crée le compte et ouvre une session lors du premier callback Google', async () => {
       const credentials = await beginOAuth('google');
       const callback = await completeOAuth('google', credentials);
@@ -252,7 +257,7 @@ describe("Tests d'intégration : Flux OAuth Google et ORCID (/api/auth/oauth)", 
       expect(account).not.toBeNull();
     });
 
-    it("rejette un state invalide ou absent avec un statut 400", async () => {
+    it('rejette un state invalide ou absent avec un statut 400', async () => {
       const credentials = await beginOAuth('google');
       const response = await app.inject({
         method: 'GET',
