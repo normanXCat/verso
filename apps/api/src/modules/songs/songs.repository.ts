@@ -2,12 +2,12 @@ import { Prisma } from '@prisma/client';
 import { SONG_EXCERPT_MAX_LENGTH, type SearchSongsQuery, type SongListItem } from '@verso/shared';
 import { prisma } from '../../config/prisma.js';
 
-const SONG_INCLUDE = {
+export const SONG_INCLUDE = {
   album: { select: { id: true, title: true } },
   tags: { include: { tag: { select: { name: true } } } },
 } satisfies Prisma.SongInclude;
 
-type SongWithRelations = Prisma.SongGetPayload<{ include: typeof SONG_INCLUDE }>;
+export type SongWithRelations = Prisma.SongGetPayload<{ include: typeof SONG_INCLUDE }>;
 
 /**
  * Construit la clause `where` Prisma à partir de la requête validée.
@@ -63,7 +63,7 @@ function buildExcerpt(content: string): string {
   return `${normalized.slice(0, SONG_EXCERPT_MAX_LENGTH).trimEnd()}…`;
 }
 
-function toSongListItem(song: SongWithRelations): SongListItem {
+export function toSongListItem(song: SongWithRelations): SongListItem {
   return {
     id: song.id,
     title: song.title,
@@ -100,4 +100,15 @@ export async function searchSongs(
   ]);
 
   return { items: songs.map(toSongListItem), total };
+}
+
+/**
+ * Récupère un texte par son identifiant en imposant l'appartenance à l'utilisateur.
+ */
+export async function findSongById(userId: string, songId: string): Promise<SongListItem | null> {
+  const song = await prisma.song.findFirst({
+    where: { id: songId, userId },
+    include: SONG_INCLUDE,
+  });
+  return song ? toSongListItem(song) : null;
 }
