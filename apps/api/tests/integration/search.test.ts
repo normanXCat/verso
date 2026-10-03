@@ -169,7 +169,12 @@ describe("Tests d'intégration : Recherche et filtres de l'espace personnel (/ap
     it('combine la recherche plein texte et le filtre de statut', async () => {
       const owner = await registerUser('owner@verso.fr');
       await seedSong({ userId: owner.userId, title: 'Nuit', content: 'étoiles', status: 'DRAFT' });
-      await seedSong({ userId: owner.userId, title: 'Nuit d’été', content: 'étoiles', status: 'COMPLETED' });
+      await seedSong({
+        userId: owner.userId,
+        title: 'Nuit d’été',
+        content: 'étoiles',
+        status: 'COMPLETED',
+      });
 
       const response = await search('q=nuit&filter=completed', owner.sessionId);
 
