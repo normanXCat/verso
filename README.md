@@ -139,27 +139,13 @@ Seuls les noms des variables d'environnement prévues par l'architecture sont li
 
 ---
 
-## Règles de contribution
+## Règles de fin de tâche obligatoires
 
-1. **Interdiction formelle de travailler sur `main`** :
-   - Tout travail DOIT être effectué sur la branche `dev` ou sur une branche thématique dédiée (ex: `feature/...`).
-   - Ne jamais faire de push direct sur `main`.
+Chaque tâche exécutée DOIT impérativement respecter ce protocole dans l'ordre strict :
 
-2. **Convention de commits** :
-   - Les commits DOIVENT impérativement respecter le standard Conventional Commits avec des messages clairs en français :
-     - `feat:` Nouvelle fonctionnalité
-     - `fix:` Correction d'un bug
-     - `docs:` Modification de documentation
-     - `chore:` Tâche de maintenance ou d'outillage
-     - `test:` Ajout ou modification de tests
-   - Chaque commit doit être atomique (une seule tâche ou fonctionnalité à la fois).
-
-3. **Sécurité et exclusion des secrets** :
-   - Ne jamais commiter de fichier `.env`, de mot de passe, de token, de clé secrète ou de fichier audio de test.
-   - Les exclusions sont appliquées par [.gitignore](file:///home/normanxcat/Lab/verso/.gitignore).
-
-4. **Documentation obligatoire avant commit** :
-   - Mettre à jour systématiquement [HANDOFF.md](file:///home/normanxcat/Lab/verso/HANDOFF.md) et [README.md](file:///home/normanxcat/Lab/verso/README.md) avant tout commit pour refléter l'état réel du dépôt.
-
-5. **Synchronisation distante** :
-   - Pousser systématiquement les modifications terminées avec `git push -u origin <branche>`. En cas d'échec, le processus doit être immédiatement interrompu pour analyse.
+1. **Lint et tests** : Lancer le linter et la suite de tests (`npm run lint`, `npm test`, etc.) ; corriger toutes les erreurs avant de continuer.
+2. **Documentation obligatoire** : Mettre à jour [HANDOFF.md](file:///home/normanxcat/Lab/verso/HANDOFF.md) (état actuel, dernière action, décisions, branche et dernier commit, comment lancer, variables d'environnement par nom seulement, problèmes connus, prochaine étape) et [README.md](file:///home/normanxcat/Lab/verso/README.md) (fonctionnalités avec statut, stack, installation, lancement, structure). Ne documenter que ce qui existe réellement dans le code.
+3. **Discipline de branches** : Ne jamais travailler directement sur `main`. Utiliser la branche courante si ce n'est pas `main`, sinon créer et basculer sur `dev`.
+4. **Staging & Commit** : `git add`, puis commit au format Conventional Commits en français (`feat:`, `fix:`, `docs:`, `chore:`, `test:`). Ne jamais commiter de fichier `.env`, de secret ni de fichier audio de test.
+5. **Synchronisation distante** : `git push -u origin <branche>`. Si le push échoue, s'arrêter immédiatement et expliquer pourquoi.
+6. **Compte-rendu final** : Terminer systématiquement par un résumé court : ce qui a été fait, ce qui reste, et la prochaine commande à lancer.
