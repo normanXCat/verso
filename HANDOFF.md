@@ -2,37 +2,30 @@
 
 ## État actuel
 
-- **Phase en cours** : Phase 1 Achevée (100%) — Prêt pour la Phase 2 (Authentification email & sessions).
+- **Phase en cours** : Phase 2 (Authentification email et sessions) — T010 complétée.
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
   - Clarification interactive (`/speckit-clarify`) sur les 5 points critiques (bannière email non bloquante, liaison OAuth sécurisée par mot de passe, quotas audio 75 Mo / 3 pistes, gestion des conflits hors ligne par duplication, rétention permanente des versions).
   - Planification d'implémentation technique complète (`/speckit-plan`) et analyse de cohérence (`/speckit-analyze`).
   - Découpage complet des tâches d'implémentation ([specs/001-verso-core/tasks.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/tasks.md)) en 13 phases testables isolément (62 tâches).
-  - **Phase 1 (Base du projet, Docker, CI, schéma Prisma) 100% implémentée et testée (T001 à T009)** :
-    - Monorepo pnpm initialisé (`package.json`, `pnpm-workspace.yaml`, `.npmrc`).
-    - Services locaux dans `docker-compose.yml` (PostgreSQL 16, MinIO S3 avec bucket `verso-audio`) et `.dockerignore`.
-    - Pipeline CI GitHub Actions (`.github/workflows/ci.yml`) automatisant lint, format, typecheck et tests.
-    - Outillage de qualité zéro warning (`eslint.config.js` Flat Config, `.prettierrc`, `.prettierignore`, `tsconfig.base.json`).
-    - Package logique partagée `packages/shared` (`@verso/shared`) avec support Zod.
-    - Application backend Fastify `apps/api` (`@verso/api`) avec plugins de sécurité (cookie, cors, helmet, rate-limit).
-    - Application frontend React 18 `apps/web` (`@verso/web`) avec Vite, Tailwind CSS, TanStack Query et React Router.
-    - Schéma Prisma complet et migration initiale PostgreSQL appliquée (`20261003134155_init`, 13 tables relationnelles).
-    - Validateur Zod des variables d'environnement (`apps/api/src/config/env.ts`), tests unitaires Vitest et `.env.example`.
-  - Branche `dev` active et synchronisée avec `origin/dev`.
+  - **Phase 1 (Base du projet, Docker, CI, schéma Prisma) 100% implémentée et testée (T001 à T009)**.
+  - **Phase 2 (Authentification email et sessions)** :
+    - T010 : Schémas Zod d'authentification (`registerSchema`, `loginSchema`, `resetPasswordSchema`, `forgotPasswordSchema`, `verifyEmailSchema`) et types inférés dans `packages/shared/src/schemas/auth.ts`, exportés dans `@verso/shared` avec suite de tests unitaires Vitest.
+  - Branche `dev` active et synchronisée.
 - **Ce qui est en cours** :
-  - Phase 1 terminée avec succès, arrêt pour validation utilisateur avant passage à la Phase 2.
+  - Phase 2 : Authentification email et sessions (T011 à T018 en cours).
 - **Ce qui reste à faire** :
-  - **Phase 2 : Authentification email et sessions (T010 à T018)** :
-    - Schémas Zod d'auth (`packages/shared`), tests d'intégration, service Argon2id, service sessions PostgreSQL en cookies HttpOnly, service email, routes Fastify, interfaces React et bannière persistante.
+  - **Phase 2 (T011 à T018)** : Tests d'intégration auth, services Argon2id/tokens, sessions PostgreSQL HttpOnly, service email, routes Fastify, interfaces React et bannière persistante.
   - **Phases 3 à 6 (Socle P1)** : OAuth Google/ORCID, Espace personnel, Éditeur CodeMirror 6, Albums et dnd-kit.
   - **Phases 7 à 10 (Confort P2)** : Historique des versions, Audio S3/Boucle/BPM/Métronome, Syllabes/Rimes, Export PDF/Partages.
   - **Phases 11 à 13 (P3 & Finitions)** : PWA hors ligne, Freestyle vocal, Dictionnaire de rimes, Polissage et audit sécurité.
 
+
 ## Dernière action
 
-- **Action exécutée** : Implémentation et validation complète de la Phase 1 (T001 à T009) avec passage de tous les tests (`vitest`), vérification de typage (`tsc --noEmit`), lint zéro warning (`eslint .`) et formatage Prettier.
-- **Résultat** : Socle monorepo, Docker, CI, bases de données PostgreSQL/Prisma et configurations opérationnels.
+- **Action exécutée** : Implémentation de T010 (schémas Zod d'authentification et tests unitaires complets).
+- **Résultat** : Validation Zod robuste pour inscription, connexion, réinitialisation et validation d'email.
 
 ## Décisions prises
 
@@ -46,7 +39,8 @@
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `9ada1d7` — `feat: planification technique complète de Verso Core (plan, research, data-model, contracts, quickstart)`
+- **Dernier commit** : `cc3da78` — `feat: validation zod des variables d environnement api`
+
 
 ## Comment lancer le projet
 

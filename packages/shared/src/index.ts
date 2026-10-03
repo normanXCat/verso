@@ -5,3 +5,5 @@ export interface BaseEntity {
   createdAt: Date | string;
   updatedAt?: Date | string;
 }
+
+export * from './schemas/auth.js';

@@ -28,7 +28,7 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 **Objectif** : Mettre en place l'inscription avec mot de passe Argon2id, les sessions en base avec cookies `HttpOnly`, l'envoi de lien de vérification par email, et la bannière d'avertissement persistante.
 **Test indépendant** : Inscrire un utilisateur, vérifier la réception du cookie de session, vérifier l'accès immédiat avec bannière d'avertissement, valider l'email via le lien, et tester la déconnexion / reconnexion.
 
-- [ ] T010 [P] [US1] [P1] Définir les schémas de validation Zod d'authentification (`registerSchema`, `loginSchema`, `resetPasswordSchema`) dans `packages/shared/src/schemas/auth.ts`. *Commit: `feat: schémas zod d authentification`*
+- [X] T010 [P] [US1] [P1] Définir les schémas de validation Zod d'authentification (`registerSchema`, `loginSchema`, `resetPasswordSchema`) dans `packages/shared/src/schemas/auth.ts`. *Commit: `feat: schémas zod d authentification`*
 - [ ] T011 [P] [US1] [P1] Écrire la suite de tests d'intégration pour l'authentification et les sessions dans `apps/api/tests/integration/auth.test.ts`. *Commit: `test: tests d intégration pour l authentification email et sessions`*
 - [ ] T012 [US1] [P1] Implémenter le service de hachage Argon2id et de génération/hachage des tokens d'email dans `apps/api/src/modules/auth/password.service.ts`. *Commit: `feat: service de hachage argon2id et tokens email`*
 - [ ] T013 [US1] [P1] Implémenter le service de gestion des sessions en base PostgreSQL avec émission de cookies `HttpOnly/Secure/SameSite=Lax` dans `apps/api/src/modules/auth/session.service.ts`. *Commit: `feat: gestionnaire de sessions en base postgresql avec cookies httponly`*
