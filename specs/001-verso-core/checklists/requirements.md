@@ -31,5 +31,6 @@
 
 ## Notes
 
-- Spécification validée à 100% sans aucun marqueur d'ambiguïté ni fuite d'implémentation.
-- Prête pour les étapes suivantes : `/speckit-clarify` ou `/speckit-plan`.
+- Spécification validée à 100% avec 5 clarifications critiques intégrées (Session 2026-10-03).
+- Zéro marqueur d'ambiguïté, zéro fuite d'implémentation.
+- Prête pour l'étape suivante : `/speckit-plan`.

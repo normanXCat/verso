@@ -8,6 +8,15 @@
 
 **Input**: User description: "Verso est une application web pour rappeurs permettant d'écrire, organiser, protéger et partager leurs textes. Décris les fonctionnalités suivantes (le quoi, pas la technique), classées par priorité. P1 : socle (Compte et authentification, Espace personnel, Textes, Albums) ; P2 : écriture et musique (Historique des versions, Compteur de syllabes, Repérage des rimes, Mode concentration, Instrus, Lecteur avec boucle, BPM et métronome, Export PDF horodaté, Lien de partage privé révocable) ; P3 : bonus (PWA hors ligne avec synchronisation, Enregistrement vocal freestyle, Suggestions de rimes dictionnaire français). Hors périmètre v1 : collaboration entre utilisateurs, partage public sans lien privé."
 
+## Clarifications
+
+### Session 2026-10-03
+- Q: L'accès à l'espace personnel et à l'écriture doit-il être strictement bloqué tant que l'adresse email n'a pas été vérifiée par le lien, ou l'utilisateur peut-il accéder immédiatement à l'application avec un statut restreint ? → A: Accès libre immédiat avec bannière d'avertissement permanente incitant à vérifier l'email, sans bloquer l'écriture ni la connexion.
+- Q: Lorsqu'un utilisateur se connecte via Google ou ORCID avec une adresse email correspondant à un compte déjà existant (créé par email/mot de passe), comment le système doit-il gérer la liaison des méthodes d'authentification ? → A: Confirmation par saisie du mot de passe existant requise avant d'autoriser la liaison du compte OAuth (protection contre l'usurpation de compte).
+- Q: Quelles limites précises doivent s'appliquer aux fichiers audio d'instrumentales téléversés par l'utilisateur (taille maximale de fichier, formats acceptés et nombre d'instrus par texte) ? → A: Taille maximale de 75 Mo par fichier, formats MP3 et WAV acceptés, et possibilité d'attacher jusqu'à 3 instrus différentes par texte (ex. versions avec/sans refrain, démo, arrangement alternatif).
+- Q: Lors du rétablissement de la connexion après une session d'écriture hors ligne, comment le système doit-il résoudre un conflit si le même texte a également été modifié sur un autre appareil pendant la déconnexion ? → A: Duplication en brouillon de conflit : le texte distant reste inchangé et la version hors ligne est enregistrée comme un nouveau brouillon distinct nommé "[Titre] (copie hors ligne)" avec notification informative.
+- Q: Quelle politique de conservation et de limitation doit s'appliquer à l'historique des versions d'un texte (durée de rétention et nombre maximal de révisions conservées) ? → A: Conservation intégrale absolue : aucune purge et aucun plafond de nombre de versions, toutes les versions horodatées enregistrées sont conservées indéfiniment pour chaque texte.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Première inscription et validation de compte (Priority: P1)
@@ -20,9 +29,9 @@ En tant que rappeur découvrant Verso, je souhaite créer un compte personnel s�
 
 **Acceptance Scenarios**:
 
-1. **Given** un visiteur non authentifié, **When** il saisit son email et un mot de passe valide et soumet le formulaire, **Then** son compte est créé à l'état non vérifié, un email de confirmation contenant un lien unique est émis, et l'interface l'invite à consulter sa boîte de réception.
+1. **Given** un visiteur non authentifié, **When** il saisit son email et un mot de passe valide et soumet le formulaire, **Then** son compte est créé à l'état non vérifié, un email de confirmation contenant un lien unique est émis, et il accède immédiatement à son espace personnel avec une bannière d'avertissement persistante l'invitant à valider son adresse.
 2. **Given** un utilisateur ayant reçu un lien de vérification d'email valide, **When** il clique sur ce lien avant expiration, **Then** son adresse email est marquée comme vérifiée et il est redirigé vers son espace connecté.
-3. **Given** un utilisateur existant, **When** il se connecte via Google ou ORCID pour la première fois avec le même email, **Then** la méthode d'authentification tierce est associée à son compte existant sans duplication.
+3. **Given** un utilisateur existant ayant créé son compte avec email/mot de passe, **When** il tente une première connexion via Google ou ORCID avec la même adresse email, **Then** le système lui demande de saisir son mot de passe existant pour valider explicitement l'association du fournisseur OAuth à son compte sans duplication.
 4. **Given** un utilisateur connecté sur plusieurs appareils, **When** il consulte la gestion de ses sessions, **Then** il visualise chaque appareil/session active et peut révoquer individuellement ou globalement les autres sessions.
 
 ---
@@ -129,8 +138,8 @@ En tant qu'artiste en studio souterrain ou en avion sans réseau, je souhaite ou
 ### Edge Cases
 
 - **Coupure réseau brutale en plein milieu d'une phrase** : Le système conserve immédiatement la frappe dans la mémoire locale de l'appareil et réessaie la persistance distante dès que possible sans afficher de modale intrusive d'erreur.
-- **Conflit de modification simultanée sur deux appareils** : Si le même utilisateur modifie le même texte sur deux appareils simultanément, la version la plus récente est conservée comme courante et la version concurrente est archivée dans l'historique sans perte.
-- **Dépassement de la taille limite de fichier audio** : Le téléversement est refusé immédiatement côté client et côté serveur avec un message explicite indiquant la limite autorisée (ex: 25 Mo).
+- **Conflit de modification hors ligne vs distant** : Si le même texte a été modifié sur un autre appareil pendant la déconnexion, la synchronisation préserve le texte distant intact et crée automatiquement une copie en brouillon nommée "[Titre] (copie hors ligne)" avec une notification discrète invitant l'artiste à comparer.
+- **Dépassement de la taille limite de fichier audio** : Le téléversement est refusé immédiatement côté client et côté serveur avec un message explicite si le fichier dépasse 75 Mo ou n'est pas au format MP3/WAV.
 - **Lien de partage expiré ou révoqué** : La page de consultation affiche un message neutre ("Ce lien n'est plus actif") sans donner d'information sur l'auteur ou le statut du texte.
 - **Suppression d'un album contenant des textes** : La suppression de l'album ne supprime JAMAIS les textes associés ; ils sont simplement détachés de l'album et conservés dans l'espace personnel.
 
@@ -143,12 +152,12 @@ En tant qu'artiste en studio souterrain ou en avion sans réseau, je souhaite ou
 #### 1. Compte, Authentification & Sessions (Priorité P1)
 
 - **FR-001**: Le système DOIT permettre l'inscription par adresse email et mot de passe sécurisé.
-- **FR-002**: Le système DOIT envoyer un email contenant un lien unique de vérification d'adresse avec expiration stricte.
+- **FR-002**: Le système DOIT envoyer un email contenant un lien unique de vérification d'adresse avec expiration stricte. L'accès à l'espace personnel et à l'écriture reste immédiatement ouvert après l'inscription, avec affichage d'une bannière d'avertissement persistante invitant l'utilisateur à vérifier son compte.
 - **FR-003**: Le système DOIT permettre la connexion par identifiant (email/mot de passe) et maintenir la session active sur l'appareil selon le choix de l'utilisateur ("Rester connecté").
 - **FR-004**: Le système DOIT permettre la déconnexion explicite de la session courante.
 - **FR-005**: Le système DOIT proposer une procédure de réinitialisation de mot de passe par envoi d'un lien temporaire à usage unique par email.
 - **FR-006**: Le système DOIT supporter l'authentification et l'inscription via des fournisseurs tiers réputés (Google, ORCID).
-- **FR-007**: Le système DOIT permettre de lier plusieurs méthodes d'authentification (email/mot de passe, Google, ORCID) au même compte utilisateur sans créer de doublon.
+- **FR-007**: Le système DOIT permettre de lier plusieurs méthodes d'authentification (email/mot de passe, Google, ORCID) au même compte utilisateur sans créer de doublon. Si un compte existe déjà lors d'une connexion OAuth avec la même adresse email, la saisie préalable du mot de passe du compte existant DOIT être exigée pour autoriser la liaison.
 - **FR-008**: Le système DOIT afficher la liste complète des sessions actives de l'utilisateur (avec informations indicatives de type d'appareil, date de dernière activité et localisation approximative).
 - **FR-009**: L'utilisateur DOIT pouvoir révoquer à distance n'importe quelle session active, individuellement ou toutes à l'exception de la session courante.
 - **FR-010**: Le système DOIT appliquer une limitation stricte de débit (rate limiting) sur toutes les tentatives d'authentification et requêtes de réinitialisation.
@@ -182,7 +191,7 @@ En tant qu'artiste en studio souterrain ou en avion sans réseau, je souhaite ou
 
 #### 5. Confort d'Écriture & Analyse Métrique (Priorité P2)
 
-- **FR-029**: Le système DOIT enregistrer un historique horodaté des versions de chaque texte au fil des modifications significatives.
+- **FR-029**: Le système DOIT enregistrer un historique horodaté immuable des versions de chaque texte au fil des modifications. Toutes les versions enregistrées DOIVENT être conservées indéfiniment, sans aucune purge automatique ni plafond sur le nombre de versions archivées.
 - **FR-030**: L'utilisateur DOIT pouvoir consulter l'historique, prévisualiser une version antérieure et la restaurer comme version active.
 - **FR-031**: L'éditeur DOIT proposer un compteur de syllabes en marge de chaque ligne pour aider à la régularité métrique.
 - **FR-032**: L'éditeur DOIT être capable de détecter et colorer automatiquement les rimes et terminaisons phonétiques similaires pour visualiser les schémas de rimes.
@@ -190,10 +199,10 @@ En tant qu'artiste en studio souterrain ou en avion sans réseau, je souhaite ou
 
 #### 6. Instrumentales & Confort Audio (Priorité P2)
 
-- **FR-034**: L'utilisateur DOIT pouvoir téléverser un fichier audio (format MP3 ou WAV, dans la limite d'une taille définie) et l'associer à un texte.
-- **FR-035**: L'utilisateur DOIT pouvoir écouter l'instru directement dans l'éditeur pendant qu'il rédige ses paroles.
+- **FR-034**: L'utilisateur DOIT pouvoir téléverser des fichiers audio aux formats MP3 ou WAV jusqu'à 75 Mo par fichier. Le système DOIT permettre d'attacher jusqu'à 3 instrumentales distinctes par texte (ex. version avec refrain, démo, variante d'arrangement) et d'en désigner une comme piste active pour l'écoute.
+- **FR-035**: L'utilisateur DOIT pouvoir écouter l'instru active directement dans l'éditeur pendant qu'il rédige ses paroles.
 - **FR-036**: Le lecteur audio DOIT permettre de définir une boucle sur un segment audio précis (point de départ et point de fin) avec répétition continue.
-- **FR-037**: L'utilisateur DOIT pouvoir remplacer ou supprimer le fichier audio associé à un texte à tout moment.
+- **FR-037**: L'utilisateur DOIT pouvoir renommer, remplacer ou supprimer chacune des instrumentales associées à un texte à tout moment.
 - **FR-038**: L'utilisateur DOIT pouvoir renseigner et modifier le tempo (BPM) et la tonalité musicale de l'instru associée.
 - **FR-039**: L'éditeur DOIT intégrer un métronome sonore et visuel réglable sur le tempo souhaité.
 
@@ -209,7 +218,7 @@ En tant qu'artiste en studio souterrain ou en avion sans réseau, je souhaite ou
 
 - **FR-045**: L'application DOIT être installable en tant que Progressive Web App (PWA) sur ordinateurs et appareils mobiles.
 - **FR-046**: L'application DOIT permettre l'ouverture, la consultation et la rédaction complète de textes en mode hors ligne.
-- **FR-047**: Le système DOIT synchroniser de manière transparente et automatique les modifications locales avec le compte utilisateur dès la reconnexion à internet.
+- **FR-047**: Le système DOIT synchroniser automatiquement les modifications locales avec le compte distant dès le rétablissement de la connexion. En cas de conflit (texte également modifié sur un autre appareil pendant la déconnexion), le système DOIT préserver le texte distant intact et enregistrer la version hors ligne sous la forme d'un nouveau brouillon distinct intitulé `[Titre] (copie hors ligne)`.
 - **FR-048**: L'utilisateur DOIT pouvoir enregistrer une note vocale (freestyle ou mémo de flow) via le microphone de son appareil et l'associer au texte courant.
 - **FR-049**: L'éditeur DOIT intégrer un dictionnaire de rimes de la langue française fournissant des suggestions de rimes riches et suffisantes basées sur la phonétique du mot sélectionné.
 
@@ -220,7 +229,7 @@ En tant qu'artiste en studio souterrain ou en avion sans réseau, je souhaite ou
 - **Utilisateur (User)** : Représente l'auteur/rappeur propriétaire du compte. Attributs : identifiant unique, adresse email vérifiée, mot de passe haché ou identifiants externes (Google, ORCID), date d'inscription, préférences d'affichage (thème sombre/clair).
 - **Session Active (Session)** : Représente une connexion active sur un navigateur/appareil. Attributs : identifiant de session, association utilisateur, empreinte appareil/navigateur, adresse IP indicative, date de création, date de dernière activité, date d'expiration.
 - **Texte (Song / Lyric)** : Entité centrale contenant l'œuvre écrite. Attributs : identifiant, association utilisateur, rattachement album optionnel, titre, contenu des paroles, statut (brouillon ou terminé), indicateur favori, tags, dates de création et de dernière modification.
-- **Version de Texte (SongVersion)** : Instantané immuable d'un texte dans le temps. Attributs : identifiant, association au texte d'origine, titre archivé, contenu archivé, horodatage précis de capture.
+- **Version de Texte (SongVersion)** : Instantané immuable d'un texte dans le temps, conservé indéfiniment sans purge ni plafond. Attributs : identifiant, association au texte d'origine, titre archivé, contenu archivé, horodatage précis de capture.
 - **Album (Album)** : Regroupement thématique de textes. Attributs : identifiant, association utilisateur, titre de l'album, description, référence visuelle de pochette, ordre des pistes, date de création.
 - **Piste d'Album (AlbumTrack)** : Association ordonnée entre un album et un texte. Attributs : référence album, référence texte, position ordonnée (numéro de piste).
 - **Instrumentale (AudioTrack)** : Fichier audio associé à un texte. Attributs : identifiant, association texte, référence de stockage du fichier binaire, format, durée, tempo (BPM), tonalité musicale.
@@ -246,7 +255,7 @@ En tant qu'artiste en studio souterrain ou en avion sans réseau, je souhaite ou
 
 ## Assumptions
 
-- **Limites de taille audio** : Les fichiers d'instrumentales téléversés sont limités par défaut à 25 Mo par fichier (formats MP3 et WAV acceptés) afin de garantir une expérience fluide.
+- **Limites de taille et formats audio** : Les fichiers d'instrumentales téléversés sont limités à 75 Mo par fichier aux formats MP3 et WAV, avec un maximum de 3 instrumentales associables par texte.
 - **Périmètre v1 strictly respecté** : La collaboration en temps réel entre utilisateurs et la publication publique de textes dans un catalogue ouvert sont explicitement hors périmètre de cette version.
 - **Langue de l'analyse poétique** : Le calcul métrique des syllabes et le dictionnaire de rimes ciblent en priorité la langue française et ses spécificités phonétiques et élisions poétiques usuelles.
 - **Preuve d'antériorité PDF** : L'export PDF intègre un horodatage textuel de la version sans valeur d'autorité de certification cryptographique légale d'État, mais constitue un document formel d'antériorité de création pour l'artiste.

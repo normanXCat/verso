@@ -2,50 +2,49 @@
 
 ## État actuel
 
-- **Phase en cours** : Phase 1 — Spécification Fonctionnelle Réalisée & Préparation de la Planification.
+- **Phase en cours** : Phase 1 — Spécification Validée & Clarifiée (Prêt pour la Planification).
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
-  - Spécification fonctionnelle complète du projet Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) couvrant l'intégralité du périmètre fonctionnel découpé par priorité :
-    - **P1 (Socle indispensable)** : Compte et authentification maison, vérification email, sessions actives avec révocation, Google/ORCID, espace personnel avec recherche plein texte et filtres, création/modification/suppression de textes avec sauvegarde auto temps réel et compteurs, gestion d'albums avec agencement glisser-déposer.
-    - **P2 (Confort d'écriture et musique)** : Historique des versions horodatées avec restauration, compteur de syllabes par ligne, détection et coloration des rimes, mode concentration zen, téléversement d'instrus audio (MP3/WAV), lecteur avec boucle de travail, BPM, tonalité et métronome, export PDF horodaté comme preuve d'antériorité, lien de partage privé révocable en lecture seule.
-    - **P3 (Bonus)** : PWA installable avec support complet hors ligne et synchronisation automatique, enregistrement vocal d'un freestyle attaché au texte, dictionnaire de rimes françaises.
-  - Validation complète de la checklist de qualité de spécification ([specs/001-verso-core/checklists/requirements.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/checklists/requirements.md)) : zéro ambiguïté, zéro fuite d'implémentation, critères de succès mesurables et agnostiques.
-  - Configuration du fichier [.gitignore](file:///home/normanxcat/Lab/verso/.gitignore) (blocage strict de `.env`, secrets et médias audio).
-  - Branche `dev` configurée et synchronisée avec `origin/dev`.
+  - Spécification fonctionnelle complète du projet Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) structurée selon la roadmap P1 (socle), P2 (confort/audio), P3 (bonus).
+  - Clarification interactive (`/speckit-clarify`) de 5 points critiques directement intégrés dans la spécification :
+    1. *Vérification email non bloquante* : accès immédiat à l'espace d'écriture dès l'inscription avec bannière persistante de rappel.
+    2. *Liaison de comptes OAuth sécurisée* : confirmation obligatoire par saisie du mot de passe existant lors d'une première connexion Google/ORCID avec le même email.
+    3. *Limites audio équilibrées* : jusqu'à 75 Mo par fichier en formats MP3 et WAV, et possibilité d'attacher jusqu'à 3 instrumentales distinctes par texte.
+    4. *Résolution des conflits hors ligne sans perte* : conservation du texte distant intact et création automatique d'un nouveau brouillon distinct intitulé `[Titre] (copie hors ligne)` avec notification.
+    5. *Conservation intégrale des versions* : aucune purge automatique et aucun plafond sur l'historique des versions, toutes les versions horodatées sont conservées indéfiniment.
+  - Checklist qualité revalidée à 100% (16/16 critères respectés, [specs/001-verso-core/checklists/requirements.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/checklists/requirements.md)).
+  - Branche `dev` active et synchronisée avec `origin/dev`.
 - **Ce qui est en cours** :
-  - Préparation de la phase de planification technique du socle P1 (`/speckit-plan`).
+  - Clôture de la phase de clarification et lancement imminent de `/speckit-plan`.
 - **Ce qui reste à faire** :
   - **[P1 - Socle Indispensable]** :
-    - Exécution de `/speckit-plan` pour concevoir l'architecture technique, le modèle de données Prisma, les contrats d'API et le plan de découpage.
-    - Génération de la liste des tâches ordonnancées (`/speckit-tasks`).
-    - Implémentation du squelette applicatif (React, Tailwind, Node.js, Prisma, PostgreSQL).
-    - Implémentation et tests de l'authentification et de l'éditeur de texte avec sauvegarde continue.
-  - **[P2 - Confort d'Écriture & Musique]** (après stabilisation complète de P1) :
+    - Exécution de `/speckit-plan` pour définir l'architecture technique, le schéma de base de données PostgreSQL / Prisma, les contrats d'API et la stratégie de test.
+    - Génération de la liste ordonnancée des tâches (`/speckit-tasks`).
+    - Implémentation du squelette applicatif et des composants P1 (Auth Argon2id, Sessions PostgreSQL, Éditeur avec sauvegarde continue, Gestion d'albums).
+  - **[P2 - Confort d'Écriture & Musique]** (après stabilisation de P1) :
     - Historique des versions, métrique des syllabes, lecteur audio avec boucle, stockage S3 externe, export PDF et liens de partage privés.
-  - **[P3 - Partage & Bonus]** (après stabilisation complète de P2) :
-    - PWA offline (IndexedDB), enregistrement vocal freestyle, dictionnaire de rimes.
+  - **[P3 - Partage & Bonus]** (après stabilisation de P2) :
+    - PWA offline (IndexedDB), enregistrement vocal freestyle, dictionnaire de rimes françaises.
 
 ## Dernière action
 
-- **Action exécutée** : Exécution de `/speckit-specify` pour formaliser la spécification fonctionnelle complète de la plateforme Verso (`specs/001-verso-core/spec.md`) et validation de la checklist qualité (`requirements.md`).
-- **Résultat** : Spécification complète prête pour la planification, enregistrée dans `.specify/feature.json` pointant sur `specs/001-verso-core`.
+- **Action exécutée** : Session de clarification fonctionnelle `/speckit-clarify` et intégration incrémentale de 5 décisions clés dans `specs/001-verso-core/spec.md`.
+- **Résultat** : Spécification affinée, zéro ambiguïté restante sur les règles d'authentification, les quotas audio, les conflits hors ligne et la rétention d'historique.
 
 ## Décisions prises
 
-- **Découpage strict en 3 priorités séquentielles (P1 socle, P2 confort/musique, P3 bonus)** : Permet de sécuriser le noyau vital de l'application avant d'aborder les enrichissements multimédias et mobiles.
-- **Spécification purement fonctionnelle et agnostique** : Description rigoureuse du comportement utilisateur et des flux métiers sans mentionner de frameworks ou de choix d'implémentation technique.
-- **Périmètre v1 délimité** : Exclusion explicite de la collaboration multi-auteurs en temps réel et des partages publics non contrôlés.
-- **Textes privés par défaut et partage strictement en lecture seule révocable** : Protection sans compromis de la propriété intellectuelle des artistes.
-- **Sauvegarde continue avec zéro perte de données garantie** : Sauvegarde en tâche de fond sous 500 ms après la frappe, résiliente aux coupures réseau.
+- **Accès immédiat dès l'inscription avec bannière persistante** : Évite toute friction pour l'artiste inspiré tout en maintenant la pression pour la sécurisation de l'email.
+- **Saisie préalable du mot de passe pour lier un compte OAuth** : Prévient les attaques par prise de contrôle de compte (account takeover) via des tiers OAuth.
+- **75 Mo et jusqu'à 3 instrus par texte** : Permet de gérer différentes variantes d'arrangement (avec/sans refrain, maquette, master) sans surcharger le stockage.
+- **Création d'un brouillon de copie lors d'un conflit hors ligne** : Garantit 100% de non-perte de texte en évitant toute écrasement silencieux ou modale bloquante.
+- **Conservation permanente et illimitée de l'historique des versions** : Respecte la valeur patrimoniale des rimes et brouillons des rappeurs sans purge arbitraire.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `8a9c0e2` — `docs: mise à jour de la constitution v1.1.0 et cadrage des priorités`
+- **Dernier commit** : `22dc8a4` — `feat: spécification fonctionnelle complète de la plateforme Verso (specs/001-verso-core)`
 
 ## Comment lancer le projet
-
-Le projet est actuellement en phase de spécification fonctionnelle. Le code applicatif sera généré lors de la phase d'implémentation du socle P1.
 
 ### Commandes actuelles disponibles
 
@@ -56,7 +55,7 @@ git branch --show-current
 # Vérifier la syntaxe des scripts Spec Kit
 bash -n .specify/scripts/bash/*.sh
 
-# Consulter la spécification courante
+# Consulter la spécification et ses clarifications
 cat specs/001-verso-core/spec.md
 ```
 
@@ -104,8 +103,8 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Problèmes connus et points d'attention
 
-- Le code source applicatif (React / Node.js) n'est pas encore initialisé ; le dépôt contient actuellement l'outillage Spec Kit, la constitution et les spécifications sous `specs/`.
-- Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification de fichier.
+- Le code source applicatif (React / Node.js) n'est pas encore initialisé ; le dépôt contient l'outillage Spec Kit, la constitution et les spécifications validées.
+- Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification.
 - Ne jamais commiter de fichier `.env`, de secret ni de fichier audio de test.
 - Respecter scrupuleusement le protocole de fin de tâche dans l'ordre strict des 6 étapes.
 - Règle de transition stricte : ne pas entamer P2 tant que P1 n'est pas stable et testé.
