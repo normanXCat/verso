@@ -47,8 +47,8 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **P2** | **Instrumentales audio, lecteur, BPM, boucle & métronome** | ✅ Fait | Téléversement direct vers un stockage compatible S3 par URLs présignées (MP3/WAV, ≤ 75 Mo, 3 pistes max), clé seule en base, lecteur Web Audio avec boucle de section et métronome synchronisé |
 | **P2** | **Compteur de syllabes & détection des rimes** | ✅ Fait | Moteur `lyrics-engine` partagé (syllabes poétiques en modes classique/relâché, rimes phonétiques), gouttière CodeMirror du décompte par vers et surlignage coloré des rimes |
 | **P2** | **Mode concentration (zen)** | ✅ Fait | Plein écran masquant les éléments d'interface parasites pour isoler l'auteur avec son texte |
-
-| **P3** | **Liens de partage privés révocables** | ⏳ Prévu | Partage explicite en lecture seule, tokens hachés révocables avec expiration et rate limiting |
+| **P2** | **Export PDF horodaté (antériorité)** | ✅ Fait | Certificat PDF sobre généré côté serveur (`pdfkit`) : titre, paroles, auteur et horodatage exact de la dernière révision |
+| **P2** | **Liens de partage privés révocables** | ✅ Fait | Partage explicite en lecture seule, jetons hachés révocables avec expiration optionnelle, page publique anonyme et rate limiting strict |
 | **P3** | **OAuth (Google & ORCID)** | ✅ Fait | Flux OAuth avec `state` et PKCE (arctic), création/connexion de compte, et liaison sécurisée par confirmation du mot de passe |
 
 *(Règle : une fonctionnalité n'est marquée ✅ que si elle est effectivement implémentée et testée dans le code).*
@@ -63,7 +63,7 @@ L'architecture technique conçue lors du plan d'implémentation repose sur :
 - **Frontend & Direction Artistique** : React 18+, TypeScript, Vite, Tailwind CSS, Framer Motion, typographies auto-hébergées via Fontsource (`Instrument Serif`, `Geist Sans`, `Geist Mono`), React Router, TanStack Query, CodeMirror 6, dnd-kit
 
 - **PWA & Offline** : `vite-plugin-pwa`, Service Workers, IndexedDB (`idb`)
-- **Backend** : Node.js (LTS), TypeScript, Fastify v4+ (API REST haute performance)
+- **Backend** : Node.js (LTS), TypeScript, Fastify v4+ (API REST haute performance), génération PDF avec `pdfkit`
 - **Base de données & ORM** : PostgreSQL 16, Prisma ORM v5+ avec migrations versionnées
 - **Stockage Audio** : Compatible S3 (MinIO en développement local, Cloudflare R2 en production) via URLs présignées (`@aws-sdk/client-s3` et `@aws-sdk/s3-request-presigner`), téléversement direct du binaire hors API
 - **Sécurité** : Hachage Argon2id, sessions PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax, Arctic (OAuth Google/ORCID avec PKCE), `@fastify/rate-limit`, `@fastify/csrf-protection`
@@ -131,7 +131,7 @@ verso/
 ├── apps/
 │   ├── api/                    # Backend Fastify + Prisma ORM
 │   │   ├── prisma/             # Schéma Prisma et migrations PostgreSQL
-│   │   ├── src/                # Serveur HTTP, validation Zod env, plugins (S3) et modules (auth, OAuth, songs, albums, audio)
+│   │   ├── src/                # Serveur HTTP, validation Zod env, plugins (S3) et modules (auth, OAuth, songs, albums, audio, partage)
 │   │   └── vitest.config.ts    # Configuration Vitest du package API
 │   └── web/                    # Frontend React 18 + Vite + Tailwind CSS
 │       ├── public/             # Assets statiques

@@ -3,7 +3,7 @@
 ## État actuel
 
 - **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
-- **Phase d'implémentation Spec Kit** : **Phase 9 (Aides à l'écriture : syllabes, rimes, mode concentration — T047 à T050) terminée** (troisième phase P2).
+- **Phase d'implémentation Spec Kit** : **Phase 10 (Export PDF horodaté et liens de partage privés — T051 à T054) terminée** (quatrième phase P2).
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
@@ -67,17 +67,28 @@
     - Extensions CodeMirror 6 (`apps/web/src/components/editor/extensions/`) : gouttière du décompte syllabique par vers (`syllablesGutter.ts`) et surlignage coloré des terminaisons rimiques (`rhymeHighlighter.ts`), intégrées à `LyricEditor` via les options `showSyllables`/`showRhymes` (T049, FR-031, FR-032).
     - Mode concentration zen plein écran (`apps/web/src/components/editor/ZenModeToggle.tsx`) masquant l'en-tête, la barre latérale, les métriques et le lecteur audio ; synchronisé avec l'API Fullscreen (touche Échap) et intégré à l'éditeur (T050, FR-033).
     - **Suite de tests totale : 123 tests au vert** (15 fichiers) ; lint, format, typecheck et build de production validés.
+  - **Phase 10 (Export PDF horodaté et liens de partage privés — T051 à T054) implémentée et testée** :
+    - Générateur de PDF d'antériorité côté serveur avec `pdfkit` (`apps/api/src/modules/songs/pdf.service.ts`) : titre, auteur, horodatage exact de la dernière révision et texte intégral, avec nom de fichier normalisé (`<titre>-verso-<AAAA-MM-JJ>.pdf`) (T051, FR-040).
+    - Route `GET /api/songs/:id/export/pdf` (garde `requireAuth`, cloisonnement par utilisateur) renvoyant un flux `application/pdf` téléchargeable ; test d'intégration `apps/api/tests/integration/pdf-export.test.ts` (3 tests).
+    - Schémas Zod et types des liens de partage dans `packages/shared/src/schemas/share.ts` : `createShareLinkSchema`, `shareLinkParamSchema`, `publicShareTokenParamSchema`, types `ShareLinkItem`/`CreatedShareLink`/`PublicSharedSong` et constantes de rate limiting (T052).
+    - Service `shares.service.ts` : jetons bruts préfixés `sec_` (32 octets aléatoires) dont seule l'empreinte SHA-256 est stockée, création avec expiration optionnelle, liste, révocation immédiate et consultation anonyme en lecture seule qui incrémente le compteur d'accès (T053, FR-041 à FR-044).
+    - Routes `GET/POST /api/songs/:id/share-links`, `DELETE /api/songs/:id/share-links/:linkId` (auteur authentifié) et `GET /api/public/shares/:token` montée sous `/api/public` avec rate limiting strict de 30 requêtes/minute par IP (T053, FR-044).
+    - Tests d'intégration `apps/api/tests/integration/shares.test.ts` (13 tests) : création/expiration, non-replay du jeton brut, cloisonnement, consultation anonyme sans donnée personnelle, compteur d'accès, refus des liens expirés/révoqués/inconnus et en-tête `x-ratelimit-limit`.
+    - Interface : modale `ShareModal.tsx` (export PDF, génération de lien avec expiration, copie unique du lien, liste et révocation) ouverte depuis l'éditeur, client `share-client.ts`, page publique anonyme `/share/:token` (`PublicSharePage.tsx`) en lecture seule sobre (T054).
+    - **Suite de tests totale : 139 tests au vert** (17 fichiers) ; lint, format, typecheck et build de production validés.
   - Branche `dev` active.
 - **Ce qui est en cours** :
-  - Phase 9 terminée : arrêt pour validation avant la Phase 10.
+  - Phase 10 terminée : arrêt pour validation avant la Phase 11.
 - **Ce qui reste à faire** :
-  - **Phase 10** : Export PDF d'antériorité et liens de partage privés révocables (T051 à T054).
+  - **Phase 11** : PWA et écriture hors ligne avec synchronisation (T055 à T057).
+  - **Phase 12** : Mémos vocaux freestyle et suggestions de rimes (T058 à T059).
+  - **Phase 13** : Finitions design, validation end-to-end et audit de sécurité (T060 à T062).
   - **Refonte Design Étape 4** : Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de la Phase 9 (Aides à l'écriture : syllabes, rimes, mode concentration — T047 à T050) en respectant la constitution, la spec (FR-031 à FR-033) et la liste des tâches.
-- **Résultat** : moteurs partagés de syllabes et de rimes françaises, gouttière CodeMirror du décompte syllabique, surlignage coloré des rimes et mode concentration plein écran, 123 tests verts sur la branche `dev`.
+- **Action exécutée** : Implémentation de la Phase 10 (Export PDF horodaté et liens de partage privés — T051 à T054) en respectant la constitution, la spec (FR-040 à FR-044) et la liste des tâches.
+- **Résultat** : générateur PDF d'antériorité avec `pdfkit`, routes de partage privé révocable à jetons hachés, consultation publique anonyme sous rate limiting strict et interface de partage (modale + page publique), 139 tests verts sur la branche `dev`.
 
 ## Décisions prises
 
@@ -114,11 +125,16 @@
 - **Moteur de rimes phonétique simplifié** : clé extraite de la dernière voyelle tonique avec normalisation des nasales, diphtongues et de la terminaison `[e]` (infinitifs, participes, imparfaits). Analyse sur la graphie, pas sur une transcription phonétique complète.
 - **Extensions CodeMirror indépendantes** : la gouttière calcule les syllabes à la volée lors du rendu de marge ; le surlignage des rimes se recalcule uniquement à chaque changement de document (`ViewPlugin`), sans bloquer la frappe.
 - **Mode zen via l'API Fullscreen** : l'état est synchronisé avec les événements `fullscreenchange` (sortie par Échap) et les éléments d'interface sont masqués en mode concentration.
+- **PDF d'antériorité généré en mémoire avec `pdfkit`** : le flux est accumulé en `Buffer` puis renvoyé avec `Content-Type: application/pdf` et `Content-Disposition: attachment`. L'horodatage affiché est celui de la dernière révision du texte (`updatedAt`).
+- **Jetons de partage jamais stockés en clair** : un jeton brut `sec_<32 octets base64url>` est généré à la création et l'URL complète n'est affichée qu'une seule fois ; seule l'empreinte SHA-256 (`tokenHash`) est conservée en base.
+- **Expiration optionnelle des liens** : `expiresInDays` (1 à 365 jours) ou `null` pour un lien sans expiration ; un lien expiré ou révoqué renvoie un message neutre (« Ce lien n'est plus actif ») sans révéler l'existence du texte.
+- **Consultation publique sous rate limiting strict** : `GET /api/public/shares/:token` limitée à 30 requêtes par minute par IP (via la configuration de route `@fastify/rate-limit`), sans transmission de cookie de session.
+- **Page publique hors authentification** : `/share/:token` est placée hors de la garde `RequireAuth` et affiche le texte en lecture seule avec le nom d'artiste (ou « Artiste Verso ») sans aucune métadonnée personnelle.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `2194d3b` — `feat: mode concentration plein écran sans distraction`
+- **Dernier commit** : `4234813` — `docs: mise a jour du handoff et du readme pour la phase syllabes rimes zen`
 
 ## Comment lancer le projet
 
@@ -183,6 +199,9 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 - **Comptage syllabique approximatif** : les diérèses (`lion`, `Pasiphaé`), les synérèses et les formes verbales en `-ent` (`parlent`) ne sont pas détectées. Le compteur vise une aide à l'écriture, pas une analyse prosodique exacte.
 - **Détection de rimes sur la graphie** : quelques homophones irréguliers peuvent échapper au regroupement ; les extensions CodeMirror ne sont pas couvertes par des tests de composants (React Testing Library non configuré).
 - **Build web volumineux** : CodeMirror 6 fait dépasser l'avertissement de taille de chunk de Vite (> 500 kB) ; un découpage `manualChunks` sera à prévoir.
+- **Export PDF mono-texte uniquement** : FR-040 mentionne aussi l'export d'un album entier ; seule l'exportation d'un texte individuel est implémentée à ce stade.
+- **Polices PDF standard** : le certificat utilise les polices intégrées `Helvetica` (encodage WinAnsi), suffisant pour les accents français ; un encodage/font embarqué serait nécessaire pour des caractères exotiques.
+- **Aucun test de composant frontend pour le partage** : `ShareModal` et `PublicSharePage` reposent sur les tests d'API, le typecheck et le lint (React Testing Library non configuré).
 - **Pas de tests de composants frontend** : l'éditeur, la sauvegarde automatique et le tableau de bord reposent sur les tests d'API et sur typecheck/lint ; React Testing Library n'est pas encore configuré.
 - Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification.
 - Ne jamais commiter de fichier `.env`, de secret ni de fichier audio de test.
@@ -190,10 +209,10 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Prochaine étape
 
-- **Commande recommandée** : `/speckit-implement` pour la Phase 10 (Export PDF et liens de partage privés — T051 à T054).
+- **Commande recommandée** : `/speckit-implement` pour la Phase 11 (PWA et écriture hors ligne — T055 à T057).
 - **Prompt recommandé** :
   ```text
-  Implémente la phase 10 (export PDF d'antériorité et liens de partage privés — T051 à T054).
+  Implémente la phase 11 (PWA et hors ligne — T055 à T057).
   Travaille tâche par tâche, commit par tâche terminée avec un message Conventional
   Commits en français, lance lint et tests, puis pousse sur dev et résume pour validation.
   ```
