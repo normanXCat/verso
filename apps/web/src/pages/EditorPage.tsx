@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, History, Trash2 } from 'lucide-react';
+import { ArrowLeft, History, Share2, Trash2 } from 'lucide-react';
 import type { SongDetail, SongListItem, UpdateSongInput } from '@verso/shared';
 import { songsClient, SongsApiError } from '../lib/songs-client.js';
 import { readDraft } from '../lib/draft-storage.js';
@@ -13,6 +13,7 @@ import { SaveStatusIndicator } from '../components/editor/SaveStatusIndicator.js
 import { SongMetadataSidebar } from '../components/editor/SongMetadataSidebar.js';
 import { VersionHistoryDrawer } from '../components/editor/VersionHistoryDrawer.js';
 import { ZenModeToggle } from '../components/editor/ZenModeToggle.js';
+import { ShareModal } from '../components/editor/ShareModal.js';
 import { AudioPlayerBar } from '../components/audio/AudioPlayerBar.js';
 
 /**
@@ -40,6 +41,7 @@ export function EditorPage(): React.ReactElement {
   const [content, setContent] = useState('');
   const [initialised, setInitialised] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const [isZen, setIsZen] = useState(false);
 
   // Initialise depuis le serveur, en priorisant un brouillon local non synchronisé.
@@ -156,6 +158,15 @@ export function EditorPage(): React.ReactElement {
               <SaveStatusIndicator status={autoSave.status} />
               <button
                 type="button"
+                onClick={() => setIsShareOpen(true)}
+                aria-label="Partager ce texte"
+                title="Partager (PDF et lien privé)"
+                className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+              >
+                <Share2 className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
                 onClick={() => setIsHistoryOpen(true)}
                 aria-label="Ouvrir l'historique des versions"
                 title="Historique des versions"
@@ -252,6 +263,15 @@ export function EditorPage(): React.ReactElement {
           </div>
         )}
       </main>
+
+      {song && (
+        <ShareModal
+          songId={song.id}
+          songTitle={title || song.title}
+          isOpen={isShareOpen}
+          onClose={() => setIsShareOpen(false)}
+        />
+      )}
 
       {song && (
         <VersionHistoryDrawer
