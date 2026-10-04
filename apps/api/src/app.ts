@@ -68,6 +68,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { audioRoutes } = await import('./modules/audio/audio.routes.js');
   await app.register(audioRoutes, { prefix: '/api' });
 
+  // Routes des mémos vocaux freestyle (upload présigné, lecture, suppression)
+  const { voiceNotesRoutes } = await import('./modules/audio/voice-notes.routes.js');
+  await app.register(voiceNotesRoutes, { prefix: '/api' });
+
   // Route de contrôle de santé
   app.get('/health', async () => {
     return {

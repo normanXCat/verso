@@ -94,3 +94,52 @@ export interface UploadUrlResult {
   s3Key: string;
   expiresInSeconds: number;
 }
+
+// ---------------------------------------------------------------------------
+// Mémos vocaux (freestyle) — FR-048
+// ---------------------------------------------------------------------------
+
+/** Taille maximale d'un mémo vocal : 25 Mo (freestyle ou mémo de flow court). */
+export const MAX_VOICE_NOTE_SIZE_BYTES = 25 * 1024 * 1024;
+
+/** Formats produits par `MediaRecorder` selon le navigateur. */
+export const voiceNoteMimeTypeSchema = z.enum(['audio/webm', 'audio/mp4', 'audio/ogg']);
+export type VoiceNoteMimeType = z.infer<typeof voiceNoteMimeTypeSchema>;
+
+/** Demande d'URL présignée pour un mémo vocal issu de `MediaRecorder`. */
+export const voiceNoteUploadUrlSchema = z.object({
+  mimeType: voiceNoteMimeTypeSchema,
+  sizeBytes: z.coerce
+    .number()
+    .int()
+    .positive('La taille doit être positive')
+    .max(MAX_VOICE_NOTE_SIZE_BYTES, 'Le mémo vocal dépasse la limite de 25 Mo')
+    .optional(),
+});
+
+export type VoiceNoteUploadUrlInput = z.infer<typeof voiceNoteUploadUrlSchema>;
+
+/** Confirmation du téléversement d'un mémo vocal et enregistrement en base. */
+export const confirmVoiceNoteSchema = z.object({
+  s3Key: z.string().trim().min(1, 'Clé de stockage requise').max(512),
+  durationSeconds: z.coerce
+    .number()
+    .positive()
+    .max(60 * 60)
+    .optional(),
+});
+
+export type ConfirmVoiceNoteInput = z.infer<typeof confirmVoiceNoteSchema>;
+
+export const voiceNoteIdParamSchema = z.object({
+  id: z.string().uuid('Identifiant de mémo vocal invalide'),
+});
+
+/** Mémo vocal exposé par l'API (avec URL de lecture signée à la volée). */
+export interface VoiceNoteItem {
+  id: string;
+  songId: string;
+  durationSeconds: number | null;
+  downloadUrl: string | null;
+  createdAt: Date | string;
+}
