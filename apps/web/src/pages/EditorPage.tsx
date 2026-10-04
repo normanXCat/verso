@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, History, Share2, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, History, Share2, Trash2 } from 'lucide-react';
 import type { SongDetail, SongListItem, UpdateSongInput } from '@verso/shared';
 import { songsClient, SongsApiError } from '../lib/songs-client.js';
 import { readDraft } from '../lib/draft-storage.js';
@@ -16,7 +16,9 @@ import { SongMetadataSidebar } from '../components/editor/SongMetadataSidebar.js
 import { VersionHistoryDrawer } from '../components/editor/VersionHistoryDrawer.js';
 import { ZenModeToggle } from '../components/editor/ZenModeToggle.js';
 import { ShareModal } from '../components/editor/ShareModal.js';
+import { RhymeSuggestionsDrawer } from '../components/editor/RhymeSuggestionsDrawer.js';
 import { AudioPlayerBar } from '../components/audio/AudioPlayerBar.js';
+import { VoiceRecorder } from '../components/audio/VoiceRecorder.js';
 
 /**
  * Espace d'écriture d'un texte : éditeur épuré avec sauvegarde automatique,
@@ -45,6 +47,10 @@ export function EditorPage(): React.ReactElement {
   const [initialised, setInitialised] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isRhymesOpen, setIsRhymesOpen] = useState(false);
+  const [selection, setSelection] = useState<{ text: string; from: number; to: number } | null>(
+    null,
+  );
   const [isZen, setIsZen] = useState(false);
 
   // Initialise depuis le serveur, en priorisant un brouillon local non synchronisé
@@ -112,6 +118,24 @@ export function EditorPage(): React.ReactElement {
       navigate('/app', { replace: true });
     },
   });
+
+  // Sélection d'un mot dans l'éditeur : ouvre les suggestions de rimes (FR-049).
+  const handleSelectionChange = (next: { text: string; from: number; to: number }): void => {
+    const trimmed = next.text.trim();
+    const isWord = trimmed.length >= 2 && /^[\p{L}][\p{L}'’-]*$/u.test(trimmed);
+    setSelection(isWord ? { text: trimmed, from: next.from, to: next.to } : null);
+    if (isWord) {
+      setIsRhymesOpen(true);
+    }
+  };
+
+  const insertRhyme = (rhyme: string): void => {
+    if (!selection) {
+      return;
+    }
+    setContent(content.slice(0, selection.from) + rhyme + content.slice(selection.to));
+    setIsRhymesOpen(false);
+  };
 
   const applyMetadata = (patch: UpdateSongInput): void => {
     queryClient.setQueryData<SongListItem>(['songs', 'detail', id], (previous) =>
@@ -182,6 +206,16 @@ export function EditorPage(): React.ReactElement {
                 status={offlineSync.status}
                 pendingCount={offlineSync.pendingCount}
               />
+              <button
+                type="button"
+                onClick={() => setIsRhymesOpen(true)}
+                disabled={!selection}
+                aria-label="Suggestions de rimes"
+                title="Suggestions de rimes (sélectionnez un mot)"
+                className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text disabled:opacity-40"
+              >
+                <BookOpen className="h-4 w-4" aria-hidden="true" />
+              </button>
               <button
                 type="button"
                 onClick={() => setIsShareOpen(true)}
@@ -258,6 +292,7 @@ export function EditorPage(): React.ReactElement {
                 <LyricEditor
                   value={content}
                   onChange={setContent}
+                  onSelectionChange={handleSelectionChange}
                   placeholder="Posez vos premières rimes…"
                   ariaLabel="Paroles du texte"
                   className={isZen ? 'min-h-[60vh]' : 'min-h-[22rem]'}
@@ -274,6 +309,7 @@ export function EditorPage(): React.ReactElement {
                   </div>
 
                   <AudioPlayerBar songId={song.id} className="mt-6" />
+                  <VoiceRecorder songId={song.id} className="mt-4" />
                 </>
               )}
             </section>
@@ -298,6 +334,13 @@ export function EditorPage(): React.ReactElement {
           onClose={() => setIsShareOpen(false)}
         />
       )}
+
+      <RhymeSuggestionsDrawer
+        isOpen={isRhymesOpen}
+        onClose={() => setIsRhymesOpen(false)}
+        word={selection?.text ?? ''}
+        onSelect={insertRhyme}
+      />
 
       {song && (
         <VersionHistoryDrawer

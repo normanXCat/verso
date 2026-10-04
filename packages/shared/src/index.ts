@@ -6,6 +6,7 @@ export interface BaseEntity {
   updatedAt?: Date | string;
 }
 
+export * from './lyrics-engine/rhyme-dict.js';
 export * from './lyrics-engine/rhymes.js';
 export * from './lyrics-engine/syllables.js';
 export * from './schemas/album.js';
