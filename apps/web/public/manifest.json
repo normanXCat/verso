@@ -1,0 +1,28 @@
+{
+  "name": "Verso — Espace d'écriture pour rappeurs",
+  "short_name": "Verso",
+  "description": "Écrire, organiser, protéger et partager ses textes, même hors ligne.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#14110F",
+  "theme_color": "#14110F",
+  "categories": ["productivity", "music", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
