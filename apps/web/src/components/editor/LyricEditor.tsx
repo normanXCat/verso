@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { EditorState, type Extension } from '@codemirror/state';
 import { EditorView, keymap, placeholder as placeholderExtension } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { syllablesGutter } from './extensions/syllablesGutter.js';
+import { rhymeHighlighter } from './extensions/rhymeHighlighter.js';
 
 interface LyricEditorProps {
   value: string;
@@ -9,6 +11,10 @@ interface LyricEditorProps {
   placeholder?: string;
   ariaLabel?: string;
   readOnly?: boolean;
+  /** Affiche la gouttière du décompte syllabique par vers. */
+  showSyllables?: boolean;
+  /** Active le surlignage coloré des rimes. */
+  showRhymes?: boolean;
   className?: string;
 }
 
@@ -56,6 +62,8 @@ export function LyricEditor({
   placeholder = '',
   ariaLabel = 'Éditeur de paroles',
   readOnly = false,
+  showSyllables = true,
+  showRhymes = true,
   className = '',
 }: LyricEditorProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -91,6 +99,14 @@ export function LyricEditor({
       extensions.push(placeholderExtension(placeholder));
     }
 
+    if (showSyllables) {
+      extensions.push(syllablesGutter());
+    }
+
+    if (showRhymes) {
+      extensions.push(rhymeHighlighter());
+    }
+
     const state = EditorState.create({ doc: initialValueRef.current, extensions });
     const view = new EditorView({ state, parent: containerRef.current });
     viewRef.current = view;
@@ -99,7 +115,7 @@ export function LyricEditor({
       view.destroy();
       viewRef.current = null;
     };
-  }, [readOnly, ariaLabel, placeholder]);
+  }, [readOnly, ariaLabel, placeholder, showSyllables, showRhymes]);
 
   // Synchronise une valeur externe (restauration de brouillon) sans casser la frappe.
   useEffect(() => {
