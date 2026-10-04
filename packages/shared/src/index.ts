@@ -12,6 +12,7 @@ export * from './schemas/album.js';
 export * from './schemas/audio.js';
 export * from './schemas/auth.js';
 export * from './schemas/search.js';
+export * from './schemas/share.js';
 export * from './schemas/song.js';
 export * from './schemas/tag.js';
 export * from './schemas/version.js';
