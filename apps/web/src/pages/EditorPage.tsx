@@ -12,6 +12,7 @@ import { EditorMetricsBar } from '../components/editor/EditorMetricsBar.js';
 import { SaveStatusIndicator } from '../components/editor/SaveStatusIndicator.js';
 import { SongMetadataSidebar } from '../components/editor/SongMetadataSidebar.js';
 import { VersionHistoryDrawer } from '../components/editor/VersionHistoryDrawer.js';
+import { ZenModeToggle } from '../components/editor/ZenModeToggle.js';
 import { AudioPlayerBar } from '../components/audio/AudioPlayerBar.js';
 
 /**
@@ -39,6 +40,7 @@ export function EditorPage(): React.ReactElement {
   const [content, setContent] = useState('');
   const [initialised, setInitialised] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isZen, setIsZen] = useState(false);
 
   // Initialise depuis le serveur, en priorisant un brouillon local non synchronisé.
   useEffect(() => {
@@ -111,43 +113,87 @@ export function EditorPage(): React.ReactElement {
     }
   };
 
+  // Mode concentration : plein écran, interface réduite au seul texte (FR-033).
+  const toggleZen = (): void => {
+    const next = !isZen;
+    setIsZen(next);
+    if (next) {
+      void document.documentElement.requestFullscreen?.().catch(() => undefined);
+    } else if (document.fullscreenElement) {
+      void document.exitFullscreen?.().catch(() => undefined);
+    }
+  };
+
+  // Synchronise l'état zen avec la sortie du plein écran (touche Échap).
+  useEffect(() => {
+    const handleFullscreenChange = (): void => {
+      if (!document.fullscreenElement) {
+        setIsZen(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      if (document.fullscreenElement) {
+        void document.exitFullscreen?.();
+      }
+    };
+  }, []);
+
   return (
     <div className="paper-grain min-h-screen bg-paper-bg text-paper-text">
-      <header className="sticky top-0 z-30 border-b border-paper-border bg-paper-surface/80 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-3 md:px-10">
-          <Link
-            to="/app"
-            className="inline-flex items-center gap-1.5 text-xs font-mono text-paper-muted transition-colors hover:text-paper-text"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-            Mon carnet
-          </Link>
-          <div className="flex items-center gap-3">
-            <SaveStatusIndicator status={autoSave.status} />
-            <button
-              type="button"
-              onClick={() => setIsHistoryOpen(true)}
-              aria-label="Ouvrir l'historique des versions"
-              title="Historique des versions"
-              className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+      {!isZen && (
+        <header className="sticky top-0 z-30 border-b border-paper-border bg-paper-surface/80 backdrop-blur">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-3 md:px-10">
+            <Link
+              to="/app"
+              className="inline-flex items-center gap-1.5 text-xs font-mono text-paper-muted transition-colors hover:text-paper-text"
             >
-              <History className="h-4 w-4" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={deleteMutation.isPending}
-              aria-label="Supprimer le texte"
-              className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-accent disabled:opacity-50"
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-            </button>
-            <ThemeSwitch />
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+              Mon carnet
+            </Link>
+            <div className="flex items-center gap-3">
+              <SaveStatusIndicator status={autoSave.status} />
+              <button
+                type="button"
+                onClick={() => setIsHistoryOpen(true)}
+                aria-label="Ouvrir l'historique des versions"
+                title="Historique des versions"
+                className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+              >
+                <History className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+                aria-label="Supprimer le texte"
+                className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-accent disabled:opacity-50"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <ZenModeToggle isActive={isZen} onToggle={toggleZen} />
+              <ThemeSwitch />
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
-      <main className="mx-auto max-w-5xl px-6 py-8 md:px-10">
+      {isZen && (
+        <div className="fixed right-4 top-4 z-40">
+          <ZenModeToggle
+            isActive
+            onToggle={toggleZen}
+            className="rounded-full border border-paper-border bg-paper-surface/80 p-2 backdrop-blur"
+          />
+        </div>
+      )}
+
+      <main
+        className={
+          isZen ? 'mx-auto max-w-3xl px-6 py-16 md:px-10' : 'mx-auto max-w-5xl px-6 py-8 md:px-10'
+        }
+      >
         {isLoading ? (
           <div
             className="h-64 animate-pulse rounded-card border border-paper-border bg-paper-surface/60"
@@ -160,7 +206,7 @@ export function EditorPage(): React.ReactElement {
               : 'Impossible de charger ce texte pour le moment.'}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_260px]">
+          <div className={isZen ? '' : 'grid grid-cols-1 gap-8 lg:grid-cols-[1fr_260px]'}>
             <section>
               <input
                 value={title}
@@ -177,26 +223,32 @@ export function EditorPage(): React.ReactElement {
                   onChange={setContent}
                   placeholder="Posez vos premières rimes…"
                   ariaLabel="Paroles du texte"
-                  className="min-h-[22rem]"
+                  className={isZen ? 'min-h-[60vh]' : 'min-h-[22rem]'}
                 />
               </div>
 
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <EditorMetricsBar content={content} />
-                <span className="text-[11px] font-mono text-paper-muted">
-                  Sauvegarde automatique active
-                </span>
-              </div>
+              {!isZen && (
+                <>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                    <EditorMetricsBar content={content} />
+                    <span className="text-[11px] font-mono text-paper-muted">
+                      Sauvegarde automatique active
+                    </span>
+                  </div>
 
-              <AudioPlayerBar songId={song.id} className="mt-6" />
+                  <AudioPlayerBar songId={song.id} className="mt-6" />
+                </>
+              )}
             </section>
 
-            <SongMetadataSidebar
-              song={song}
-              onChange={applyMetadata}
-              disabled={metadataMutation.isPending}
-              className="lg:sticky lg:top-24 lg:self-start"
-            />
+            {!isZen && (
+              <SongMetadataSidebar
+                song={song}
+                onChange={applyMetadata}
+                disabled={metadataMutation.isPending}
+                className="lg:sticky lg:top-24 lg:self-start"
+              />
+            )}
           </div>
         )}
       </main>
