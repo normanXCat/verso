@@ -5,7 +5,9 @@ import { ArrowLeft, History, Share2, Trash2 } from 'lucide-react';
 import type { SongDetail, SongListItem, UpdateSongInput } from '@verso/shared';
 import { songsClient, SongsApiError } from '../lib/songs-client.js';
 import { readDraft } from '../lib/draft-storage.js';
-import { useAutoSave } from '../hooks/useAutoSave.js';
+import { cacheSong, getDraft } from '../lib/offline-storage.js';
+import { useOfflineSync } from '../hooks/useOfflineSync.js';
+import { useToast } from '../components/ui/Toast.js';
 import { ThemeSwitch } from '../components/common/ThemeSwitch.js';
 import { LyricEditor } from '../components/editor/LyricEditor.js';
 import { EditorMetricsBar } from '../components/editor/EditorMetricsBar.js';
@@ -24,6 +26,7 @@ export function EditorPage(): React.ReactElement {
   const { id = '' } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const {
     data: song,
@@ -44,22 +47,42 @@ export function EditorPage(): React.ReactElement {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isZen, setIsZen] = useState(false);
 
-  // Initialise depuis le serveur, en priorisant un brouillon local non synchronisé.
+  // Initialise depuis le serveur, en priorisant un brouillon local non synchronisé
+  // (IndexedDB, puis `localStorage` en repli) et met le texte en cache hors ligne.
   useEffect(() => {
     if (!song || initialised) {
       return;
     }
-    const draft = readDraft(song.id);
-    setTitle(song.title);
-    setContent(draft ?? song.content);
-    setInitialised(true);
+    let cancelled = false;
+    void (async () => {
+      const localDraft = await getDraft(song.id);
+      if (cancelled) {
+        return;
+      }
+      setTitle(localDraft?.title || song.title);
+      setContent(localDraft?.content ?? readDraft(song.id) ?? song.content);
+      setInitialised(true);
+      void cacheSong(song);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [song, initialised]);
 
-  const autoSave = useAutoSave({
+  const offlineSync = useOfflineSync({
     songId: initialised ? id : null,
+    title,
     content,
     enabled: initialised,
     baselineContent: song?.content,
+    onConflict: (created, serverContent) => {
+      toast(
+        `Conflit détecté : la version distante est conservée et votre version hors ligne a été enregistrée dans « ${created.title} ».`,
+        'info',
+      );
+      setContent(serverContent);
+      void queryClient.invalidateQueries({ queryKey: ['songs', 'search'] });
+    },
   });
 
   const metadataMutation = useMutation({
@@ -155,7 +178,10 @@ export function EditorPage(): React.ReactElement {
               Mon carnet
             </Link>
             <div className="flex items-center gap-3">
-              <SaveStatusIndicator status={autoSave.status} />
+              <SaveStatusIndicator
+                status={offlineSync.status}
+                pendingCount={offlineSync.pendingCount}
+              />
               <button
                 type="button"
                 onClick={() => setIsShareOpen(true)}
