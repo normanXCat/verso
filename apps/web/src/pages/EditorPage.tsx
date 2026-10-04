@@ -12,6 +12,7 @@ import { EditorMetricsBar } from '../components/editor/EditorMetricsBar.js';
 import { SaveStatusIndicator } from '../components/editor/SaveStatusIndicator.js';
 import { SongMetadataSidebar } from '../components/editor/SongMetadataSidebar.js';
 import { VersionHistoryDrawer } from '../components/editor/VersionHistoryDrawer.js';
+import { AudioPlayerBar } from '../components/audio/AudioPlayerBar.js';
 
 /**
  * Espace d'écriture d'un texte : éditeur épuré avec sauvegarde automatique,
@@ -186,6 +187,8 @@ export function EditorPage(): React.ReactElement {
                   Sauvegarde automatique active
                 </span>
               </div>
+
+              <AudioPlayerBar songId={song.id} className="mt-6" />
             </section>
 
             <SongMetadataSidebar
