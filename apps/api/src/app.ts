@@ -52,6 +52,14 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { versionsRoutes } = await import('./modules/songs/versions.routes.js');
   await app.register(versionsRoutes, { prefix: '/api/songs' });
 
+  // Routes des liens de partage privés (administration par l'auteur)
+  const { sharesRoutes } = await import('./modules/songs/shares.routes.js');
+  await app.register(sharesRoutes, { prefix: '/api/songs' });
+
+  // Route publique de consultation d'un texte partagé (rate limit strict)
+  const { publicSharesRoutes } = await import('./modules/songs/shares.routes.js');
+  await app.register(publicSharesRoutes, { prefix: '/api/public' });
+
   // Routes des albums et de leurs tracklists
   const { albumsRoutes } = await import('./modules/albums/albums.routes.js');
   await app.register(albumsRoutes, { prefix: '/api/albums' });
