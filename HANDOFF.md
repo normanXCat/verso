@@ -3,7 +3,7 @@
 ## État actuel
 
 - **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
-- **Phase d'implémentation Spec Kit** : **Phase 11 (PWA et écriture hors ligne avec synchronisation — T055 à T057) terminée** (première phase P3).
+- **Phase d'implémentation Spec Kit** : **Phase 12 (Bonus : enregistrement vocal et suggestions de rimes — T058 à T059) terminée** (seconde phase P3).
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
@@ -86,18 +86,27 @@
     - Intégration à l'éditeur (`EditorPage.tsx`) : restauration prioritaire du brouillon IndexedDB, mise en cache du texte pour la consultation hors ligne, et `useAutoSave` remplacé par `useOfflineSync` (moteur unique de sauvegarde).
     - Purge du cache local et du cache Workbox d'API à la déconnexion (`clearAllOfflineData`, appelée depuis `useAuth`) pour cloisonner les sessions.
     - **Suite de tests totale : 143 tests au vert** (18 fichiers, dont 4 nouveaux tests web) ; lint, format, typecheck et build de production validés (Service Worker `dist/sw.js` généré, 50 entrées précachées, `dist/manifest.json` lié).
+  - **Phase 12 (Bonus : enregistrement vocal freestyle et suggestions de rimes — T058 à T059) implémentée et testée** :
+    - Schémas Zod et types des mémos vocaux dans `packages/shared/src/schemas/audio.ts` : formats `MediaRecorder` (`audio/webm`, `audio/mp4`, `audio/ogg`), limite de 25 Mo, `VoiceNoteItem` (T058, FR-048).
+    - Repository, service et routes des mémos vocaux (`voice-notes.repository.ts`, `voice-notes.service.ts`, `voice-notes.routes.ts`) : URL présignée PUT cloisonnée (`users/{userId}/songs/{songId}/voice/{uuid}.ext`), confirmation en base, liste avec URL de lecture signée et suppression base + objet S3 (T058).
+    - Routes montées sous `/api` : `POST /songs/:id/voice-notes/upload-url`, `POST /songs/:id/voice-notes/confirm`, `GET /songs/:id/voice-notes`, `DELETE /voice-notes/:id` (T058).
+    - Tests d'intégration `apps/api/tests/integration/voice-notes.test.ts` (7 tests) : génération d'URL, format refusé, cycle confirmation/liste/suppression, cloisonnement et authentification.
+    - Client API `audio-client.ts` enrichi (méthodes mémos vocaux + sélection du meilleur format `MediaRecorder`) et composant `VoiceRecorder.tsx` : capture micro, minuteur, téléversement présigné, liste avec lecture `<audio>` et suppression, intégré sous le lecteur d'instrumentales dans l'éditeur (T058).
+    - Base lexicale française embarquée `packages/shared/src/lyrics-engine/rhyme-dict.ts` : plus de 250 mots courants et moteur `findRhymes` classant les rimes riches (suffixe commun ≥ 3 caractères) et suffisantes, testé dans `packages/shared/tests/rhyme-dict.test.ts` (8 tests) (T059, FR-049).
+    - Normalisation partagée extraite (`normalizeRhymeWord`) réutilisée par le détecteur de rimes et le dictionnaire.
+    - Sélection de mot dans l'éditeur CodeMirror (`LyricEditor.onSelectionChange`) et tiroir latéral `RhymeSuggestionsDrawer.tsx` : ouverture à la sélection d'un mot, groupes « rimes riches » / « rimes suffisantes » et insertion de la rime en un clic (T059).
+    - **Suite de tests totale : 158 tests au vert** (20 fichiers) ; lint, format, typecheck et build de production validés.
   - Branche `dev` active.
 - **Ce qui est en cours** :
-  - Phase 11 terminée : arrêt pour validation avant la Phase 12.
+  - Phase 12 terminée : arrêt pour validation avant la Phase 13.
 - **Ce qui reste à faire** :
-  - **Phase 12** : Mémos vocaux freestyle et suggestions de rimes (T058 à T059).
-  - **Phase 13** : Finitions design, validation end-to-end et audit de sécurité (T060 à T062).
+  - **Phase 13** : Finitions design, validation end-to-end (`quickstart.md`) et audit de sécurité (T060 à T062).
   - **Refonte Design Étape 4** : Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de la Phase 11 (PWA et écriture hors ligne avec synchronisation — T055 à T057) en respectant la constitution, la spec (FR-045 à FR-047) et la liste des tâches.
-- **Résultat** : PWA installable (Service Worker Workbox + manifeste), persistance locale IndexedDB des textes et file d'attente d'actions, hook `useOfflineSync` avec résolution de conflit par duplication `[Titre] (copie hors ligne)`, 143 tests verts sur la branche `dev`.
+- **Action exécutée** : Implémentation de la Phase 12 (Bonus : enregistrement vocal freestyle et suggestions de rimes — T058 à T059) en respectant la constitution, la spec (FR-048 à FR-049) et la liste des tâches.
+- **Résultat** : enregistreur `MediaRecorder` avec téléversement présigné S3 et mémos vocaux rattachés au texte, dictionnaire de rimes françaises embarqué et tiroir de suggestions avec insertion en un clic, 158 tests verts sur la branche `dev`.
 
 ## Décisions prises
 
@@ -144,11 +153,15 @@
 - **Moteur unique de sauvegarde** : `useOfflineSync` remplace `useAutoSave` (supprimé) dans l'éditeur ; il combine persistance locale IndexedDB, sauvegarde distante debouncée, file d'attente et détection de conflit pour éviter tout double mécanisme concurrent.
 - **Détection de conflit côté client sans changement d'API** : avant d'appliquer une action en attente, `GET /api/songs/:id` est rejoué et comparé au contenu de base ; en cas de divergence, la copie `[Titre] (copie hors ligne)` est créée via l'API existante (`POST /api/songs`).
 - **Purge à la déconnexion** : `clearAllOfflineData` vide les stores IndexedDB et supprime le cache Workbox `verso-api` pour éviter toute fuite de données entre sessions.
+- **Mémos vocaux réutilisant l'infrastructure S3 existante** : même plugin de signatures présignées que les instrumentales, avec un préfixe de clé dédié `.../voice/` (aucun nouveau binaire en base, seul le `s3Key` est stocké).
+- **Format d'enregistrement négocié par le navigateur** : `pickVoiceRecorderFormat` sélectionne le premier format `MediaRecorder.isTypeSupported` parmi webm/opus, webm, mp4 et ogg, puis normalise le type MIME accepté par l'API.
+- **Dictionnaire de rimes embarqué plutôt qu'un index volumineux** : un lexique curé d'environ 250 mots courants est livré dans le bundle partagé, et la richesse d'une rime est déduite de la longueur du suffixe graphique commun (≥ 3 caractères = riche).
+- **Sélection de mot pilotée par CodeMirror** : `LyricEditor` remonte la sélection (`onSelectionChange`) ; l'éditeur ouvre le tiroir de rimes et remplace la sélection par la rime choisie via l'état React partagé (pas d'API impérative).
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `31f7501` — `docs: mise a jour du handoff et du readme pour la phase export pdf et partage prive`
+- **Dernier commit** : `966e79c` — `docs: mise a jour du handoff et du readme pour la phase pwa et hors ligne`
 
 ## Comment lancer le projet
 
@@ -220,6 +233,11 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 - **Cache d'API Workbox** : les réponses `GET /api/*` sont mises en cache pour la consultation hors ligne et purgées à la déconnexion ; sans déconnexion explicite, elles persistent sur l'appareil (comme les brouillons IndexedDB).
 - **Icônes PWA en SVG uniquement** : le manifeste référence `favicon.svg` (`sizes: any`) ; des icônes PNG 192/512 restent à ajouter pour une compatibilité d'installation maximale (iOS notamment).
 - **Service Worker inactif en développement** : testable via `pnpm --filter @verso/web build && pnpm --filter @verso/web preview` ; `devOptions` volontairement désactivé pour éviter les caches persistants en dev.
+- **Enregistrement vocal non testé automatisé** : `MediaRecorder` et `getUserMedia` exigent un navigateur et un micro réels (React Testing Library non configuré) ; l'API (URL présignée, confirmation, liste, suppression) est couverte par 7 tests d'intégration.
+- **Formats d'enregistrement dépendants du navigateur** : le type produit varie (webm/opus sur Chrome/Firefox, mp4 sur Safari) ; l'API accepte webm, mp4 et ogg.
+- **Dictionnaire de rimes volontairement restreint** : environ 250 mots courants ; les suggestions se limitent à cette base embarquée et ne couvrent pas l'intégralité du lexique français.
+- **Richesse de rime heuristique** : déduite du suffixe graphique commun et non d'une transcription phonétique complète ; quelques classements riches/suffisantes peuvent être approximatifs.
+- **Boucle micro non libérée si l'onglet est fermé pendant l'enregistrement** : le composant arrête le flux et le `MediaRecorder` au démontage, mais une fermeture brutale de l'onglet peut laisser la piste active jusqu'à sa révision par le navigateur.
 - **Pas de tests de composants frontend** : l'éditeur, la sauvegarde automatique et le tableau de bord reposent sur les tests d'API et sur typecheck/lint ; React Testing Library n'est pas encore configuré.
 - Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification.
 - Ne jamais commiter de fichier `.env`, de secret ni de fichier audio de test.
@@ -227,10 +245,10 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Prochaine étape
 
-- **Commande recommandée** : `/speckit-implement` pour la Phase 12 (Mémos vocaux freestyle et suggestions de rimes — T058 à T059).
+- **Commande recommandée** : `/speckit-implement` pour la Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062).
 - **Prompt recommandé** :
   ```text
-  Implémente la phase 12 (mémos vocaux freestyle et suggestions de rimes — T058 à T059).
+  Implémente la phase 13 (finitions design, validation end-to-end et audit de sécurité — T060 à T062).
   Travaille tâche par tâche, commit par tâche terminée avec un message Conventional
   Commits en français, lance lint et tests, puis pousse sur dev et résume pour validation.
   ```
