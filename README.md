@@ -43,7 +43,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 
 | **P1** | **Éditeur d'écriture résilient** | ⏳ Prévu | Typographie soignée, sauvegarde automatique en continu, zéro perte de texte |
 | **P1** | **Organisation des textes (Privés par défaut)** | ⏳ Prévu | Cloisonnement strict multi-tenant, vérification d'appartenance systématique |
-| **P2** | **Application installable (PWA) & Mode Hors Ligne** | ⏳ Prévu | Écriture hors ligne totale (IndexedDB) et synchronisation au retour du réseau |
+| **P3** | **Application installable (PWA) & Mode Hors Ligne** | ✅ Fait | Service Worker Workbox + manifeste installable, rédaction hors ligne (IndexedDB), file d'attente d'actions et synchronisation au retour du réseau avec duplication de conflit `[Titre] (copie hors ligne)` |
 | **P2** | **Instrumentales audio, lecteur, BPM, boucle & métronome** | ✅ Fait | Téléversement direct vers un stockage compatible S3 par URLs présignées (MP3/WAV, ≤ 75 Mo, 3 pistes max), clé seule en base, lecteur Web Audio avec boucle de section et métronome synchronisé |
 | **P2** | **Compteur de syllabes & détection des rimes** | ✅ Fait | Moteur `lyrics-engine` partagé (syllabes poétiques en modes classique/relâché, rimes phonétiques), gouttière CodeMirror du décompte par vers et surlignage coloré des rimes |
 | **P2** | **Mode concentration (zen)** | ✅ Fait | Plein écran masquant les éléments d'interface parasites pour isoler l'auteur avec son texte |
@@ -134,7 +134,7 @@ verso/
 │   │   ├── src/                # Serveur HTTP, validation Zod env, plugins (S3) et modules (auth, OAuth, songs, albums, audio, partage)
 │   │   └── vitest.config.ts    # Configuration Vitest du package API
 │   └── web/                    # Frontend React 18 + Vite + Tailwind CSS
-│       ├── public/             # Assets statiques
+│       ├── public/             # Assets statiques et manifeste PWA (manifest.json)
 │       └── src/                # App React, pages (landing, auth, dashboard, éditeur, album), composants (dont audio), hooks et styles
 ├── packages/
 │   └── shared/                 # Bibliothèque partagée (@verso/shared)

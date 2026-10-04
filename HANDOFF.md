@@ -3,7 +3,7 @@
 ## État actuel
 
 - **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
-- **Phase d'implémentation Spec Kit** : **Phase 10 (Export PDF horodaté et liens de partage privés — T051 à T054) terminée** (quatrième phase P2).
+- **Phase d'implémentation Spec Kit** : **Phase 11 (PWA et écriture hors ligne avec synchronisation — T055 à T057) terminée** (première phase P3).
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
@@ -76,19 +76,28 @@
     - Tests d'intégration `apps/api/tests/integration/shares.test.ts` (13 tests) : création/expiration, non-replay du jeton brut, cloisonnement, consultation anonyme sans donnée personnelle, compteur d'accès, refus des liens expirés/révoqués/inconnus et en-tête `x-ratelimit-limit`.
     - Interface : modale `ShareModal.tsx` (export PDF, génération de lien avec expiration, copie unique du lien, liste et révocation) ouverte depuis l'éditeur, client `share-client.ts`, page publique anonyme `/share/:token` (`PublicSharePage.tsx`) en lecture seule sobre (T054).
     - **Suite de tests totale : 139 tests au vert** (17 fichiers) ; lint, format, typecheck et build de production validés.
+  - **Phase 11 (PWA et écriture hors ligne — T055 à T057) implémentée et testée** :
+    - Configuration PWA avec `vite-plugin-pwa` dans `apps/web/vite.config.ts` : Service Worker Workbox en `generateSW`, précache de la coquille applicative (HTML, JS, CSS, polices, SVG), `navigateFallback` vers `/index.html` (avec exclusion des routes `/api/*`) et stratégie `NetworkFirst` pour les lectures d'API (cache `verso-api`, repli hors ligne) (T055, FR-045).
+    - Manifeste web statique `apps/web/public/manifest.json` (nom, icônes SVG, `display: standalone`, couleurs Encre & Papier) déclaré dans `index.html`, avec métadonnées mobiles (`theme-color`, `apple-mobile-web-app-*`) ; enregistrement du Service Worker via `registerSW` dans `main.tsx` (T055).
+    - Couche de persistance locale IndexedDB avec `idb` (`apps/web/src/lib/offline-storage.ts`) : brouillons (`drafts`), cache des textes (`songs`), file d'attente d'actions (`sync-queue`, index `by-song`) et helpers typés ; repli silencieux si IndexedDB est indisponible (T056, FR-046).
+    - Résolution de conflit pure `decideSyncAction` (`up-to-date` / `apply-local` / `conflict`) testée dans `apps/web/src/lib/offline-storage.test.ts` (4 tests).
+    - Hook `useOfflineSync.ts` (T057, FR-047) : persistance locale immédiate (IndexedDB + `localStorage` en repli), sauvegarde distante debouncée (< 500 ms), file d'attente rejouée au retour du réseau, indicateur de statut enrichi (`enregistré`, `hors ligne`, `conflit`) et compteur d'actions en attente.
+    - **Résolution de conflit par duplication** : si le texte a divergé côté serveur pendant la déconnexion, la version distante reste intacte et le contenu local est enregistré dans un nouveau brouillon intitulé `[Titre] (copie hors ligne)`, avec notification informative.
+    - Intégration à l'éditeur (`EditorPage.tsx`) : restauration prioritaire du brouillon IndexedDB, mise en cache du texte pour la consultation hors ligne, et `useAutoSave` remplacé par `useOfflineSync` (moteur unique de sauvegarde).
+    - Purge du cache local et du cache Workbox d'API à la déconnexion (`clearAllOfflineData`, appelée depuis `useAuth`) pour cloisonner les sessions.
+    - **Suite de tests totale : 143 tests au vert** (18 fichiers, dont 4 nouveaux tests web) ; lint, format, typecheck et build de production validés (Service Worker `dist/sw.js` généré, 50 entrées précachées, `dist/manifest.json` lié).
   - Branche `dev` active.
 - **Ce qui est en cours** :
-  - Phase 10 terminée : arrêt pour validation avant la Phase 11.
+  - Phase 11 terminée : arrêt pour validation avant la Phase 12.
 - **Ce qui reste à faire** :
-  - **Phase 11** : PWA et écriture hors ligne avec synchronisation (T055 à T057).
   - **Phase 12** : Mémos vocaux freestyle et suggestions de rimes (T058 à T059).
   - **Phase 13** : Finitions design, validation end-to-end et audit de sécurité (T060 à T062).
   - **Refonte Design Étape 4** : Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de la Phase 10 (Export PDF horodaté et liens de partage privés — T051 à T054) en respectant la constitution, la spec (FR-040 à FR-044) et la liste des tâches.
-- **Résultat** : générateur PDF d'antériorité avec `pdfkit`, routes de partage privé révocable à jetons hachés, consultation publique anonyme sous rate limiting strict et interface de partage (modale + page publique), 139 tests verts sur la branche `dev`.
+- **Action exécutée** : Implémentation de la Phase 11 (PWA et écriture hors ligne avec synchronisation — T055 à T057) en respectant la constitution, la spec (FR-045 à FR-047) et la liste des tâches.
+- **Résultat** : PWA installable (Service Worker Workbox + manifeste), persistance locale IndexedDB des textes et file d'attente d'actions, hook `useOfflineSync` avec résolution de conflit par duplication `[Titre] (copie hors ligne)`, 143 tests verts sur la branche `dev`.
 
 ## Décisions prises
 
@@ -130,11 +139,16 @@
 - **Expiration optionnelle des liens** : `expiresInDays` (1 à 365 jours) ou `null` pour un lien sans expiration ; un lien expiré ou révoqué renvoie un message neutre (« Ce lien n'est plus actif ») sans révéler l'existence du texte.
 - **Consultation publique sous rate limiting strict** : `GET /api/public/shares/:token` limitée à 30 requêtes par minute par IP (via la configuration de route `@fastify/rate-limit`), sans transmission de cookie de session.
 - **Page publique hors authentification** : `/share/:token` est placée hors de la garde `RequireAuth` et affiche le texte en lecture seule avec le nom d'artiste (ou « Artiste Verso ») sans aucune métadonnée personnelle.
+- **Service Worker en `generateSW` (Workbox)** : précache de la coquille, `NetworkFirst` sur les lectures d'API (repli cache hors ligne), `navigateFallback` vers `index.html` sauf sous `/api/*`.
+- **Manifeste statique plutôt que généré** : `apps/web/public/manifest.json` est servi tel quel (`manifest: false` dans `vite-plugin-pwa`) et déclaré dans `index.html`, pour garder la main sur le contenu.
+- **Moteur unique de sauvegarde** : `useOfflineSync` remplace `useAutoSave` (supprimé) dans l'éditeur ; il combine persistance locale IndexedDB, sauvegarde distante debouncée, file d'attente et détection de conflit pour éviter tout double mécanisme concurrent.
+- **Détection de conflit côté client sans changement d'API** : avant d'appliquer une action en attente, `GET /api/songs/:id` est rejoué et comparé au contenu de base ; en cas de divergence, la copie `[Titre] (copie hors ligne)` est créée via l'API existante (`POST /api/songs`).
+- **Purge à la déconnexion** : `clearAllOfflineData` vide les stores IndexedDB et supprime le cache Workbox `verso-api` pour éviter toute fuite de données entre sessions.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `4234813` — `docs: mise a jour du handoff et du readme pour la phase syllabes rimes zen`
+- **Dernier commit** : `31f7501` — `docs: mise a jour du handoff et du readme pour la phase export pdf et partage prive`
 
 ## Comment lancer le projet
 
@@ -202,6 +216,10 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 - **Export PDF mono-texte uniquement** : FR-040 mentionne aussi l'export d'un album entier ; seule l'exportation d'un texte individuel est implémentée à ce stade.
 - **Polices PDF standard** : le certificat utilise les polices intégrées `Helvetica` (encodage WinAnsi), suffisant pour les accents français ; un encodage/font embarqué serait nécessaire pour des caractères exotiques.
 - **Aucun test de composant frontend pour le partage** : `ShareModal` et `PublicSharePage` reposent sur les tests d'API, le typecheck et le lint (React Testing Library non configuré).
+- **Hook hors ligne non couvert par des tests de comportement** : seule la décision pure de conflit (`decideSyncAction`) est testée unitairement ; le cycle complet Service Worker/IndexedDB/reconnexion n'est pas automatisé (React Testing Library et un environnement navigateur ne sont pas configurés).
+- **Cache d'API Workbox** : les réponses `GET /api/*` sont mises en cache pour la consultation hors ligne et purgées à la déconnexion ; sans déconnexion explicite, elles persistent sur l'appareil (comme les brouillons IndexedDB).
+- **Icônes PWA en SVG uniquement** : le manifeste référence `favicon.svg` (`sizes: any`) ; des icônes PNG 192/512 restent à ajouter pour une compatibilité d'installation maximale (iOS notamment).
+- **Service Worker inactif en développement** : testable via `pnpm --filter @verso/web build && pnpm --filter @verso/web preview` ; `devOptions` volontairement désactivé pour éviter les caches persistants en dev.
 - **Pas de tests de composants frontend** : l'éditeur, la sauvegarde automatique et le tableau de bord reposent sur les tests d'API et sur typecheck/lint ; React Testing Library n'est pas encore configuré.
 - Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification.
 - Ne jamais commiter de fichier `.env`, de secret ni de fichier audio de test.
@@ -209,10 +227,10 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Prochaine étape
 
-- **Commande recommandée** : `/speckit-implement` pour la Phase 11 (PWA et écriture hors ligne — T055 à T057).
+- **Commande recommandée** : `/speckit-implement` pour la Phase 12 (Mémos vocaux freestyle et suggestions de rimes — T058 à T059).
 - **Prompt recommandé** :
   ```text
-  Implémente la phase 11 (PWA et hors ligne — T055 à T057).
+  Implémente la phase 12 (mémos vocaux freestyle et suggestions de rimes — T058 à T059).
   Travaille tâche par tâche, commit par tâche terminée avec un message Conventional
   Commits en français, lance lint et tests, puis pousse sur dev et résume pour validation.
   ```
