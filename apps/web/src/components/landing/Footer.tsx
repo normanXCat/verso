@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Logo } from '../common/Logo.js';
 
 export function Footer(): React.ReactElement {
   return (
@@ -7,11 +8,12 @@ export function Footer(): React.ReactElement {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12">
         {/* Colonne Identité */}
         <div className="md:col-span-5 space-y-4">
-          <Link to="/" className="inline-flex items-baseline gap-1 group">
-            <span className="font-serif text-3xl font-normal text-paper-text tracking-tight group-hover:text-paper-accent transition-colors">
-              Verso
-            </span>
-            <span className="inline-block w-2 h-2 rounded-full bg-paper-accent translate-y-[-2px]" />
+          <Link
+            to="/"
+            aria-label="Verso — retour à l'accueil"
+            className="inline-flex text-paper-text transition-colors group-hover:text-paper-accent"
+          >
+            <Logo size="lg" title="Verso" />
           </Link>
 
           <p className="text-paper-muted max-w-sm text-xs sm:text-sm leading-relaxed font-sans">

@@ -35,6 +35,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **P1** | **Espace personnel, recherche & filtres** | ✅ Fait | Tableau de bord `/app`, recherche plein texte en direct (titre et paroles), filtres brouillons/terminés/favoris, cloisonnement par utilisateur |
 | **P1** | **Éditeur, sauvegarde auto, favoris & tags** | ✅ Fait | Éditeur CodeMirror 6, sauvegarde automatique (< 500 ms, brouillon local), compteurs mots/lignes en direct, statut brouillon/terminé, favoris et tags personnalisés |
 | **P1** | **Albums & réorganisation de tracklist** | ✅ Fait | Création d'albums, rattachement de textes existants, tracklist réordonnable par glisser-déposer (`@dnd-kit`) et détachement automatique à la suppression (aucun texte jamais supprimé) |
+| **P2** | **Historique des versions** | ✅ Fait | Archivage horodaté immuable à chaque modification (conservé indéfiniment, sans purge ni plafond), aperçu comparatif et restauration d'une révision antérieure sans écrasement de l'historique |
 
 
 
@@ -43,7 +44,9 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **P1** | **Éditeur d'écriture résilient** | ⏳ Prévu | Typographie soignée, sauvegarde automatique en continu, zéro perte de texte |
 | **P1** | **Organisation des textes (Privés par défaut)** | ⏳ Prévu | Cloisonnement strict multi-tenant, vérification d'appartenance systématique |
 | **P2** | **Application installable (PWA) & Mode Hors Ligne** | ⏳ Prévu | Écriture hors ligne totale (IndexedDB) et synchronisation au retour du réseau |
-| **P2** | **Gestion des médias audio (Compatible S3)** | ⏳ Prévu | Fichiers audio stockés hors base, stockage de la clé uniquement en base |
+| **P2** | **Instrumentales audio, lecteur, BPM, boucle & métronome** | ✅ Fait | Téléversement direct vers un stockage compatible S3 par URLs présignées (MP3/WAV, ≤ 75 Mo, 3 pistes max), clé seule en base, lecteur Web Audio avec boucle de section et métronome synchronisé |
+| **P2** | **Compteur de syllabes & détection des rimes** | ✅ Fait | Moteur `lyrics-engine` partagé (syllabes poétiques en modes classique/relâché, rimes phonétiques), gouttière CodeMirror du décompte par vers et surlignage coloré des rimes |
+| **P2** | **Mode concentration (zen)** | ✅ Fait | Plein écran masquant les éléments d'interface parasites pour isoler l'auteur avec son texte |
 
 | **P3** | **Liens de partage privés révocables** | ⏳ Prévu | Partage explicite en lecture seule, tokens hachés révocables avec expiration et rate limiting |
 | **P3** | **OAuth (Google & ORCID)** | ✅ Fait | Flux OAuth avec `state` et PKCE (arctic), création/connexion de compte, et liaison sécurisée par confirmation du mot de passe |
@@ -62,9 +65,9 @@ L'architecture technique conçue lors du plan d'implémentation repose sur :
 - **PWA & Offline** : `vite-plugin-pwa`, Service Workers, IndexedDB (`idb`)
 - **Backend** : Node.js (LTS), TypeScript, Fastify v4+ (API REST haute performance)
 - **Base de données & ORM** : PostgreSQL 16, Prisma ORM v5+ avec migrations versionnées
-- **Stockage Audio** : Compatible S3 (MinIO en développement local, Cloudflare R2 en production) via URLs présignées
+- **Stockage Audio** : Compatible S3 (MinIO en développement local, Cloudflare R2 en production) via URLs présignées (`@aws-sdk/client-s3` et `@aws-sdk/s3-request-presigner`), téléversement direct du binaire hors API
 - **Sécurité** : Hachage Argon2id, sessions PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax, Arctic (OAuth Google/ORCID avec PKCE), `@fastify/rate-limit`, `@fastify/csrf-protection`
-- **Métrique & Rimes** : Module partagé `lyrics-engine` adapté aux spécificités de la langue française
+- **Métrique & Rimes** : Module partagé `lyrics-engine` adapté aux spécificités de la langue française (comptage syllabique par vers, détection et coloration des rimes), exposé via des extensions CodeMirror 6
 - **Qualité & Tests** : Vitest, React Testing Library, ESLint et Prettier (zéro warning toléré)
 
 ---
@@ -128,11 +131,11 @@ verso/
 ├── apps/
 │   ├── api/                    # Backend Fastify + Prisma ORM
 │   │   ├── prisma/             # Schéma Prisma et migrations PostgreSQL
-│   │   ├── src/                # Serveur HTTP, validation Zod env, modules (auth, OAuth, songs, albums)
+│   │   ├── src/                # Serveur HTTP, validation Zod env, plugins (S3) et modules (auth, OAuth, songs, albums, audio)
 │   │   └── vitest.config.ts    # Configuration Vitest du package API
 │   └── web/                    # Frontend React 18 + Vite + Tailwind CSS
 │       ├── public/             # Assets statiques
-│       └── src/                # App React, pages (landing, auth, dashboard, éditeur, album), composants et styles
+│       └── src/                # App React, pages (landing, auth, dashboard, éditeur, album), composants (dont audio), hooks et styles
 ├── packages/
 │   └── shared/                 # Bibliothèque partagée (@verso/shared)
 │       └── src/                # Schémas Zod, types et moteur poétique

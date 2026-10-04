@@ -3,7 +3,7 @@
 ## État actuel
 
 - **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
-- **Phase d'implémentation Spec Kit** : **Phase 6 (Albums et réorganisation de tracklist — T034 à T037) terminée** → **jalon MVP P1 complet**.
+- **Phase d'implémentation Spec Kit** : **Phase 9 (Aides à l'écriture : syllabes, rimes, mode concentration — T047 à T050) terminée** (troisième phase P2).
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
@@ -44,17 +44,40 @@
     - **Règle stricte FR-027** : la suppression d'un album détache tous ses textes (`albumId` et `positionInAlbum` remis à `null`) sans jamais en supprimer un seul.
     - Interface : page `/app/albums/:id` (`AlbumDetailPage.tsx`) avec métadonnées éditables, rattachement de textes existants et tracklist triable `@dnd-kit` (`SortableTracklist.tsx`, souris/tactile/clavier), carte d'album (`AlbumCard.tsx`) et création d'album depuis le tableau de bord.
     - **Suite de tests totale : 83 tests au vert** (11 fichiers) ; lint, format, typecheck et build de production validés.
+  - **Phase 7 (Historique des versions — T038 à T041) implémentée et testée** :
+    - Schémas Zod de l'historique (`packages/shared/src/schemas/version.ts`) : `versionIdParamSchema`, type `SongVersionItem`, et option `createVersion` sur la mise à jour d'un texte.
+    - Archivage immuable automatique avant chaque modification du contenu ou du titre (ou après 5 minutes d'inactivité) dans `apps/api/src/modules/songs/versions.service.ts`.
+    - Routes `GET /api/songs/:id/versions` (liste antichronologique) et `POST /api/songs/:id/versions/:versionId/restore` (restauration sans écrasement) dans `versions.routes.ts`, cloisonnées par utilisateur.
+    - **Conservation intégrale FR-029** : aucune purge, aucun plafond sur le nombre de versions ; la restauration archive d'abord l'état courant (zéro perte).
+    - Interface : tiroir latéral `VersionHistoryDrawer.tsx` (liste horodatée, aperçu complet, restauration) ouvert depuis l'éditeur, et méthodes `versions()`/`restoreVersion()` du client API.
+    - **Suite de tests totale : 92 tests au vert** (12 fichiers) ; lint, format, typecheck et build de production validés.
+  - **Phase 8 (Instrus S3, lecteur, BPM, boucle et métronome — T042 à T046) implémentée et testée** :
+    - Schémas Zod des instrumentales (`packages/shared/src/schemas/audio.ts`) : formats MP3/WAV, limite de 75 Mo, quota de 3 pistes, BPM 20–300, types `InstrumentalItem` et `UploadUrlResult` (T043).
+    - Plugin Fastify S3 (`apps/api/src/plugins/s3.plugin.ts`) basé sur `@aws-sdk/client-s3` et `@aws-sdk/s3-request-presigner` : URLs présignées PUT (5 min) et GET (1 h), suppression d'objet non bloquante, `forcePathStyle` pour MinIO (T042).
+    - Repository, service et routes de gestion des instrumentales (`audio.repository.ts`, `audio.service.ts`, `audio.routes.ts`) : génération d'URL de téléversement cloisonnée (`users/{userId}/songs/{songId}/{uuid}.ext`), confirmation, liste avec URL de lecture signée, mise à jour des métadonnées, bascule de la piste active unique et suppression base + objet S3 (T045).
+    - Enregistrement des routes sous `/api` : `POST/GET /api/songs/:id/instrumentals`, `POST /api/songs/:id/instrumentals/upload-url`, `POST .../confirm`, `PATCH/DELETE /api/instrumentals/:id`.
+    - Client API audio et téléversement direct par `XMLHttpRequest` avec progression (`apps/web/src/lib/audio-client.ts`).
+    - Hook `useAudioPlayer` (Web Audio API) : lecture via balise `<audio>`, boucle de section sample-précise (start/end), métronome synchronisé avec planification par anticipation sur l'horloge audio (T046).
+    - Barre de lecture `AudioPlayerBar.tsx` intégrée à l'éditeur : sélection de piste active, transport, volume, boucle, BPM éditable et métronome (T046).
+    - **Suite de tests totale : 107 tests au vert** (13 fichiers) ; lint, format, typecheck et build de production validés.
+  - **Phase 9 (Aides à l'écriture : syllabes, rimes, mode concentration — T047 à T050) implémentée et testée** :
+    - Moteur de comptage des syllabes poétiques françaises (`packages/shared/src/lyrics-engine/syllables.ts`) : groupes de voyelles, gestion du `e` caduc (modes `classic` et `relaxed`), élisions, particularités graphiques (`qu`, `gu`), décompte par ligne et total (T047).
+    - Moteur de détection et de regroupement des rimes françaises (`packages/shared/src/lyrics-engine/rhymes.ts`) : clé phonétique de la terminaison (accents neutralisés, nasales et diphtongues normalisées, rimes en `[e]`), groupes de rimes et palette de couleurs `RHYME_PALETTE` (T048).
+    - Tests unitaires partagés : `packages/shared/tests/syllables.test.ts` (9 tests) et `rhymes.test.ts` (7 tests).
+    - Extensions CodeMirror 6 (`apps/web/src/components/editor/extensions/`) : gouttière du décompte syllabique par vers (`syllablesGutter.ts`) et surlignage coloré des terminaisons rimiques (`rhymeHighlighter.ts`), intégrées à `LyricEditor` via les options `showSyllables`/`showRhymes` (T049, FR-031, FR-032).
+    - Mode concentration zen plein écran (`apps/web/src/components/editor/ZenModeToggle.tsx`) masquant l'en-tête, la barre latérale, les métriques et le lecteur audio ; synchronisé avec l'API Fullscreen (touche Échap) et intégré à l'éditeur (T050, FR-033).
+    - **Suite de tests totale : 123 tests au vert** (15 fichiers) ; lint, format, typecheck et build de production validés.
   - Branche `dev` active.
 - **Ce qui est en cours** :
-  - Phase 6 terminée (jalon MVP P1 atteint) : arrêt pour validation avant les phases P2.
+  - Phase 9 terminée : arrêt pour validation avant la Phase 10.
 - **Ce qui reste à faire** :
-  - **Phase 7** : Historique des versions (T038 à T041).
+  - **Phase 10** : Export PDF d'antériorité et liens de partage privés révocables (T051 à T054).
   - **Refonte Design Étape 4** : Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de la Phase 6 (Albums et réorganisation de tracklist — T034 à T037) en respectant la constitution, la spec, le contrat `albums-api.md` et la liste des tâches.
-- **Résultat** : API albums complète avec réordonnancement et détachement automatique (zéro suppression de textes), page d'album avec tracklist `@dnd-kit`, création d'album depuis le tableau de bord, 83 tests verts sur la branche `dev`.
+- **Action exécutée** : Implémentation de la Phase 9 (Aides à l'écriture : syllabes, rimes, mode concentration — T047 à T050) en respectant la constitution, la spec (FR-031 à FR-033) et la liste des tâches.
+- **Résultat** : moteurs partagés de syllabes et de rimes françaises, gouttière CodeMirror du décompte syllabique, surlignage coloré des rimes et mode concentration plein écran, 123 tests verts sur la branche `dev`.
 
 ## Décisions prises
 
@@ -79,11 +102,23 @@
 - **Détachement avant suppression** : `deleteAlbum` exécute en transaction la remise à `null` de `albumId`/`positionInAlbum` de tous les textes puis la suppression de l'album, garantissant qu'aucun texte n'est jamais perdu.
 - **Tracklist optimiste** : le glisser-déposer réordonne immédiatement l'interface (`arrayMove`) puis persiste l'ordre ; en cas d'échec serveur, la tracklist est rechargée depuis l'API.
 - **Pochette d'album non exposée** : `coverImageUrl` est renvoyé à `null` en attendant la signature des URLs S3 (Phase 8) ; la clé `coverImageKey` est bien stockée en base.
+- **Archivage des versions côté serveur** : l'instantané est créé dans `updateSong` avant modification, si `createVersion` est demandé, si le contenu/le titre change, ou si la dernière version remonte à plus de 5 minutes. La restauration archive toujours l'état courant avant d'appliquer la révision choisie.
+- **Restauration appliquée au contenu local** : l'éditeur met à jour son titre et son contenu depuis la réponse de restauration, puis invalide les caches des versions et de la recherche.
+- **Téléversement direct via URLs présignées S3** : le binaire ne transite jamais par l'API. Le backend vérifie l'appartenance et le quota (3 pistes), signe une URL PUT (5 min) puis une URL GET (1 h) à la volée. Clé cloisonnée `users/{userId}/songs/{songId}/{uuid}.ext`.
+- **SDK S3 officiel** : `@aws-sdk/client-s3` et `@aws-sdk/s3-request-presigner` avec `forcePathStyle: true` (compatible MinIO en local et Cloudflare R2 en production). La signature des URLs est hors ligne : aucun appel réseau requis pour les générer.
+- **Suppression S3 best effort** : la suppression de l'objet binaire est encapsulée et non bloquante (une indisponibilité du stockage n'empêche jamais la suppression en base).
+- **Piste active unique** : confirmer ou activer une instrumentale désactive automatiquement toutes les autres du même texte.
+- **Métronome Web Audio** : planification des clics par anticipation (lookahead 100 ms, tick de 25 ms) sur l'horloge de l'`AudioContext` pour rester aligné sur la lecture ; boucle de section vérifiée à chaque frame via `requestAnimationFrame`.
+- **Format audio** : seuls MP3 (`audio/mpeg`) et WAV (`audio/wav`) sont acceptés, avec une limite de 75 Mo.
+- **Moteur de syllabes heuristique** : découpage en groupes de voyelles avec traitement du `e` caduc. Mode `classic` (défaut, versification) et mode `relaxed` (débit rap moderne où les `e` caducs finaux sont élidés). Les diérèses/synérèses lexicales et les formes en `-ent` ne sont pas traitées (un dictionnaire phonétique serait nécessaire).
+- **Moteur de rimes phonétique simplifié** : clé extraite de la dernière voyelle tonique avec normalisation des nasales, diphtongues et de la terminaison `[e]` (infinitifs, participes, imparfaits). Analyse sur la graphie, pas sur une transcription phonétique complète.
+- **Extensions CodeMirror indépendantes** : la gouttière calcule les syllabes à la volée lors du rendu de marge ; le surlignage des rimes se recalcule uniquement à chaque changement de document (`ViewPlugin`), sans bloquer la frappe.
+- **Mode zen via l'API Fullscreen** : l'état est synchronisé avec les événements `fullscreenchange` (sortie par Échap) et les éléments d'interface sont masqués en mode concentration.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `71fb566` — `feat: interface album avec réorganisation de tracklist par glisser-déposer`
+- **Dernier commit** : `2194d3b` — `feat: mode concentration plein écran sans distraction`
 
 ## Comment lancer le projet
 
@@ -144,6 +179,9 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 - **Filtres tag/album non exposés dans l'interface** : ils existent côté API, mais la barre de filtres du tableau de bord n'affiche que les statuts (tous/brouillons/terminés/favoris). Les albums disposent en revanche de leur propre section et page de détail.
 - **Pochette d'album sans téléversement** : la clé S3 est stockée mais l'interface ne permet pas encore de téléverser une pochette (module audio prévu en Phase 8).
 - **Hors ligne partiel** : le brouillon local (`localStorage`) évite toute perte, mais la synchronisation IndexedDB complète avec gestion de conflit n'est pas encore implémentée (PWA prévue ultérieurement).
+- **Téléversement S3 non testé contre un vrai stockage** : les tests d'intégration vérifient la signature des URLs et le cycle de vie en base, mais ne poussent pas de binaire (MinIO n'est pas requis par la suite). La configuration CORS du bucket (PUT/GET depuis `CLIENT_URL`) reste à valider en recette.
+- **Comptage syllabique approximatif** : les diérèses (`lion`, `Pasiphaé`), les synérèses et les formes verbales en `-ent` (`parlent`) ne sont pas détectées. Le compteur vise une aide à l'écriture, pas une analyse prosodique exacte.
+- **Détection de rimes sur la graphie** : quelques homophones irréguliers peuvent échapper au regroupement ; les extensions CodeMirror ne sont pas couvertes par des tests de composants (React Testing Library non configuré).
 - **Build web volumineux** : CodeMirror 6 fait dépasser l'avertissement de taille de chunk de Vite (> 500 kB) ; un découpage `manualChunks` sera à prévoir.
 - **Pas de tests de composants frontend** : l'éditeur, la sauvegarde automatique et le tableau de bord reposent sur les tests d'API et sur typecheck/lint ; React Testing Library n'est pas encore configuré.
 - Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification.
@@ -152,10 +190,10 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Prochaine étape
 
-- **Commande recommandée** : `/speckit-implement` pour la Phase 7 (Historique des versions — T038 à T041).
+- **Commande recommandée** : `/speckit-implement` pour la Phase 10 (Export PDF et liens de partage privés — T051 à T054).
 - **Prompt recommandé** :
   ```text
-  Implémente la phase 7 (historique des versions — T038 à T041).
+  Implémente la phase 10 (export PDF d'antériorité et liens de partage privés — T051 à T054).
   Travaille tâche par tâche, commit par tâche terminée avec un message Conventional
   Commits en français, lance lint et tests, puis pousse sur dev et résume pour validation.
   ```

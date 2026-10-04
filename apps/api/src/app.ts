@@ -32,6 +32,10 @@ export async function buildApp(): Promise<FastifyInstance> {
     timeWindow: '1 minute',
   });
 
+  // Stockage d'objets compatible S3 (URLs présignées)
+  const { s3Plugin } = await import('./plugins/s3.plugin.js');
+  await app.register(s3Plugin);
+
   // Routes d'authentification et de sessions
   const { authRoutes } = await import('./modules/auth/auth.routes.js');
   await app.register(authRoutes, { prefix: '/api/auth' });
@@ -44,9 +48,17 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { songsRoutes } = await import('./modules/songs/songs.routes.js');
   await app.register(songsRoutes, { prefix: '/api/songs' });
 
+  // Routes de l'historique des versions des textes
+  const { versionsRoutes } = await import('./modules/songs/versions.routes.js');
+  await app.register(versionsRoutes, { prefix: '/api/songs' });
+
   // Routes des albums et de leurs tracklists
   const { albumsRoutes } = await import('./modules/albums/albums.routes.js');
   await app.register(albumsRoutes, { prefix: '/api/albums' });
+
+  // Routes des instrumentales (upload présigné, lecture, quotas)
+  const { audioRoutes } = await import('./modules/audio/audio.routes.js');
+  await app.register(audioRoutes, { prefix: '/api' });
 
   // Route de contrôle de santé
   app.get('/health', async () => {
