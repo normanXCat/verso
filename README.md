@@ -45,6 +45,8 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **P1** | **Organisation des textes (Privés par défaut)** | ⏳ Prévu | Cloisonnement strict multi-tenant, vérification d'appartenance systématique |
 | **P2** | **Application installable (PWA) & Mode Hors Ligne** | ⏳ Prévu | Écriture hors ligne totale (IndexedDB) et synchronisation au retour du réseau |
 | **P2** | **Instrumentales audio, lecteur, BPM, boucle & métronome** | ✅ Fait | Téléversement direct vers un stockage compatible S3 par URLs présignées (MP3/WAV, ≤ 75 Mo, 3 pistes max), clé seule en base, lecteur Web Audio avec boucle de section et métronome synchronisé |
+| **P2** | **Compteur de syllabes & détection des rimes** | ✅ Fait | Moteur `lyrics-engine` partagé (syllabes poétiques en modes classique/relâché, rimes phonétiques), gouttière CodeMirror du décompte par vers et surlignage coloré des rimes |
+| **P2** | **Mode concentration (zen)** | ✅ Fait | Plein écran masquant les éléments d'interface parasites pour isoler l'auteur avec son texte |
 
 | **P3** | **Liens de partage privés révocables** | ⏳ Prévu | Partage explicite en lecture seule, tokens hachés révocables avec expiration et rate limiting |
 | **P3** | **OAuth (Google & ORCID)** | ✅ Fait | Flux OAuth avec `state` et PKCE (arctic), création/connexion de compte, et liaison sécurisée par confirmation du mot de passe |
@@ -65,7 +67,7 @@ L'architecture technique conçue lors du plan d'implémentation repose sur :
 - **Base de données & ORM** : PostgreSQL 16, Prisma ORM v5+ avec migrations versionnées
 - **Stockage Audio** : Compatible S3 (MinIO en développement local, Cloudflare R2 en production) via URLs présignées (`@aws-sdk/client-s3` et `@aws-sdk/s3-request-presigner`), téléversement direct du binaire hors API
 - **Sécurité** : Hachage Argon2id, sessions PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax, Arctic (OAuth Google/ORCID avec PKCE), `@fastify/rate-limit`, `@fastify/csrf-protection`
-- **Métrique & Rimes** : Module partagé `lyrics-engine` adapté aux spécificités de la langue française
+- **Métrique & Rimes** : Module partagé `lyrics-engine` adapté aux spécificités de la langue française (comptage syllabique par vers, détection et coloration des rimes), exposé via des extensions CodeMirror 6
 - **Qualité & Tests** : Vitest, React Testing Library, ESLint et Prettier (zéro warning toléré)
 
 ---

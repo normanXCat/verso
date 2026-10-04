@@ -3,7 +3,7 @@
 ## État actuel
 
 - **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
-- **Phase d'implémentation Spec Kit** : **Phase 8 (Instrus S3, lecteur, BPM, boucle et métronome — T042 à T046) terminée** (deuxième phase P2).
+- **Phase d'implémentation Spec Kit** : **Phase 9 (Aides à l'écriture : syllabes, rimes, mode concentration — T047 à T050) terminée** (troisième phase P2).
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
@@ -60,17 +60,24 @@
     - Hook `useAudioPlayer` (Web Audio API) : lecture via balise `<audio>`, boucle de section sample-précise (start/end), métronome synchronisé avec planification par anticipation sur l'horloge audio (T046).
     - Barre de lecture `AudioPlayerBar.tsx` intégrée à l'éditeur : sélection de piste active, transport, volume, boucle, BPM éditable et métronome (T046).
     - **Suite de tests totale : 107 tests au vert** (13 fichiers) ; lint, format, typecheck et build de production validés.
+  - **Phase 9 (Aides à l'écriture : syllabes, rimes, mode concentration — T047 à T050) implémentée et testée** :
+    - Moteur de comptage des syllabes poétiques françaises (`packages/shared/src/lyrics-engine/syllables.ts`) : groupes de voyelles, gestion du `e` caduc (modes `classic` et `relaxed`), élisions, particularités graphiques (`qu`, `gu`), décompte par ligne et total (T047).
+    - Moteur de détection et de regroupement des rimes françaises (`packages/shared/src/lyrics-engine/rhymes.ts`) : clé phonétique de la terminaison (accents neutralisés, nasales et diphtongues normalisées, rimes en `[e]`), groupes de rimes et palette de couleurs `RHYME_PALETTE` (T048).
+    - Tests unitaires partagés : `packages/shared/tests/syllables.test.ts` (9 tests) et `rhymes.test.ts` (7 tests).
+    - Extensions CodeMirror 6 (`apps/web/src/components/editor/extensions/`) : gouttière du décompte syllabique par vers (`syllablesGutter.ts`) et surlignage coloré des terminaisons rimiques (`rhymeHighlighter.ts`), intégrées à `LyricEditor` via les options `showSyllables`/`showRhymes` (T049, FR-031, FR-032).
+    - Mode concentration zen plein écran (`apps/web/src/components/editor/ZenModeToggle.tsx`) masquant l'en-tête, la barre latérale, les métriques et le lecteur audio ; synchronisé avec l'API Fullscreen (touche Échap) et intégré à l'éditeur (T050, FR-033).
+    - **Suite de tests totale : 123 tests au vert** (15 fichiers) ; lint, format, typecheck et build de production validés.
   - Branche `dev` active.
 - **Ce qui est en cours** :
-  - Phase 8 terminée : arrêt pour validation avant la Phase 9.
+  - Phase 9 terminée : arrêt pour validation avant la Phase 10.
 - **Ce qui reste à faire** :
-  - **Phase 9** : Aides à l'écriture — syllabes, rimes, mode concentration (T047 à T050).
+  - **Phase 10** : Export PDF d'antériorité et liens de partage privés révocables (T051 à T054).
   - **Refonte Design Étape 4** : Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de la Phase 8 (Instrus S3, lecteur, BPM, boucle et métronome — T042 à T046) en respectant la constitution, la spec, le contrat `audio-api.md` et la liste des tâches.
-- **Résultat** : téléversement direct par URLs présignées avec quota de 3 pistes, lecture signée, lecteur Web Audio avec boucle de section et métronome synchronisé dans l'éditeur, 107 tests verts sur la branche `dev`.
+- **Action exécutée** : Implémentation de la Phase 9 (Aides à l'écriture : syllabes, rimes, mode concentration — T047 à T050) en respectant la constitution, la spec (FR-031 à FR-033) et la liste des tâches.
+- **Résultat** : moteurs partagés de syllabes et de rimes françaises, gouttière CodeMirror du décompte syllabique, surlignage coloré des rimes et mode concentration plein écran, 123 tests verts sur la branche `dev`.
 
 ## Décisions prises
 
@@ -103,11 +110,15 @@
 - **Piste active unique** : confirmer ou activer une instrumentale désactive automatiquement toutes les autres du même texte.
 - **Métronome Web Audio** : planification des clics par anticipation (lookahead 100 ms, tick de 25 ms) sur l'horloge de l'`AudioContext` pour rester aligné sur la lecture ; boucle de section vérifiée à chaque frame via `requestAnimationFrame`.
 - **Format audio** : seuls MP3 (`audio/mpeg`) et WAV (`audio/wav`) sont acceptés, avec une limite de 75 Mo.
+- **Moteur de syllabes heuristique** : découpage en groupes de voyelles avec traitement du `e` caduc. Mode `classic` (défaut, versification) et mode `relaxed` (débit rap moderne où les `e` caducs finaux sont élidés). Les diérèses/synérèses lexicales et les formes en `-ent` ne sont pas traitées (un dictionnaire phonétique serait nécessaire).
+- **Moteur de rimes phonétique simplifié** : clé extraite de la dernière voyelle tonique avec normalisation des nasales, diphtongues et de la terminaison `[e]` (infinitifs, participes, imparfaits). Analyse sur la graphie, pas sur une transcription phonétique complète.
+- **Extensions CodeMirror indépendantes** : la gouttière calcule les syllabes à la volée lors du rendu de marge ; le surlignage des rimes se recalcule uniquement à chaque changement de document (`ViewPlugin`), sans bloquer la frappe.
+- **Mode zen via l'API Fullscreen** : l'état est synchronisé avec les événements `fullscreenchange` (sortie par Échap) et les éléments d'interface sont masqués en mode concentration.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `1509536` — `feat: lecteur audio intégré avec boucle de section et métronome web audio`
+- **Dernier commit** : `2194d3b` — `feat: mode concentration plein écran sans distraction`
 
 ## Comment lancer le projet
 
@@ -169,6 +180,8 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 - **Pochette d'album sans téléversement** : la clé S3 est stockée mais l'interface ne permet pas encore de téléverser une pochette (module audio prévu en Phase 8).
 - **Hors ligne partiel** : le brouillon local (`localStorage`) évite toute perte, mais la synchronisation IndexedDB complète avec gestion de conflit n'est pas encore implémentée (PWA prévue ultérieurement).
 - **Téléversement S3 non testé contre un vrai stockage** : les tests d'intégration vérifient la signature des URLs et le cycle de vie en base, mais ne poussent pas de binaire (MinIO n'est pas requis par la suite). La configuration CORS du bucket (PUT/GET depuis `CLIENT_URL`) reste à valider en recette.
+- **Comptage syllabique approximatif** : les diérèses (`lion`, `Pasiphaé`), les synérèses et les formes verbales en `-ent` (`parlent`) ne sont pas détectées. Le compteur vise une aide à l'écriture, pas une analyse prosodique exacte.
+- **Détection de rimes sur la graphie** : quelques homophones irréguliers peuvent échapper au regroupement ; les extensions CodeMirror ne sont pas couvertes par des tests de composants (React Testing Library non configuré).
 - **Build web volumineux** : CodeMirror 6 fait dépasser l'avertissement de taille de chunk de Vite (> 500 kB) ; un découpage `manualChunks` sera à prévoir.
 - **Pas de tests de composants frontend** : l'éditeur, la sauvegarde automatique et le tableau de bord reposent sur les tests d'API et sur typecheck/lint ; React Testing Library n'est pas encore configuré.
 - Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification.
@@ -177,10 +190,10 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Prochaine étape
 
-- **Commande recommandée** : `/speckit-implement` pour la Phase 9 (Aides à l'écriture : syllabes, rimes, mode concentration — T047 à T050).
+- **Commande recommandée** : `/speckit-implement` pour la Phase 10 (Export PDF et liens de partage privés — T051 à T054).
 - **Prompt recommandé** :
   ```text
-  Implémente la phase 9 (aides à l'écriture : syllabes, rimes, mode concentration — T047 à T050).
+  Implémente la phase 10 (export PDF d'antériorité et liens de partage privés — T051 à T054).
   Travaille tâche par tâche, commit par tâche terminée avec un message Conventional
   Commits en français, lance lint et tests, puis pousse sur dev et résume pour validation.
   ```
