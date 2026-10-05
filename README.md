@@ -188,6 +188,27 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ---
 
+## Dépannage
+
+### Erreur 500 sur toutes les requêtes de l'API
+
+Un 500 global signifie presque toujours que la base de données est injoignable ou que la configuration est incomplète. L'API répond désormais un message générique accompagné d'un identifiant de requête (`requestId`) et journalise l'erreur détaillée côté serveur (jamais la pile ni de secret).
+
+1. **Vérifier l'état de l'API et de la base** :
+   ```bash
+   curl http://localhost:4000/health
+   ```
+   - `{"status":"ok","database":"up"}` → la base répond.
+   - `{"status":"error","database":"down"}` (HTTP 503) → PostgreSQL est arrêté ou `DATABASE_URL` est incorrecte.
+2. **Vérifier les variables d'environnement** : à la racine du projet, `cp .env.example .env`. `DATABASE_URL` et `SESSION_SECRET` sont obligatoires ; l'API refuse de démarrer et nomme explicitement la variable manquante. Le `.env` de la racine est chargé quel que soit le répertoire de lancement.
+3. **Démarrer la base** : `docker compose up -d` (PostgreSQL 16 + MinIO).
+4. **Appliquer les migrations** : `pnpm --filter @verso/api exec prisma migrate dev`.
+5. **Régénérer le client Prisma** si nécessaire : `pnpm --filter @verso/api exec prisma generate`.
+6. **Service d'email local** : sans `RESEND_API_KEY`, les emails sont simulés et journalisés ; une panne d'envoi ne fait plus échouer l'inscription (le compte est créé et l'envoi peut être redemandé).
+7. **Proxy Vite, CORS et CSRF** : le frontend appelle `/api/*`, redirigé vers l'API par le proxy de développement Vite. `CLIENT_URL` doit correspondre à l'origine du frontend (défaut `http://localhost:5173`) pour le CORS et la protection CSRF.
+
+---
+
 ## Règles de fin de tâche obligatoires
 
 Chaque tâche exécutée DOIT impérativement respecter ce protocole dans l'ordre strict :

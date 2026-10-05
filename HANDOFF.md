@@ -106,15 +106,25 @@
     - **Suite de tests totale : 168 tests au vert** (21 fichiers) ; lint, format, typecheck et builds de production validés.
   - Branche `dev` active.
 - **Ce qui est en cours** :
-  - Phase 13 terminée : les 13 phases / 62 tâches du plan Spec Kit sont intégralement implémentées et testées. Arrêt pour validation.
+  - Phase 13 terminée. Correctifs de stabilisation « erreur 500 backend & formulaires d'authentification » en cours de validation : cause du 500 identifiée et corrigée, messages d'erreur API présentés en français, boutons avec icône unifiés.
 - **Ce qui reste à faire** :
   - **Refonte Design Étape 4** : Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
   - **Recette manuelle** : téléversements S3 réels (CORS bucket), OAuth contre les vrais fournisseurs, scénarios `quickstart.md` en navigateur (Service Worker/hors ligne, micro), icônes PWA PNG 192/512.
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de la Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) en respectant la constitution, la spec et le skill `frontend-design`.
-- **Résultat** : bascule de thème `ThemeToggle` accessible et finitions visuelles, protection CSRF par validation d'origine et tests d'audit de sécurité, validation complète du monorepo (168 tests verts) sur la branche `dev`.
+- **Action exécutée** : Correctifs de stabilisation backend et formulaires d'authentification (hors phase Spec Kit).
+- **Cause racine du 500** : la base PostgreSQL était injoignable (`DATABASE_URL` invalide — rôle `verso` inexistant / mot de passe incorrect) ; de plus le fichier `.env` de la racine n'était pas chargé lorsque l'API tourne depuis `apps/api`, et aucune erreur non gérée n'était interceptée, si bien que Prisma renvoyait au navigateur un 500 brut avec sa pile et ses détails internes.
+- **Corrections apportées** :
+  - `apps/api/src/config/env.ts` charge désormais le `.env` le plus proche en remontant depuis le répertoire courant (donc la racine du monorepo quel que soit le cwd) ; en mode test le `.env` machine est ignoré au profit de valeurs déterministes. La validation Zod nomme explicitement chaque variable manquante.
+  - `apps/api/src/server.ts` importe l'environnement dans un `try/catch` : en cas de configuration invalide, le serveur s'arrête avec un message clair nommant la variable, sans pile d'appels. Une sonde PostgreSQL non bloquante au démarrage journalise immédiatement une base injoignable.
+  - `GET /health` teste réellement la base (`SELECT 1`) : `200 {status:"ok",database:"up"}` ou `503 {status:"error",database:"down"}`.
+  - Gestionnaire d'erreurs global (`apps/api/src/plugins/error-handler.ts`) posé à la racine : journalise l'erreur complète (messages et pile masqués des secrets via `redactSecrets`), renvoie un message générique et un identifiant de requête (`requestId`), sans jamais exposer la pile ; les erreurs d'infrastructure (base) deviennent un `503`.
+  - L'échec d'envoi d'email de vérification ne fait plus échouer l'inscription : le compte est créé et le message invite à redemander l'envoi (`POST /api/auth/resend-verification`).
+  - Nouveaux tests d'intégration `apps/api/tests/integration/robustness.test.ts` (5) : health check, inscription complète, inscription malgré échec email, base indisponible (503 générique + `requestId`, sans fuite) et erreur inattendue (500 générique, sans fuite).
+  - Frontend : `apps/web/src/lib/auth-errors.ts` mappe les erreurs en messages français (400 avec détail par champ, 401, 403, 409, 429 avec délai, 500/503, réseau) ; `FormError.tsx` affiche ces messages dans une zone `role="alert"` avec bouton « Réessayer » quand l'erreur est temporaire ; `auth-client.ts` convertit les coupures réseau (statut 0) et conserve `retry-after`.
+  - Boutons : `apps/web/src/components/ui/Button.tsx` gère désormais une icône à gauche/droite et l'icône seule (emplacement de 20 px, `shrink-0`, indicateur de chargement qui remplace l'icône) ; boutons OAuth, bascule du mot de passe et bascule de thème unifiés dessus, avec les logos officiels Google (4 couleurs) et ORCID (vert `#A6CE39`).
+- **Résultat** : inscription réussie en bout-en-bout avec base correcte (201), base indisponible renvoyant un 503 générique sans fuite, `pnpm lint`/`format:check`/`typecheck` au vert, **178 tests verts** (23 fichiers) et build web validé, sur la branche `dev`.
 
 ## Décisions prises
 
@@ -168,11 +178,14 @@
 - **Protection CSRF par validation d'origine plutôt que par jetons** : sur une API JSON à cookies `SameSite=Lax` consommée par une SPA de même origine, la vérification stricte de `Origin`/`Referer` sur les méthodes non sûres (recommandation OWASP) protège efficacement sans imposer un flux de jetons à tous les appels ; les clients non-navigateur (tests `app.inject`, appels serveur à serveur) sont laissés passer car ils ne peuvent pas rejouer de cookie ambiant.
 - **Bascule de thème `ThemeToggle`** : renommage de `ThemeSwitch` vers le chemin exact nommé par T060, refondu en contrôle segmenté « Papier / Encre » accessible.
 - **Dépendance `@fastify/csrf-protection` retirée** : non utilisée (remplacée par le hook de validation d'origine) ; `pnpm-lock.yaml` resynchronisé.
+- **Chargement du `.env` depuis la racine du monorepo** : `dotenv` recherche le `.env` en remontant depuis le cwd (l'API étant lancée depuis `apps/api`), afin que `cp .env.example .env` à la racine suffise ; en mode test, les valeurs de repli déterministes sont utilisées.
+- **Erreurs API jamais exposées brutes** : gestionnaire d'erreurs global avec `requestId`, message générique et masquage des secrets dans les journaux ; le frontend mappe les statuts en messages français.
+- **Bouton unifié** : un seul composant `Button` gère icône positionnable, icône seule et indicateur de chargement remplaçant l'icône sans changer la largeur.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `e015b13` — `security: vérification et durcissement des protections et en-têtes`
+- **Dernier commit** : `1108c79` — `fix: boutons avec icône unifiés et logos Google/ORCID officiels`
 
 ## Comment lancer le projet
 
@@ -250,6 +263,8 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 - **Richesse de rime heuristique** : déduite du suffixe graphique commun et non d'une transcription phonétique complète ; quelques classements riches/suffisantes peuvent être approximatifs.
 - **Boucle micro non libérée si l'onglet est fermé pendant l'enregistrement** : le composant arrête le flux et le `MediaRecorder` au démontage, mais une fermeture brutale de l'onglet peut laisser la piste active jusqu'à sa révision par le navigateur.
 - **Pas de tests de composants frontend** : l'éditeur, la sauvegarde automatique et le tableau de bord reposent sur les tests d'API et sur typecheck/lint ; React Testing Library n'est pas encore configuré.
+- **Autres pages d'authentification** : `ResetPasswordPage`, `SessionsPage` et `LinkAccountModal` n'utilisent pas encore `presentAuthError`/`FormError` (seules l'inscription et la connexion ont été traitées) ; à généraliser ultérieurement.
+- **Base de données de recette** : le `.env` local peut pointer vers une base PostgreSQL native (le rôle `verso` de `docker-compose` n'existe pas hors Docker) ; `GET /health` et le message de démarrage permettent de le détecter.
 - Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification.
 - Ne jamais commiter de fichier `.env`, de secret ni de fichier audio de test.
 - Respecter scrupuleusement le protocole de fin de tâche dans l'ordre strict des 6 étapes.
