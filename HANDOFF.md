@@ -3,7 +3,7 @@
 ## État actuel
 
 - **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
-- **Phase d'implémentation Spec Kit** : **Phase 12 (Bonus : enregistrement vocal et suggestions de rimes — T058 à T059) terminée** (seconde phase P3).
+- **Phase d'implémentation Spec Kit** : **Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) terminée**. **Les 13 phases / 62 tâches du plan sont désormais toutes implémentées et testées.**
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
@@ -96,17 +96,25 @@
     - Normalisation partagée extraite (`normalizeRhymeWord`) réutilisée par le détecteur de rimes et le dictionnaire.
     - Sélection de mot dans l'éditeur CodeMirror (`LyricEditor.onSelectionChange`) et tiroir latéral `RhymeSuggestionsDrawer.tsx` : ouverture à la sélection d'un mot, groupes « rimes riches » / « rimes suffisantes » et insertion de la rime en un clic (T059).
     - **Suite de tests totale : 158 tests au vert** (20 fichiers) ; lint, format, typecheck et build de production validés.
+  - **Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) implémentée et testée** :
+    - Bascule de thème renommée et refondue en `apps/web/src/components/common/ThemeToggle.tsx` (chemin exact nommé par T060) : contrôle segmenté « Papier / Encre » accessible (`role="group"`, `aria-pressed`, libellé lecteur d'écran via `sr-only`) et respectueux de `prefers-reduced-motion` ; remplace l'ancien `ThemeSwitch` (7 imports mis à jour).
+    - Finitions `apps/web/src/index.css` conformes au skill `frontend-design` : anneau de focus visible cohérent au clavier, sélection de texte teintée à l'accent, barres de défilement discrètes accordées à la palette, rendu typographique optimisé et défilement doux.
+    - Durcissement sécurité (T062) : protection CSRF par validation stricte d'origine (`apps/api/src/plugins/csrf.plugin.ts`, hook posé à la racine pour englober toutes les routes) refusant (403) toute écriture dont l'`Origin`/`Referer` de navigateur n'appartient pas à `CLIENT_URL`, en complément des cookies `SameSite=Lax` et du CORS restrictif.
+    - Tests d'intégration `apps/api/tests/integration/security.test.ts` (10 tests) : en-têtes Helmet (`x-content-type-options`, `x-frame-options`, `referrer-policy`, `x-dns-prefetch-control`, `cross-origin-opener-policy`, absence de `x-powered-by`), CORS (origine autorisée reflétée avec credentials, origine étrangère jamais reflétée), CSRF (origine étrangère et référent étranger refusés, origine légitime acceptée, requête non-navigateur laissée passer, lecture GET jamais bloquée), isolation multi-tenant anti-IDOR (lecture/modification/suppression d'autrui refusées en 404, texte du propriétaire préservé) et absence de fuite du hash de mot de passe.
+    - Dépendance `@fastify/csrf-protection` retirée (non utilisée) ; `apps/api/package.json` et `pnpm-lock.yaml` resynchronisés, README corrigé.
+    - Validation complète (T061) : `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (**168 tests / 21 fichiers**) et builds `apps/web` et `apps/api` au vert. Les scénarios de `quickstart.md` sont couverts par les suites d'intégration correspondantes (auth & sessions, CRUD textes + sauvegarde, albums & réordonnancement, instrumentales, PDF & partage privé).
+    - **Suite de tests totale : 168 tests au vert** (21 fichiers) ; lint, format, typecheck et builds de production validés.
   - Branche `dev` active.
 - **Ce qui est en cours** :
-  - Phase 12 terminée : arrêt pour validation avant la Phase 13.
+  - Phase 13 terminée : les 13 phases / 62 tâches du plan Spec Kit sont intégralement implémentées et testées. Arrêt pour validation.
 - **Ce qui reste à faire** :
-  - **Phase 13** : Finitions design, validation end-to-end (`quickstart.md`) et audit de sécurité (T060 à T062).
   - **Refonte Design Étape 4** : Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
+  - **Recette manuelle** : téléversements S3 réels (CORS bucket), OAuth contre les vrais fournisseurs, scénarios `quickstart.md` en navigateur (Service Worker/hors ligne, micro), icônes PWA PNG 192/512.
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de la Phase 12 (Bonus : enregistrement vocal freestyle et suggestions de rimes — T058 à T059) en respectant la constitution, la spec (FR-048 à FR-049) et la liste des tâches.
-- **Résultat** : enregistreur `MediaRecorder` avec téléversement présigné S3 et mémos vocaux rattachés au texte, dictionnaire de rimes françaises embarqué et tiroir de suggestions avec insertion en un clic, 158 tests verts sur la branche `dev`.
+- **Action exécutée** : Implémentation de la Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) en respectant la constitution, la spec et le skill `frontend-design`.
+- **Résultat** : bascule de thème `ThemeToggle` accessible et finitions visuelles, protection CSRF par validation d'origine et tests d'audit de sécurité, validation complète du monorepo (168 tests verts) sur la branche `dev`.
 
 ## Décisions prises
 
@@ -157,11 +165,14 @@
 - **Format d'enregistrement négocié par le navigateur** : `pickVoiceRecorderFormat` sélectionne le premier format `MediaRecorder.isTypeSupported` parmi webm/opus, webm, mp4 et ogg, puis normalise le type MIME accepté par l'API.
 - **Dictionnaire de rimes embarqué plutôt qu'un index volumineux** : un lexique curé d'environ 250 mots courants est livré dans le bundle partagé, et la richesse d'une rime est déduite de la longueur du suffixe graphique commun (≥ 3 caractères = riche).
 - **Sélection de mot pilotée par CodeMirror** : `LyricEditor` remonte la sélection (`onSelectionChange`) ; l'éditeur ouvre le tiroir de rimes et remplace la sélection par la rime choisie via l'état React partagé (pas d'API impérative).
+- **Protection CSRF par validation d'origine plutôt que par jetons** : sur une API JSON à cookies `SameSite=Lax` consommée par une SPA de même origine, la vérification stricte de `Origin`/`Referer` sur les méthodes non sûres (recommandation OWASP) protège efficacement sans imposer un flux de jetons à tous les appels ; les clients non-navigateur (tests `app.inject`, appels serveur à serveur) sont laissés passer car ils ne peuvent pas rejouer de cookie ambiant.
+- **Bascule de thème `ThemeToggle`** : renommage de `ThemeSwitch` vers le chemin exact nommé par T060, refondu en contrôle segmenté « Papier / Encre » accessible.
+- **Dépendance `@fastify/csrf-protection` retirée** : non utilisée (remplacée par le hook de validation d'origine) ; `pnpm-lock.yaml` resynchronisé.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `966e79c` — `docs: mise a jour du handoff et du readme pour la phase pwa et hors ligne`
+- **Dernier commit** : `e015b13` — `security: vérification et durcissement des protections et en-têtes`
 
 ## Comment lancer le projet
 
@@ -245,10 +256,8 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Prochaine étape
 
-- **Commande recommandée** : `/speckit-implement` pour la Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062).
-- **Prompt recommandé** :
-  ```text
-  Implémente la phase 13 (finitions design, validation end-to-end et audit de sécurité — T060 à T062).
-  Travaille tâche par tâche, commit par tâche terminée avec un message Conventional
-  Commits en français, lance lint et tests, puis pousse sur dev et résume pour validation.
-  ```
+- **Plan Spec Kit complet** : les 13 phases / 62 tâches sont terminées. Aucune phase d'implémentation restante.
+- **Travaux suivants recommandés** :
+  - **Refonte Design Étape 4** : espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
+  - **Recette manuelle** : valider les téléversements S3 (CORS bucket), l'OAuth réel, les scénarios `quickstart.md` en navigateur (micro, hors ligne) et ajouter les icônes PWA PNG 192/512.
+  - **Tests de composants** : configurer React Testing Library pour couvrir éditeur, sauvegarde hors ligne, partage et enregistrement vocal.

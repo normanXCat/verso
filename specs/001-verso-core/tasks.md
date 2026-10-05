@@ -174,9 +174,9 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 **Objectif** : Appliquer les règles esthétiques du skill `frontend-design` (contrastes, typographie soignée, bascule dark/light mode), exécuter la validation de bout en bout et durcir la sécurité.
 **Test indépendant** : Exécuter avec succès la suite complète `pnpm test`, `pnpm typecheck`, `pnpm lint` (0 erreur, 0 warning) et valider l'ensemble des scénarios de `quickstart.md`.
 
-- [ ] T060 [P] [P1] Harmoniser l'interface selon le skill `frontend-design` (contrastes accessibles, typographie, espacements généreux, bascule dark/light fluide) dans `apps/web/src/index.css` et `apps/web/src/components/common/ThemeToggle.tsx`. *Commit: `style: harmonisation esthétique minimaliste dark light mode selon frontend design`*
-- [ ] T061 [P1] Exécuter la suite complète de validation end-to-end `quickstart.md` et les tests automatisés du monorepo (`pnpm test`, `pnpm typecheck`, `pnpm lint`). *Commit: `test: validation complète de la suite de tests et des scénarios quickstart`*
-- [ ] T062 [P1] Réaliser l'audit final de sécurité : vérification des en-têtes Helmet, CORS, protection CSRF, isolation multi-tenante et absence de secrets. *Commit: `security: vérification et durcissement des protections et en-têtes`*
+- [X] T060 [P] [P1] Harmoniser l'interface selon le skill `frontend-design` (contrastes accessibles, typographie, espacements généreux, bascule dark/light fluide) dans `apps/web/src/index.css` et `apps/web/src/components/common/ThemeToggle.tsx`. *Commit: `style: harmonisation esthétique minimaliste dark light mode selon frontend design`*
+- [X] T061 [P1] Exécuter la suite complète de validation end-to-end `quickstart.md` et les tests automatisés du monorepo (`pnpm test`, `pnpm typecheck`, `pnpm lint`). *Commit: `test: validation complète de la suite de tests et des scénarios quickstart`*
+- [X] T062 [P1] Réaliser l'audit final de sécurité : vérification des en-têtes Helmet, CORS, protection CSRF, isolation multi-tenante et absence de secrets. *Commit: `security: vérification et durcissement des protections et en-têtes`*
 
 ---
 
