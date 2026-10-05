@@ -6,7 +6,7 @@ import { Card } from '../components/ui/Card.js';
 import { Tag } from '../components/ui/Tag.js';
 import { Modal } from '../components/ui/Modal.js';
 import { useToast } from '../components/ui/Toast.js';
-import { ThemeSwitch } from '../components/common/ThemeSwitch.js';
+import { ThemeToggle } from '../components/common/ThemeToggle.js';
 
 export function DesignSystemPage(): React.ReactElement {
   const { toast } = useToast();
@@ -44,7 +44,7 @@ export function DesignSystemPage(): React.ReactElement {
           </div>
 
           <div className="flex items-center gap-3">
-            <ThemeSwitch showLabel />
+            <ThemeToggle showLabel />
           </div>
         </header>
 

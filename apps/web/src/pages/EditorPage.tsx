@@ -8,7 +8,7 @@ import { readDraft } from '../lib/draft-storage.js';
 import { cacheSong, getDraft } from '../lib/offline-storage.js';
 import { useOfflineSync } from '../hooks/useOfflineSync.js';
 import { useToast } from '../components/ui/Toast.js';
-import { ThemeSwitch } from '../components/common/ThemeSwitch.js';
+import { ThemeToggle } from '../components/common/ThemeToggle.js';
 import { LyricEditor } from '../components/editor/LyricEditor.js';
 import { EditorMetricsBar } from '../components/editor/EditorMetricsBar.js';
 import { SaveStatusIndicator } from '../components/editor/SaveStatusIndicator.js';
@@ -244,7 +244,7 @@ export function EditorPage(): React.ReactElement {
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
               </button>
               <ZenModeToggle isActive={isZen} onToggle={toggleZen} />
-              <ThemeSwitch />
+              <ThemeToggle />
             </div>
           </div>
         </header>

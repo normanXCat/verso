@@ -11,7 +11,7 @@ import { Modal } from '../components/ui/Modal.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
 import { useToast } from '../components/ui/Toast.js';
-import { ThemeSwitch } from '../components/common/ThemeSwitch.js';
+import { ThemeToggle } from '../components/common/ThemeToggle.js';
 import { Logo } from '../components/common/Logo.js';
 import { FilterBar } from '../components/dashboard/FilterBar.js';
 import { SongCard } from '../components/dashboard/SongCard.js';
@@ -122,7 +122,7 @@ export function DashboardPage(): React.ReactElement {
             >
               Sessions
             </Link>
-            <ThemeSwitch />
+            <ThemeToggle />
           </div>
         </div>
       </header>
