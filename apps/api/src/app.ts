@@ -32,6 +32,11 @@ export async function buildApp(): Promise<FastifyInstance> {
     timeWindow: '1 minute',
   });
 
+  // Protection CSRF : validation stricte de l'origine des requêtes modifiant l'état
+  // (hook posé à la racine pour englober toutes les routes sans encapsulation)
+  const { csrfGuard } = await import('./plugins/csrf.plugin.js');
+  app.addHook('onRequest', csrfGuard);
+
   // Stockage d'objets compatible S3 (URLs présignées)
   const { s3Plugin } = await import('./plugins/s3.plugin.js');
   await app.register(s3Plugin);
