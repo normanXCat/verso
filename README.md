@@ -29,7 +29,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 
 | **Socle** | **Docker & Base PostgreSQL (Phase 1)** | ✅ Fait | Docker Compose (PostgreSQL 16, MinIO S3), schéma Prisma et migration initiale appliquée (13 tables) |
 | **Socle** | **CI GitHub Actions (Phase 1)** | ✅ Fait | Pipeline CI automatisé (`.github/workflows/ci.yml`) testant lint, format, typecheck et tests |
-| **Socle** | **Design System « Encre & Papier »** | ✅ Fait | Tokens clair/sombre, typographie Fontsource (Instrument Serif, Geist), Framer Motion, page `/design`, composant `Button` unifié (icônes, chargement, pleine largeur, `asChild`) |
+| **Socle** | **Design System « Encre & Papier »** | ✅ Fait | Tokens clair/sombre, typographie Fontsource (Instrument Serif, Geist), Framer Motion, page `/design`, composant `Button` unifié (icônes, chargement, pleine largeur, `asChild`), `NavLink` (trait au survol en 150 ms, état actif) et logotype `Logo` vectoriel |
 | **Socle** | **Landing Page « Encre & Papier »** | ✅ Fait | Hero asymétrique, feuille signature animée, mockup interactif, studio audio, frise d'antériorité |
 | **P1** | **Authentification sécurisée & Sessions** | ✅ Fait | Mots de passe Argon2id, sessions PostgreSQL en cookies HttpOnly/Secure/SameSite=Lax, emails transactionnels, rate limiting |
 | **P1** | **Espace personnel, recherche & filtres** | ✅ Fait | Tableau de bord `/app`, recherche plein texte en direct (titre et paroles), filtres brouillons/terminés/favoris, cloisonnement par utilisateur |
@@ -146,6 +146,9 @@ verso/
 │       ├── research.md         # Décisions d'architecture
 │       ├── spec.md             # Spécification fonctionnelle validée
 │       └── tasks.md            # Découpage des 62 tâches ordonnancées
+├── docs/
+│   └── brand/
+│       └── logo-wordmark.svg   # Logotype Verso (Instrument Serif converti en tracés)
 ├── .dockerignore               # Exclusion Docker
 ├── .env.example                # Modèle de variables d'environnement
 ├── .gitignore                  # Exclusion des dépendances, secrets et médias audio
@@ -185,6 +188,8 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 | `GOOGLE_CLIENT_SECRET` | Secret client de l'application OAuth Google |
 | `ORCID_CLIENT_ID` | Identifiant client de l'application OAuth ORCID |
 | `ORCID_CLIENT_SECRET` | Secret client de l'application OAuth ORCID |
+| `RESEND_API_KEY` | Clé API du transport d'emails transactionnels (Resend) — **obligatoire en production** |
+| `EMAIL_FROM` | Expéditeur des emails transactionnels (défaut `Verso <noreply@verso.fr>`) |
 
 ---
 
@@ -204,7 +209,7 @@ Un 500 global signifie presque toujours que la base de données est injoignable 
 3. **Démarrer la base** : `docker compose up -d` (PostgreSQL 16 + MinIO).
 4. **Appliquer les migrations** : `pnpm --filter @verso/api exec prisma migrate dev`.
 5. **Régénérer le client Prisma** si nécessaire : `pnpm --filter @verso/api exec prisma generate`.
-6. **Service d'email local** : sans `RESEND_API_KEY`, les emails sont simulés et journalisés ; une panne d'envoi ne fait plus échouer l'inscription (le compte est créé et l'envoi peut être redemandé).
+6. **Emails en développement (sans Docker ni SMTP)** : sans `RESEND_API_KEY` et hors production, l'API affiche dans la console l'email complet — destinataire, objet, contenu et **lien de vérification** — encadré par un bandeau `EMAIL SIMULÉ`, et l'inscription n'échoue jamais (le compte est créé, l'envoi peut être redemandé). En **production**, l'absence de transport d'email empêche le démarrage de l'API (message nommant `RESEND_API_KEY`) : aucun lien de vérification n'est jamais journalisé en production.
 7. **Proxy Vite, CORS et CSRF** : le frontend appelle `/api/*`, redirigé vers l'API par le proxy de développement Vite. `CLIENT_URL` doit correspondre à l'origine du frontend (défaut `http://localhost:5173`) pour le CORS et la protection CSRF.
 
 ---
