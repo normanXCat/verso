@@ -1,132 +1,172 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, User, X } from 'lucide-react';
 import { ThemeToggle } from '../common/ThemeToggle.js';
 import { Logo } from '../common/Logo.js';
 import { Button } from '../ui/Button.js';
+import { NavLink } from '../ui/NavLink.js';
 import { useAuth } from '../../hooks/useAuth.js';
+
+const NAV_LINKS = [
+  { label: 'Écrire', href: '#ecrire' },
+  { label: 'Organiser', href: '#organiser' },
+  { label: 'Instrus', href: '#instrus' },
+  { label: 'Protéger', href: '#proteger' },
+  { label: 'Méthode', href: '#methode' },
+];
+
+/** Seuil (px) de passage à la barre compacte. */
+const SCROLL_COMPACT = 24;
+/** Au-delà de cette distance, le bandeau de vérification a quitté l'écran. */
+const SCROLL_PAST_BANNER = 48;
 
 export function Navbar(): React.ReactElement {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [pastBanner, setPastBanner] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const { isAuthenticated, user } = useAuth();
 
+  // Barre compacte + décalage sous le bandeau de vérification email.
   useEffect(() => {
     const handleScroll = (): void => {
-      if (window.scrollY > 24) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      const y = window.scrollY;
+      setIsScrolled(y > SCROLL_COMPACT);
+      setPastBanner(y > SCROLL_PAST_BANNER);
     };
 
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { label: 'Écrire', href: '#ecrire' },
-    { label: 'Organiser', href: '#organiser' },
-    { label: 'Instrus', href: '#instrus' },
-    { label: 'Protéger', href: '#proteger' },
-    { label: 'Méthode', href: '#methode' },
-  ];
+  // État actif : la section visible la plus avancée (ligne de lecture à 35 % de l'écran).
+  useEffect(() => {
+    const ids = NAV_LINKS.map((link) => link.href.slice(1));
+
+    const handleScroll = (): void => {
+      const readingLine = window.innerHeight * 0.35;
+      let current: string | null = null;
+
+      for (const id of ids) {
+        const element = document.getElementById(id);
+        if (element && element.getBoundingClientRect().top <= readingLine) {
+          current = id;
+        }
+      }
+
+      setActiveSection(current);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, []);
+
+  const displayName = user?.displayName || user?.email || '';
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+      // Le bandeau de vérification est dans le flux, au-dessus : la barre fixe se décale
+      // exactement de sa hauteur (`--banner-h`) tant qu'il est à l'écran, puis revient à 0.
+      style={{ top: pastBanner ? '0px' : 'var(--banner-h, 0px)' }}
+      className={`fixed left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
-          ? 'py-3 bg-paper-bg/90 backdrop-blur-md border-b border-paper-border shadow-paper-sm'
-          : 'py-6 bg-transparent'
+          ? 'bg-paper-bg/90 py-3 border-b border-paper-border shadow-paper-sm backdrop-blur-md'
+          : 'bg-transparent py-6'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 md:px-12">
         {/* Logo Verso */}
         <Link
           to="/"
           aria-label="Verso — retour à l'accueil"
-          className="group text-paper-text transition-colors hover:text-paper-accent"
+          className="flex items-center text-paper-text no-underline transition-colors hover:text-paper-accent"
         >
           <Logo size="lg" title="Verso" />
         </Link>
 
         {/* Liens Desktop */}
-        <nav className="hidden md:flex items-center gap-8 text-sm text-paper-muted">
-          {navLinks.map((link) => (
-            <a
+        <nav className="hidden items-center gap-8 md:flex" aria-label="Sections de la page">
+          {NAV_LINKS.map((link) => (
+            <NavLink
               key={link.href}
               href={link.href}
-              className="transition-colors hover:text-paper-text font-medium relative py-1 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1px] after:bg-paper-accent hover:after:w-full after:transition-all after:duration-200"
+              isActive={activeSection === link.href.slice(1)}
             >
               {link.label}
-            </a>
+            </NavLink>
           ))}
         </nav>
 
         {/* Actions & Authentification */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden items-center gap-3 md:flex">
           <ThemeToggle />
 
           {isAuthenticated && user ? (
-            <div className="flex items-center gap-3">
-              <Link
-                to="/app"
-                className="text-xs font-mono text-paper-muted hover:text-paper-text transition-colors px-2 py-1 border border-paper-border rounded"
-              >
-                {user.displayName || user.email}
-              </Link>
-              <Button asChild variant="secondary" size="sm">
+            <>
+              <Button asChild variant="ghost" size="sm" iconLeft={<User className="h-4 w-4" />}>
+                <Link to="/app" title={displayName}>
+                  <span className="inline-block max-w-[10rem] truncate align-bottom">
+                    {displayName}
+                  </span>
+                </Link>
+              </Button>
+              <Button asChild variant="primary" size="sm">
                 <Link to="/app">Mon espace</Link>
               </Button>
-            </div>
+            </>
           ) : (
-            <div className="flex items-center gap-3">
-              <Link
-                to="/login"
-                className="text-sm font-medium text-paper-text hover:text-paper-accent transition-colors px-3 py-1.5"
-              >
-                Se connecter
-              </Link>
+            <>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/login">Se connecter</Link>
+              </Button>
               <Button asChild variant="primary" size="sm">
                 <Link to="/register">Commencer</Link>
               </Button>
-            </div>
+            </>
           )}
         </div>
 
         {/* Bouton Menu Mobile */}
         <div className="flex items-center gap-3 md:hidden">
           <ThemeToggle />
-          <button
+          <Button
             type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-paper-text hover:text-paper-accent focus:outline-none"
+            variant="ghost"
+            size="icon"
+            iconOnly
             aria-label="Basculer le menu"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+            aria-expanded={mobileMenuOpen}
+            iconLeft={mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            onClick={() => setMobileMenuOpen((open) => !open)}
+          />
         </div>
       </div>
 
       {/* Menu Déroulant Mobile */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-paper-border bg-paper-surface px-6 py-6 shadow-paper-md animate-in fade-in slide-in-from-top-2 duration-200">
-          <nav className="flex flex-col gap-4 text-base">
-            {navLinks.map((link) => (
+        <div className="animate-in fade-in slide-in-from-top-2 border-b border-paper-border bg-paper-surface px-6 py-6 shadow-paper-md duration-200 md:hidden">
+          <nav className="flex flex-col gap-4 text-base" aria-label="Sections de la page">
+            {NAV_LINKS.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-paper-muted hover:text-paper-text font-medium py-1 border-b border-paper-border/40"
+                className="border-b border-paper-border/40 py-1 font-medium text-paper-muted no-underline transition-colors hover:text-paper-text"
               >
                 {link.label}
               </a>
             ))}
-            <div className="pt-4 flex flex-col gap-3">
+            <div className="flex flex-col gap-3 pt-4">
               {isAuthenticated && user ? (
                 <Button asChild variant="primary" fullWidth>
                   <Link to="/app" onClick={() => setMobileMenuOpen(false)}>
-                    Mon espace ({user.displayName || user.email})
+                    Mon espace ({displayName})
                   </Link>
                 </Button>
               ) : (

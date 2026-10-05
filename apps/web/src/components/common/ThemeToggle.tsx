@@ -22,9 +22,11 @@ const OPTIONS: ThemeOption[] = [
 
 /**
  * Bascule de thème segmentée « Papier / Encre ».
- * Respecte les préférences système, persiste le choix et reste utilisable au clavier
- * et au lecteur d'écran (boutons à bascule `aria-pressed`). Réutilise le composant
- * `Button` unique pour garantir une icône de taille fixe et un alignement constant.
+ *
+ * Couleurs **plates** issues des jetons du thème (aucun dégradé, aucune transparence
+ * ni ombre) et hauteur alignée sur les autres éléments de la barre : le groupe mesure
+ * 36 px (`h-9`) comme les boutons `sm`, ses segments internes 32 px.
+ * Reste utilisable au clavier et au lecteur d'écran (`role="group"`, `aria-pressed`).
  */
 export function ThemeToggle({
   className = '',
@@ -36,7 +38,7 @@ export function ThemeToggle({
     <div
       role="group"
       aria-label="Thème de l'interface"
-      className={`inline-flex items-center gap-0.5 rounded-full border border-paper-border bg-paper-surface/70 p-0.5 backdrop-blur-sm ${className}`}
+      className={`inline-flex h-9 shrink-0 items-center gap-0.5 rounded-paper border border-paper-border bg-paper-surface p-0.5 ${className}`}
     >
       {OPTIONS.map(({ value, label, hint, Icon }) => {
         const isActive = theme === value;
@@ -45,18 +47,16 @@ export function ThemeToggle({
             key={value}
             type="button"
             variant="ghost"
-            size="sm"
+            size="icon"
             iconOnly={!showLabel}
             aria-pressed={isActive}
             aria-label={hint}
             title={hint}
             onClick={() => setTheme(value)}
-            iconLeft={<Icon className="w-5 h-5" aria-hidden="true" />}
-            className={`!rounded-full ${
-              isActive
-                ? '!bg-paper-bg !text-paper-text shadow-paper-sm'
-                : 'text-paper-muted hover:text-paper-text'
-            }`}
+            iconLeft={<Icon className="h-4 w-4" aria-hidden="true" />}
+            className={`!h-8 !rounded-paper ${
+              showLabel ? '!w-auto !gap-1.5 !px-2' : '!w-8'
+            } ${isActive ? '!bg-paper-bg !text-paper-text' : 'text-paper-muted hover:text-paper-text'}`}
           >
             {showLabel ? <span className="text-[11px] tracking-wide">{label}</span> : undefined}
           </Button>
