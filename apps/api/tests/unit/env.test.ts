@@ -36,6 +36,23 @@ describe('Validation Zod des variables d environnement (env.ts)', () => {
     );
   });
 
+  it("doit refuser la production sans transport d'email configuré", () => {
+    const invalidEnv = { ...validMockEnv, NODE_ENV: 'production' };
+    expect(() => validateEnv(invalidEnv)).toThrowError(/RESEND_API_KEY/);
+  });
+
+  it("doit accepter la production dès qu'un transport d'email est configuré", () => {
+    const prodEnv = { ...validMockEnv, NODE_ENV: 'production', RESEND_API_KEY: 're_cle_de_test' };
+    const config = validateEnv(prodEnv);
+    expect(config.NODE_ENV).toBe('production');
+    expect(config.RESEND_API_KEY).toBe('re_cle_de_test');
+  });
+
+  it("n'exige aucun transport d'email hors production", () => {
+    const config = validateEnv({ ...validMockEnv, NODE_ENV: 'development' });
+    expect(config.RESEND_API_KEY).toBeUndefined();
+  });
+
   it('doit assigner les valeurs par défaut pour les champs optionnels', () => {
     const minimalEnv = {
       DATABASE_URL: 'postgresql://localhost:5432/verso',

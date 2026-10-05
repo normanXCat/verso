@@ -118,6 +118,18 @@ export function validateEnv(customEnv: Record<string, string | undefined> = proc
     );
   }
 
+  // En production, un transport d'email est obligatoire : sans lui, l'API ne pourrait
+  // pas envoyer les liens de vérification et n'aurait d'autre choix que de les écrire
+  // dans ses journaux, ce qui est interdit. On refuse donc de démarrer.
+  if (result.data.NODE_ENV === 'production' && !result.data.RESEND_API_KEY) {
+    throw new EnvironmentValidationError(
+      `Configuration invalide. L'envoi des emails transactionnels est requis en production :\n` +
+        `  - RESEND_API_KEY: clé API du transport d'email (Resend) absente.\n` +
+        `Sans transport configuré, le serveur refuse de démarrer pour ne jamais journaliser\n` +
+        `de lien de vérification d'adresse en production.`,
+    );
+  }
+
   return result.data;
 }
 
