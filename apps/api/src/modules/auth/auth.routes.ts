@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import { FastifyInstance, FastifyPluginAsync, FastifyRequest } from 'fastify';
 import {
   registerSchema,
   loginSchema,
@@ -23,6 +23,27 @@ import {
 } from './session.service.js';
 import { sendVerificationEmail, sendPasswordResetEmail } from './email.service.js';
 import { requireAuth } from './auth.guard.js';
+
+/**
+ * Envoie l'email de vérification sans jamais faire échouer l'inscription :
+ * toute erreur est journalisée et signalée par un booléen.
+ */
+async function trySendVerificationEmail(
+  request: FastifyRequest,
+  email: string,
+  rawToken: string,
+): Promise<boolean> {
+  try {
+    const sent = await sendVerificationEmail(email, rawToken);
+    if (!sent) {
+      request.log.warn({ email }, "Échec de l'envoi de l'email de vérification");
+    }
+    return sent;
+  } catch (error) {
+    request.log.error({ err: error, email }, "Erreur lors de l'envoi de l'email de vérification");
+    return false;
+  }
+}
 
 export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   // Inscription
@@ -84,8 +105,10 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
         },
       });
 
-      // Envoi de l'email transactionnel
-      await sendVerificationEmail(user.email, rawToken);
+      // Envoi de l'email transactionnel : ne doit jamais faire échouer l'inscription.
+      // En cas d'incident, le compte reste créé et un nouvel envoi est possible
+      // via POST /api/auth/resend-verification.
+      const emailSent = await trySendVerificationEmail(request, user.email, rawToken);
 
       // Création immédiate de la session
       const session = await createSession({
@@ -104,7 +127,9 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
           displayName: user.displayName,
           emailVerified: user.emailVerified,
         },
-        message: 'Compte créé avec succès. Un lien de vérification a été envoyé par email.',
+        message: emailSent
+          ? 'Compte créé avec succès. Un lien de vérification a été envoyé par email.'
+          : "Compte créé avec succès. L'envoi de l'email de vérification a échoué ; vous pouvez demander un nouvel envoi depuis votre espace.",
       });
     },
   );
@@ -278,10 +303,12 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
         },
       });
 
-      await sendVerificationEmail(user.email, rawToken);
+      const emailSent = await trySendVerificationEmail(request, user.email, rawToken);
 
       return reply.status(200).send({
-        message: 'Un nouvel email de vérification vous a été envoyé.',
+        message: emailSent
+          ? 'Un nouvel email de vérification vous a été envoyé.'
+          : "L'envoi de l'email de vérification a échoué. Réessayez dans un instant.",
       });
     },
   );

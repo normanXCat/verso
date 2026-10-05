@@ -8,3 +8,11 @@ export const prisma = new PrismaClient({
     },
   },
 });
+
+/**
+ * Vérifie que la base PostgreSQL est joignable (utilisé par le healthcheck).
+ * Lève une erreur si la connexion ou la requête échoue.
+ */
+export async function checkDatabaseConnection(): Promise<void> {
+  await prisma.$queryRaw`SELECT 1`;
+}

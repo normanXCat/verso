@@ -1,7 +1,39 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
-dotenv.config();
+/**
+ * Localise le fichier `.env` le plus proche en remontant depuis le répertoire
+ * courant. Indispensable dans le monorepo : l'API est lancée avec pour cwd
+ * `apps/api` (`tsx watch src/server.ts`) alors que le `.env` documenté se trouve
+ * à la racine du projet (`cp .env.example .env`). Sans cette remontée, dotenv
+ * chercherait `apps/api/.env` et ignorerait silencieusement la configuration.
+ */
+function findEnvFile(startDir: string): string | null {
+  let dir = startDir;
+  for (let depth = 0; depth < 6; depth += 1) {
+    const candidate = path.join(dir, '.env');
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) {
+      break;
+    }
+    dir = parent;
+  }
+  return null;
+}
+
+// En mode test, on ne charge pas le `.env` de la machine : la suite utilise des
+// valeurs de repli déterministes (base `verso_test`) définies ci-dessous.
+if (process.env.NODE_ENV !== 'test') {
+  const envFilePath = findEnvFile(process.cwd());
+  if (envFilePath) {
+    dotenv.config({ path: envFilePath });
+  }
+}
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -34,6 +66,16 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
+/** Variables strictement requises hors mode test (sans valeur par défaut sûre). */
+const REQUIRED_VARIABLES = ['DATABASE_URL', 'SESSION_SECRET'] as const;
+
+export class EnvironmentValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'EnvironmentValidationError';
+  }
+}
+
 export function validateEnv(customEnv: Record<string, string | undefined> = process.env): Env {
   const isTest = (customEnv.NODE_ENV || process.env.NODE_ENV) === 'test';
   const resolvedEnv = {
@@ -53,6 +95,17 @@ export function validateEnv(customEnv: Record<string, string | undefined> = proc
           ? 'test_session_secret_at_least_32_characters_long_for_security'
           : undefined,
   };
+
+  // Message explicite nommant chaque variable manquante, avant toute autre erreur.
+  const missingVariables = REQUIRED_VARIABLES.filter((name) => !resolvedEnv[name]);
+  if (missingVariables.length > 0) {
+    const details = missingVariables.map((name) => `  - ${name}: ${name} est requise`).join('\n');
+    throw new EnvironmentValidationError(
+      `Configuration invalide. Variables d'environnement manquantes :\n${details}\n` +
+        `Copiez le fichier modèle à la racine du projet : « cp .env.example .env » puis renseignez les valeurs.`,
+    );
+  }
+
   const result = envSchema.safeParse(resolvedEnv);
 
   if (!result.success) {
@@ -60,7 +113,7 @@ export function validateEnv(customEnv: Record<string, string | undefined> = proc
       .map((err) => `  - ${err.path.join('.')}: ${err.message}`)
       .join('\n');
 
-    throw new Error(
+    throw new EnvironmentValidationError(
       `Configuration invalide. Erreurs dans les variables d'environnement :\n${errorDetails}`,
     );
   }

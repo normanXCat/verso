@@ -32,6 +32,10 @@ export async function buildApp(): Promise<FastifyInstance> {
     timeWindow: '1 minute',
   });
 
+  // Gestionnaire d'erreurs global (message générique + identifiant de requête)
+  const { globalErrorHandler } = await import('./plugins/error-handler.js');
+  app.setErrorHandler(globalErrorHandler);
+
   // Protection CSRF : validation stricte de l'origine des requêtes modifiant l'état
   // (hook posé à la racine pour englober toutes les routes sans encapsulation)
   const { csrfGuard } = await import('./plugins/csrf.plugin.js');
@@ -77,13 +81,26 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { voiceNotesRoutes } = await import('./modules/audio/voice-notes.routes.js');
   await app.register(voiceNotesRoutes, { prefix: '/api' });
 
-  // Route de contrôle de santé
-  app.get('/health', async () => {
-    return {
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      service: 'verso-api',
-    };
+  // Contrôle de santé : vérifie explicitement la connexion à la base de données.
+  app.get('/health', async (request, reply) => {
+    const { checkDatabaseConnection } = await import('./config/prisma.js');
+    try {
+      await checkDatabaseConnection();
+      return reply.status(200).send({
+        status: 'ok',
+        database: 'up',
+        timestamp: new Date().toISOString(),
+        service: 'verso-api',
+      });
+    } catch (error) {
+      request.log.error({ err: error }, 'Healthcheck : base de données injoignable');
+      return reply.status(503).send({
+        status: 'error',
+        database: 'down',
+        timestamp: new Date().toISOString(),
+        service: 'verso-api',
+      });
+    }
   });
 
   return app;
