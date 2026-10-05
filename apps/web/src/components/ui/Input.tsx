@@ -106,7 +106,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                   aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                   title={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                   className="text-paper-muted hover:text-paper-text"
-                  icon={
+                  iconLeft={
                     showPassword ? (
                       <EyeOff className="w-4 h-4" aria-hidden="true" />
                     ) : (

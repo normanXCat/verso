@@ -147,13 +147,14 @@ export function LoginPage(): React.ReactElement {
           type="submit"
           variant="primary"
           size="md"
-          className="w-full mt-2"
+          fullWidth
+          className="mt-2"
           isLoading={isLoading}
           loadingText="Vérification des accès..."
           isSuccess={isSuccess}
           successText="Connexion réussie"
           shake={shake}
-          icon={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
+          iconRight={<ArrowRight />}
         >
           Accéder à mon espace
         </Button>

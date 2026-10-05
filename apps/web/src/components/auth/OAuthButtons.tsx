@@ -38,8 +38,9 @@ export function OAuthButtons(): React.ReactElement {
             disabled={pending !== null}
             aria-label={`Se connecter avec ${label}`}
             isLoading={isPending}
-            icon={provider === 'google' ? <GoogleIcon /> : <OrcidIcon />}
-            className="w-full px-2 sm:px-4 font-mono text-xs"
+            iconLeft={provider === 'google' ? <GoogleIcon /> : <OrcidIcon />}
+            fullWidth
+            className="px-2 sm:px-4 font-mono text-xs"
           >
             {label}
           </Button>

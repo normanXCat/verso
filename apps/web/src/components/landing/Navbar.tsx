@@ -75,11 +75,9 @@ export function Navbar(): React.ReactElement {
               >
                 {user.displayName || user.email}
               </Link>
-              <Link to="/app">
-                <Button variant="secondary" size="sm">
-                  Mon espace
-                </Button>
-              </Link>
+              <Button asChild variant="secondary" size="sm">
+                <Link to="/app">Mon espace</Link>
+              </Button>
             </div>
           ) : (
             <div className="flex items-center gap-3">
@@ -89,11 +87,9 @@ export function Navbar(): React.ReactElement {
               >
                 Se connecter
               </Link>
-              <Link to="/register">
-                <Button variant="primary" size="sm">
-                  Commencer
-                </Button>
-              </Link>
+              <Button asChild variant="primary" size="sm">
+                <Link to="/register">Commencer</Link>
+              </Button>
             </div>
           )}
         </div>
@@ -128,23 +124,23 @@ export function Navbar(): React.ReactElement {
             ))}
             <div className="pt-4 flex flex-col gap-3">
               {isAuthenticated && user ? (
-                <Link to="/app" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="primary" className="w-full">
+                <Button asChild variant="primary" fullWidth>
+                  <Link to="/app" onClick={() => setMobileMenuOpen(false)}>
                     Mon espace ({user.displayName || user.email})
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               ) : (
                 <>
-                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="secondary" className="w-full">
+                  <Button asChild variant="secondary" fullWidth>
+                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                       Se connecter
-                    </Button>
-                  </Link>
-                  <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="primary" className="w-full">
+                    </Link>
+                  </Button>
+                  <Button asChild variant="primary" fullWidth>
+                    <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
                       Commencer à écrire
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </>
               )}
             </div>

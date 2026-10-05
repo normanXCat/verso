@@ -62,7 +62,7 @@ export function ForgotPasswordPage(): React.ReactElement {
             {message}
           </div>
           <Link to="/login" className="block">
-            <Button variant="secondary" className="w-full">
+            <Button variant="secondary" fullWidth>
               Retour à la connexion
             </Button>
           </Link>
@@ -91,7 +91,7 @@ export function ForgotPasswordPage(): React.ReactElement {
             type="submit"
             variant="primary"
             size="md"
-            className="w-full"
+            fullWidth
             isLoading={isLoading}
             loadingText="Transmission de la clé..."
             shake={shake}

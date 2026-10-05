@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowDown, PenLine, Shield, Zap } from 'lucide-react';
+import { ArrowDown, ArrowRight, Shield, Zap } from 'lucide-react';
 import { Button } from '../ui/Button.js';
 import { RapSheetSignature } from './RapSheetSignature.js';
 
@@ -28,24 +28,20 @@ export function HeroSection(): React.ReactElement {
 
           {/* CTA Principal & Lien Secondaire */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
-            <Link to="/register">
-              <Button
-                variant="primary"
-                size="lg"
-                className="w-full sm:w-auto text-base px-8 py-3.5"
-              >
-                <PenLine className="w-4 h-4 mr-2" />
-                Commencer à écrire
-              </Button>
-            </Link>
-
-            <a
-              href="#ecrire"
-              className="inline-flex items-center justify-center gap-2 text-sm font-medium text-paper-text hover:text-paper-accent transition-colors py-3 px-4 border border-transparent hover:border-paper-border rounded"
+            <Button
+              asChild
+              variant="primary"
+              size="lg"
+              iconRight={<ArrowRight />}
+              fullWidth
+              className="sm:w-auto"
             >
-              <span>Tester l'atelier interactif</span>
-              <ArrowDown className="w-4 h-4" />
-            </a>
+              <Link to="/register">Commencer à écrire</Link>
+            </Button>
+
+            <Button asChild variant="ghost" size="lg" iconRight={<ArrowDown />}>
+              <a href="#ecrire">Tester l'atelier interactif</a>
+            </Button>
           </div>
 
           {/* Micro-engagements authentiques (sans faux chiffres ni logos inventés) */}

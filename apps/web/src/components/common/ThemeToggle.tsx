@@ -51,7 +51,7 @@ export function ThemeToggle({
             aria-label={hint}
             title={hint}
             onClick={() => setTheme(value)}
-            icon={<Icon className="w-5 h-5" aria-hidden="true" />}
+            iconLeft={<Icon className="w-5 h-5" aria-hidden="true" />}
             className={`!rounded-full ${
               isActive
                 ? '!bg-paper-bg !text-paper-text shadow-paper-sm'

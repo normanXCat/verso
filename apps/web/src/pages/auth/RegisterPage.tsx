@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { PenLine } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth.js';
 import { presentAuthError, type PresentedAuthError } from '../../lib/auth-errors.js';
 import { AuthLayout } from '../../components/auth/AuthLayout.js';
@@ -131,13 +131,14 @@ export function RegisterPage(): React.ReactElement {
           type="submit"
           variant="primary"
           size="md"
-          className="w-full mt-2"
+          fullWidth
+          className="mt-2"
           isLoading={isLoading}
           loadingText="Création de votre carnet..."
           isSuccess={isSuccess}
           successText="Carnet initialisé avec succès"
           shake={shake}
-          icon={<PenLine className="w-5 h-5" aria-hidden="true" />}
+          iconRight={<ArrowRight />}
         >
           Créer mon carnet d'écriture
         </Button>
