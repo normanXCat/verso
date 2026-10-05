@@ -2,6 +2,7 @@ import React, { createContext, useContext, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { UserPublic, LoginInput, RegisterInput } from '@verso/shared';
 import { authClient } from '../lib/auth-client.js';
+import { clearAllOfflineData } from '../lib/offline-storage.js';
 
 interface AuthContextType {
   user: UserPublic | null;
@@ -52,6 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     onSuccess: () => {
       queryClient.setQueryData(['auth', 'me'], null);
       queryClient.removeQueries({ queryKey: ['auth'] });
+      // Cloisonnement des sessions : purge du cache local et du cache Workbox d'API.
+      void clearAllOfflineData();
     },
   });
 

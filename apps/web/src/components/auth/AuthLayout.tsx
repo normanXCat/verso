@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
-import { ThemeSwitch } from '../common/ThemeSwitch.js';
+import { ThemeToggle } from '../common/ThemeToggle.js';
 import { Logo } from '../common/Logo.js';
 import { OAuthButtons } from './OAuthButtons.js';
 
@@ -42,7 +42,7 @@ export function AuthLayout({
         </Link>
 
         <div className="flex items-center gap-3">
-          <ThemeSwitch />
+          <ThemeToggle />
         </div>
       </header>
 

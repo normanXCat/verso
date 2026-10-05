@@ -46,6 +46,24 @@ export interface RhymeAnalysis {
  */
 const RHYME_E_ENDINGS = /(er|ez|ée?s?|ai|ais|ait|aient|et)$/;
 
+/**
+ * Normalise une forme graphique pour l'analyse des rimes : minuscules, ligatures
+ * développées, accents neutralisés, `y` ramené à `i`, puis suppression des
+ * consonnes finales muettes (`temps`, `gens`…) et des `e` caducs terminaux.
+ */
+export function normalizeRhymeWord(input: string): string {
+  const normalized = input
+    .toLowerCase()
+    .replace(/œ/g, 'oe')
+    .replace(/æ/g, 'ae')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z'-]/g, '')
+    .replace(/y/g, 'i');
+
+  return normalized.replace(/[sxztpd]+$/, '').replace(/e+$/, '');
+}
+
 /** Extrait la clé phonétique de la terminaison d'un vers. */
 export function rhymeKeyOf(line: string): string | null {
   const words = line.toLowerCase().match(/[\p{L}]+(?:['’-][\p{L}]+)*/gu);
@@ -61,16 +79,7 @@ export function rhymeKeyOf(line: string): string | null {
     return 'e';
   }
 
-  let word = lastWord
-    .replace(/œ/g, 'oe')
-    .replace(/æ/g, 'ae')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z'-]/g, '')
-    .replace(/y/g, 'i');
-
-  // Consonnes finales muettes (`temps`, `gens`…) puis `e` caducs.
-  word = word.replace(/[sxztpd]+$/, '').replace(/e+$/, '');
+  const word = normalizeRhymeWord(lastWord);
   if (word.length === 0) {
     return 'e';
   }

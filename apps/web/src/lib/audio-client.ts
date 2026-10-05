@@ -1,9 +1,13 @@
 import type {
   AudioMimeType,
   ConfirmInstrumentalInput,
+  ConfirmVoiceNoteInput,
   InstrumentalItem,
   UpdateInstrumentalInput,
   UploadUrlResult,
+  VoiceNoteItem,
+  VoiceNoteMimeType,
+  VoiceNoteUploadUrlInput,
 } from '@verso/shared';
 import { SongsApiError } from './songs-client.js';
 
@@ -113,4 +117,57 @@ export const audioClient = {
   async remove(id: string): Promise<void> {
     await request<void>(`/instrumentals/${encodeURIComponent(id)}`, { method: 'DELETE' });
   },
+
+  // --- Mémos vocaux freestyle (FR-048) ---
+
+  async listVoiceNotes(songId: string): Promise<VoiceNoteItem[]> {
+    return request<VoiceNoteItem[]>(`/songs/${encodeURIComponent(songId)}/voice-notes`);
+  },
+
+  async requestVoiceUploadUrl(
+    songId: string,
+    input: VoiceNoteUploadUrlInput,
+  ): Promise<UploadUrlResult> {
+    return request<UploadUrlResult>(`/songs/${encodeURIComponent(songId)}/voice-notes/upload-url`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  },
+
+  async confirmVoiceNote(songId: string, input: ConfirmVoiceNoteInput): Promise<VoiceNoteItem> {
+    return request<VoiceNoteItem>(`/songs/${encodeURIComponent(songId)}/voice-notes/confirm`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  },
+
+  async removeVoiceNote(id: string): Promise<void> {
+    await request<void>(`/voice-notes/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  },
 };
+
+/**
+ * Sélectionne le meilleur format d'enregistrement supporté par le navigateur
+ * et le type MIME normalisé attendu par l'API de mémos vocaux (FR-048).
+ */
+export function pickVoiceRecorderFormat(): {
+  mimeType: VoiceNoteMimeType;
+  recorderMimeType: string;
+} | null {
+  if (typeof MediaRecorder === 'undefined' || typeof MediaRecorder.isTypeSupported !== 'function') {
+    return null;
+  }
+
+  const candidates: { mimeType: VoiceNoteMimeType; recorderMimeType: string }[] = [
+    { mimeType: 'audio/webm', recorderMimeType: 'audio/webm;codecs=opus' },
+    { mimeType: 'audio/webm', recorderMimeType: 'audio/webm' },
+    { mimeType: 'audio/mp4', recorderMimeType: 'audio/mp4' },
+    { mimeType: 'audio/ogg', recorderMimeType: 'audio/ogg;codecs=opus' },
+    { mimeType: 'audio/ogg', recorderMimeType: 'audio/ogg' },
+  ];
+
+  return (
+    candidates.find((candidate) => MediaRecorder.isTypeSupported(candidate.recorderMimeType)) ??
+    null
+  );
+}

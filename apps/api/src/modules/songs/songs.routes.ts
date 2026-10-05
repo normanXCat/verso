@@ -6,6 +6,7 @@ import {
   updateSongSchema,
 } from '@verso/shared';
 import { requireAuth } from '../auth/auth.guard.js';
+import { buildPdfFilename, generateSongPdf } from './pdf.service.js';
 import { searchSongs } from './songs.repository.js';
 import { SongServiceError, createSong, deleteSong, getSong, updateSong } from './songs.service.js';
 
@@ -54,6 +55,33 @@ export const songsRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
       }
       throw error;
     }
+  });
+
+  // Export PDF horodaté (certificat d'antériorité, FR-040)
+  app.get('/:id/export/pdf', { preHandler: requireAuth }, async (request, reply) => {
+    const params = songIdParamSchema.safeParse(request.params);
+    if (!params.success) {
+      return reply.status(400).send({ message: 'Identifiant de texte invalide' });
+    }
+
+    const item = await getSong(request.user!.id, params.data.id);
+    if (!item) {
+      return reply.status(404).send({ message: 'Texte introuvable' });
+    }
+
+    const authorName = request.user!.displayName?.trim() || 'Artiste Verso';
+    const pdf = await generateSongPdf(
+      { title: item.title, content: item.content, updatedAt: item.updatedAt },
+      authorName,
+    );
+
+    return reply
+      .header('Content-Type', 'application/pdf')
+      .header(
+        'Content-Disposition',
+        `attachment; filename="${buildPdfFilename(item.title, item.updatedAt)}"`,
+      )
+      .send(pdf);
   });
 
   // Lecture d'un texte

@@ -16,6 +16,7 @@ import { LandingPage } from './pages/LandingPage.js';
 import { DashboardPage } from './pages/DashboardPage.js';
 import { EditorPage } from './pages/EditorPage.js';
 import { AlbumDetailPage } from './pages/AlbumDetailPage.js';
+import { PublicSharePage } from './pages/PublicSharePage.js';
 import { useAuth } from './hooks/useAuth.js';
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ export function App(): React.ReactElement {
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/verify-email" element={<VerifyEmailPage />} />
+                <Route path="/share/:token" element={<PublicSharePage />} />
                 <Route path="/sessions" element={<SessionsPage />} />
                 <Route path="/design" element={<DesignSystemPage />} />
                 <Route

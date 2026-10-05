@@ -15,6 +15,8 @@ interface LyricEditorProps {
   showSyllables?: boolean;
   /** Active le surlignage coloré des rimes. */
   showRhymes?: boolean;
+  /** Signale la sélection courante (mot sélectionné et ses positions). */
+  onSelectionChange?: (selection: { text: string; from: number; to: number }) => void;
   className?: string;
 }
 
@@ -64,16 +66,22 @@ export function LyricEditor({
   readOnly = false,
   showSyllables = true,
   showRhymes = true,
+  onSelectionChange,
   className = '',
 }: LyricEditorProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
+  const onSelectionChangeRef = useRef(onSelectionChange);
   const initialValueRef = useRef(value);
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    onSelectionChangeRef.current = onSelectionChange;
+  }, [onSelectionChange]);
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -91,6 +99,11 @@ export function LyricEditor({
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           onChangeRef.current(update.state.doc.toString());
+        }
+        if ((update.docChanged || update.selectionSet) && onSelectionChangeRef.current) {
+          const range = update.state.selection.main;
+          const text = update.state.sliceDoc(range.from, range.to);
+          onSelectionChangeRef.current({ text, from: range.from, to: range.to });
         }
       }),
     ];

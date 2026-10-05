@@ -7,7 +7,7 @@ import { albumsClient, AlbumsApiError } from '../lib/albums-client.js';
 import { songsClient } from '../lib/songs-client.js';
 import { Button } from '../components/ui/Button.js';
 import { Modal } from '../components/ui/Modal.js';
-import { ThemeSwitch } from '../components/common/ThemeSwitch.js';
+import { ThemeToggle } from '../components/common/ThemeToggle.js';
 import { useToast } from '../components/ui/Toast.js';
 import { SortableTracklist } from '../components/album/SortableTracklist.js';
 
@@ -169,7 +169,7 @@ export function AlbumDetailPage(): React.ReactElement {
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" />
             </button>
-            <ThemeSwitch />
+            <ThemeToggle />
           </div>
         </div>
       </header>

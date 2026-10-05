@@ -1,19 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, History, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, History, Share2, Trash2 } from 'lucide-react';
 import type { SongDetail, SongListItem, UpdateSongInput } from '@verso/shared';
 import { songsClient, SongsApiError } from '../lib/songs-client.js';
 import { readDraft } from '../lib/draft-storage.js';
-import { useAutoSave } from '../hooks/useAutoSave.js';
-import { ThemeSwitch } from '../components/common/ThemeSwitch.js';
+import { cacheSong, getDraft } from '../lib/offline-storage.js';
+import { useOfflineSync } from '../hooks/useOfflineSync.js';
+import { useToast } from '../components/ui/Toast.js';
+import { ThemeToggle } from '../components/common/ThemeToggle.js';
 import { LyricEditor } from '../components/editor/LyricEditor.js';
 import { EditorMetricsBar } from '../components/editor/EditorMetricsBar.js';
 import { SaveStatusIndicator } from '../components/editor/SaveStatusIndicator.js';
 import { SongMetadataSidebar } from '../components/editor/SongMetadataSidebar.js';
 import { VersionHistoryDrawer } from '../components/editor/VersionHistoryDrawer.js';
 import { ZenModeToggle } from '../components/editor/ZenModeToggle.js';
+import { ShareModal } from '../components/editor/ShareModal.js';
+import { RhymeSuggestionsDrawer } from '../components/editor/RhymeSuggestionsDrawer.js';
 import { AudioPlayerBar } from '../components/audio/AudioPlayerBar.js';
+import { VoiceRecorder } from '../components/audio/VoiceRecorder.js';
 
 /**
  * Espace d'écriture d'un texte : éditeur épuré avec sauvegarde automatique,
@@ -23,6 +28,7 @@ export function EditorPage(): React.ReactElement {
   const { id = '' } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const {
     data: song,
@@ -40,24 +46,49 @@ export function EditorPage(): React.ReactElement {
   const [content, setContent] = useState('');
   const [initialised, setInitialised] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isRhymesOpen, setIsRhymesOpen] = useState(false);
+  const [selection, setSelection] = useState<{ text: string; from: number; to: number } | null>(
+    null,
+  );
   const [isZen, setIsZen] = useState(false);
 
-  // Initialise depuis le serveur, en priorisant un brouillon local non synchronisé.
+  // Initialise depuis le serveur, en priorisant un brouillon local non synchronisé
+  // (IndexedDB, puis `localStorage` en repli) et met le texte en cache hors ligne.
   useEffect(() => {
     if (!song || initialised) {
       return;
     }
-    const draft = readDraft(song.id);
-    setTitle(song.title);
-    setContent(draft ?? song.content);
-    setInitialised(true);
+    let cancelled = false;
+    void (async () => {
+      const localDraft = await getDraft(song.id);
+      if (cancelled) {
+        return;
+      }
+      setTitle(localDraft?.title || song.title);
+      setContent(localDraft?.content ?? readDraft(song.id) ?? song.content);
+      setInitialised(true);
+      void cacheSong(song);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [song, initialised]);
 
-  const autoSave = useAutoSave({
+  const offlineSync = useOfflineSync({
     songId: initialised ? id : null,
+    title,
     content,
     enabled: initialised,
     baselineContent: song?.content,
+    onConflict: (created, serverContent) => {
+      toast(
+        `Conflit détecté : la version distante est conservée et votre version hors ligne a été enregistrée dans « ${created.title} ».`,
+        'info',
+      );
+      setContent(serverContent);
+      void queryClient.invalidateQueries({ queryKey: ['songs', 'search'] });
+    },
   });
 
   const metadataMutation = useMutation({
@@ -87,6 +118,24 @@ export function EditorPage(): React.ReactElement {
       navigate('/app', { replace: true });
     },
   });
+
+  // Sélection d'un mot dans l'éditeur : ouvre les suggestions de rimes (FR-049).
+  const handleSelectionChange = (next: { text: string; from: number; to: number }): void => {
+    const trimmed = next.text.trim();
+    const isWord = trimmed.length >= 2 && /^[\p{L}][\p{L}'’-]*$/u.test(trimmed);
+    setSelection(isWord ? { text: trimmed, from: next.from, to: next.to } : null);
+    if (isWord) {
+      setIsRhymesOpen(true);
+    }
+  };
+
+  const insertRhyme = (rhyme: string): void => {
+    if (!selection) {
+      return;
+    }
+    setContent(content.slice(0, selection.from) + rhyme + content.slice(selection.to));
+    setIsRhymesOpen(false);
+  };
 
   const applyMetadata = (patch: UpdateSongInput): void => {
     queryClient.setQueryData<SongListItem>(['songs', 'detail', id], (previous) =>
@@ -153,7 +202,29 @@ export function EditorPage(): React.ReactElement {
               Mon carnet
             </Link>
             <div className="flex items-center gap-3">
-              <SaveStatusIndicator status={autoSave.status} />
+              <SaveStatusIndicator
+                status={offlineSync.status}
+                pendingCount={offlineSync.pendingCount}
+              />
+              <button
+                type="button"
+                onClick={() => setIsRhymesOpen(true)}
+                disabled={!selection}
+                aria-label="Suggestions de rimes"
+                title="Suggestions de rimes (sélectionnez un mot)"
+                className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text disabled:opacity-40"
+              >
+                <BookOpen className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsShareOpen(true)}
+                aria-label="Partager ce texte"
+                title="Partager (PDF et lien privé)"
+                className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+              >
+                <Share2 className="h-4 w-4" aria-hidden="true" />
+              </button>
               <button
                 type="button"
                 onClick={() => setIsHistoryOpen(true)}
@@ -173,7 +244,7 @@ export function EditorPage(): React.ReactElement {
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
               </button>
               <ZenModeToggle isActive={isZen} onToggle={toggleZen} />
-              <ThemeSwitch />
+              <ThemeToggle />
             </div>
           </div>
         </header>
@@ -221,6 +292,7 @@ export function EditorPage(): React.ReactElement {
                 <LyricEditor
                   value={content}
                   onChange={setContent}
+                  onSelectionChange={handleSelectionChange}
                   placeholder="Posez vos premières rimes…"
                   ariaLabel="Paroles du texte"
                   className={isZen ? 'min-h-[60vh]' : 'min-h-[22rem]'}
@@ -237,6 +309,7 @@ export function EditorPage(): React.ReactElement {
                   </div>
 
                   <AudioPlayerBar songId={song.id} className="mt-6" />
+                  <VoiceRecorder songId={song.id} className="mt-4" />
                 </>
               )}
             </section>
@@ -252,6 +325,22 @@ export function EditorPage(): React.ReactElement {
           </div>
         )}
       </main>
+
+      {song && (
+        <ShareModal
+          songId={song.id}
+          songTitle={title || song.title}
+          isOpen={isShareOpen}
+          onClose={() => setIsShareOpen(false)}
+        />
+      )}
+
+      <RhymeSuggestionsDrawer
+        isOpen={isRhymesOpen}
+        onClose={() => setIsRhymesOpen(false)}
+        word={selection?.text ?? ''}
+        onSelect={insertRhyme}
+      />
 
       {song && (
         <VersionHistoryDrawer

@@ -37,19 +37,16 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **P1** | **Albums & réorganisation de tracklist** | ✅ Fait | Création d'albums, rattachement de textes existants, tracklist réordonnable par glisser-déposer (`@dnd-kit`) et détachement automatique à la suppression (aucun texte jamais supprimé) |
 | **P2** | **Historique des versions** | ✅ Fait | Archivage horodaté immuable à chaque modification (conservé indéfiniment, sans purge ni plafond), aperçu comparatif et restauration d'une révision antérieure sans écrasement de l'historique |
 
-
-
-
-
-| **P1** | **Éditeur d'écriture résilient** | ⏳ Prévu | Typographie soignée, sauvegarde automatique en continu, zéro perte de texte |
-| **P1** | **Organisation des textes (Privés par défaut)** | ⏳ Prévu | Cloisonnement strict multi-tenant, vérification d'appartenance systématique |
-| **P2** | **Application installable (PWA) & Mode Hors Ligne** | ⏳ Prévu | Écriture hors ligne totale (IndexedDB) et synchronisation au retour du réseau |
+| **P3** | **Application installable (PWA) & Mode Hors Ligne** | ✅ Fait | Service Worker Workbox + manifeste installable, rédaction hors ligne (IndexedDB), file d'attente d'actions et synchronisation au retour du réseau avec duplication de conflit `[Titre] (copie hors ligne)` |
+| **P3** | **Enregistrement vocal freestyle** | ✅ Fait | Capture micro via `MediaRecorder`, téléversement direct vers un stockage compatible S3 par URL présignée, mémos vocaux rattachés au texte avec lecture et suppression |
+| **P3** | **Suggestions de rimes (dictionnaire français)** | ✅ Fait | Base lexicale française embarquée (`lyrics-engine/rhyme-dict`), classement rimes riches / suffisantes et tiroir latéral de suggestions avec insertion en un clic depuis la sélection de l'éditeur |
 | **P2** | **Instrumentales audio, lecteur, BPM, boucle & métronome** | ✅ Fait | Téléversement direct vers un stockage compatible S3 par URLs présignées (MP3/WAV, ≤ 75 Mo, 3 pistes max), clé seule en base, lecteur Web Audio avec boucle de section et métronome synchronisé |
 | **P2** | **Compteur de syllabes & détection des rimes** | ✅ Fait | Moteur `lyrics-engine` partagé (syllabes poétiques en modes classique/relâché, rimes phonétiques), gouttière CodeMirror du décompte par vers et surlignage coloré des rimes |
 | **P2** | **Mode concentration (zen)** | ✅ Fait | Plein écran masquant les éléments d'interface parasites pour isoler l'auteur avec son texte |
-
-| **P3** | **Liens de partage privés révocables** | ⏳ Prévu | Partage explicite en lecture seule, tokens hachés révocables avec expiration et rate limiting |
+| **P2** | **Export PDF horodaté (antériorité)** | ✅ Fait | Certificat PDF sobre généré côté serveur (`pdfkit`) : titre, paroles, auteur et horodatage exact de la dernière révision |
+| **P2** | **Liens de partage privés révocables** | ✅ Fait | Partage explicite en lecture seule, jetons hachés révocables avec expiration optionnelle, page publique anonyme et rate limiting strict |
 | **P3** | **OAuth (Google & ORCID)** | ✅ Fait | Flux OAuth avec `state` et PKCE (arctic), création/connexion de compte, et liaison sécurisée par confirmation du mot de passe |
+| **Socle** | **Finitions design, validation & audit de sécurité (Phase 13)** | ✅ Fait | Bascule de thème segmentée `ThemeToggle` accessible (Papier/Encre), en-têtes Helmet, CORS restrictif et protection CSRF par validation d'origine vérifiés et testés |
 
 *(Règle : une fonctionnalité n'est marquée ✅ que si elle est effectivement implémentée et testée dans le code).*
 
@@ -63,12 +60,12 @@ L'architecture technique conçue lors du plan d'implémentation repose sur :
 - **Frontend & Direction Artistique** : React 18+, TypeScript, Vite, Tailwind CSS, Framer Motion, typographies auto-hébergées via Fontsource (`Instrument Serif`, `Geist Sans`, `Geist Mono`), React Router, TanStack Query, CodeMirror 6, dnd-kit
 
 - **PWA & Offline** : `vite-plugin-pwa`, Service Workers, IndexedDB (`idb`)
-- **Backend** : Node.js (LTS), TypeScript, Fastify v4+ (API REST haute performance)
+- **Backend** : Node.js (LTS), TypeScript, Fastify v4+ (API REST haute performance), génération PDF avec `pdfkit`
 - **Base de données & ORM** : PostgreSQL 16, Prisma ORM v5+ avec migrations versionnées
 - **Stockage Audio** : Compatible S3 (MinIO en développement local, Cloudflare R2 en production) via URLs présignées (`@aws-sdk/client-s3` et `@aws-sdk/s3-request-presigner`), téléversement direct du binaire hors API
-- **Sécurité** : Hachage Argon2id, sessions PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax, Arctic (OAuth Google/ORCID avec PKCE), `@fastify/rate-limit`, `@fastify/csrf-protection`
+- **Sécurité** : Hachage Argon2id, sessions PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax, protection CSRF par validation d'origine (`Origin`/`Referer`), en-têtes Helmet (HSTS, CSP en production), CORS restrictif, Arctic (OAuth Google/ORCID avec PKCE), `@fastify/rate-limit`
 - **Métrique & Rimes** : Module partagé `lyrics-engine` adapté aux spécificités de la langue française (comptage syllabique par vers, détection et coloration des rimes), exposé via des extensions CodeMirror 6
-- **Qualité & Tests** : Vitest, React Testing Library, ESLint et Prettier (zéro warning toléré)
+- **Qualité & Tests** : Vitest (tests unitaires et d'intégration, exécution séquentielle), ESLint et Prettier (zéro warning toléré)
 
 ---
 
@@ -131,10 +128,10 @@ verso/
 ├── apps/
 │   ├── api/                    # Backend Fastify + Prisma ORM
 │   │   ├── prisma/             # Schéma Prisma et migrations PostgreSQL
-│   │   ├── src/                # Serveur HTTP, validation Zod env, plugins (S3) et modules (auth, OAuth, songs, albums, audio)
+│   │   ├── src/                # Serveur HTTP, validation Zod env, plugins (S3) et modules (auth, OAuth, songs, albums, audio, partage)
 │   │   └── vitest.config.ts    # Configuration Vitest du package API
 │   └── web/                    # Frontend React 18 + Vite + Tailwind CSS
-│       ├── public/             # Assets statiques
+│       ├── public/             # Assets statiques et manifeste PWA (manifest.json)
 │       └── src/                # App React, pages (landing, auth, dashboard, éditeur, album), composants (dont audio), hooks et styles
 ├── packages/
 │   └── shared/                 # Bibliothèque partagée (@verso/shared)

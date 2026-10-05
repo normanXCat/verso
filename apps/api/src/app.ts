@@ -32,6 +32,11 @@ export async function buildApp(): Promise<FastifyInstance> {
     timeWindow: '1 minute',
   });
 
+  // Protection CSRF : validation stricte de l'origine des requêtes modifiant l'état
+  // (hook posé à la racine pour englober toutes les routes sans encapsulation)
+  const { csrfGuard } = await import('./plugins/csrf.plugin.js');
+  app.addHook('onRequest', csrfGuard);
+
   // Stockage d'objets compatible S3 (URLs présignées)
   const { s3Plugin } = await import('./plugins/s3.plugin.js');
   await app.register(s3Plugin);
@@ -52,6 +57,14 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { versionsRoutes } = await import('./modules/songs/versions.routes.js');
   await app.register(versionsRoutes, { prefix: '/api/songs' });
 
+  // Routes des liens de partage privés (administration par l'auteur)
+  const { sharesRoutes } = await import('./modules/songs/shares.routes.js');
+  await app.register(sharesRoutes, { prefix: '/api/songs' });
+
+  // Route publique de consultation d'un texte partagé (rate limit strict)
+  const { publicSharesRoutes } = await import('./modules/songs/shares.routes.js');
+  await app.register(publicSharesRoutes, { prefix: '/api/public' });
+
   // Routes des albums et de leurs tracklists
   const { albumsRoutes } = await import('./modules/albums/albums.routes.js');
   await app.register(albumsRoutes, { prefix: '/api/albums' });
@@ -59,6 +72,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Routes des instrumentales (upload présigné, lecture, quotas)
   const { audioRoutes } = await import('./modules/audio/audio.routes.js');
   await app.register(audioRoutes, { prefix: '/api' });
+
+  // Routes des mémos vocaux freestyle (upload présigné, lecture, suppression)
+  const { voiceNotesRoutes } = await import('./modules/audio/voice-notes.routes.js');
+  await app.register(voiceNotesRoutes, { prefix: '/api' });
 
   // Route de contrôle de santé
   app.get('/health', async () => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { ThemeSwitch } from '../common/ThemeSwitch.js';
+import { ThemeToggle } from '../common/ThemeToggle.js';
 import { Logo } from '../common/Logo.js';
 import { Button } from '../ui/Button.js';
 import { useAuth } from '../../hooks/useAuth.js';
@@ -65,7 +65,7 @@ export function Navbar(): React.ReactElement {
 
         {/* Actions & Authentification */}
         <div className="hidden md:flex items-center gap-4">
-          <ThemeSwitch />
+          <ThemeToggle />
 
           {isAuthenticated && user ? (
             <div className="flex items-center gap-3">
@@ -100,7 +100,7 @@ export function Navbar(): React.ReactElement {
 
         {/* Bouton Menu Mobile */}
         <div className="flex items-center gap-3 md:hidden">
-          <ThemeSwitch />
+          <ThemeToggle />
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

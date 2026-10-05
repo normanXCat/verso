@@ -3,7 +3,7 @@
 ## État actuel
 
 - **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
-- **Phase d'implémentation Spec Kit** : **Phase 9 (Aides à l'écriture : syllabes, rimes, mode concentration — T047 à T050) terminée** (troisième phase P2).
+- **Phase d'implémentation Spec Kit** : **Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) terminée**. **Les 13 phases / 62 tâches du plan sont désormais toutes implémentées et testées.**
 - **Ce qui est terminé** :
   - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
@@ -67,17 +67,54 @@
     - Extensions CodeMirror 6 (`apps/web/src/components/editor/extensions/`) : gouttière du décompte syllabique par vers (`syllablesGutter.ts`) et surlignage coloré des terminaisons rimiques (`rhymeHighlighter.ts`), intégrées à `LyricEditor` via les options `showSyllables`/`showRhymes` (T049, FR-031, FR-032).
     - Mode concentration zen plein écran (`apps/web/src/components/editor/ZenModeToggle.tsx`) masquant l'en-tête, la barre latérale, les métriques et le lecteur audio ; synchronisé avec l'API Fullscreen (touche Échap) et intégré à l'éditeur (T050, FR-033).
     - **Suite de tests totale : 123 tests au vert** (15 fichiers) ; lint, format, typecheck et build de production validés.
+  - **Phase 10 (Export PDF horodaté et liens de partage privés — T051 à T054) implémentée et testée** :
+    - Générateur de PDF d'antériorité côté serveur avec `pdfkit` (`apps/api/src/modules/songs/pdf.service.ts`) : titre, auteur, horodatage exact de la dernière révision et texte intégral, avec nom de fichier normalisé (`<titre>-verso-<AAAA-MM-JJ>.pdf`) (T051, FR-040).
+    - Route `GET /api/songs/:id/export/pdf` (garde `requireAuth`, cloisonnement par utilisateur) renvoyant un flux `application/pdf` téléchargeable ; test d'intégration `apps/api/tests/integration/pdf-export.test.ts` (3 tests).
+    - Schémas Zod et types des liens de partage dans `packages/shared/src/schemas/share.ts` : `createShareLinkSchema`, `shareLinkParamSchema`, `publicShareTokenParamSchema`, types `ShareLinkItem`/`CreatedShareLink`/`PublicSharedSong` et constantes de rate limiting (T052).
+    - Service `shares.service.ts` : jetons bruts préfixés `sec_` (32 octets aléatoires) dont seule l'empreinte SHA-256 est stockée, création avec expiration optionnelle, liste, révocation immédiate et consultation anonyme en lecture seule qui incrémente le compteur d'accès (T053, FR-041 à FR-044).
+    - Routes `GET/POST /api/songs/:id/share-links`, `DELETE /api/songs/:id/share-links/:linkId` (auteur authentifié) et `GET /api/public/shares/:token` montée sous `/api/public` avec rate limiting strict de 30 requêtes/minute par IP (T053, FR-044).
+    - Tests d'intégration `apps/api/tests/integration/shares.test.ts` (13 tests) : création/expiration, non-replay du jeton brut, cloisonnement, consultation anonyme sans donnée personnelle, compteur d'accès, refus des liens expirés/révoqués/inconnus et en-tête `x-ratelimit-limit`.
+    - Interface : modale `ShareModal.tsx` (export PDF, génération de lien avec expiration, copie unique du lien, liste et révocation) ouverte depuis l'éditeur, client `share-client.ts`, page publique anonyme `/share/:token` (`PublicSharePage.tsx`) en lecture seule sobre (T054).
+    - **Suite de tests totale : 139 tests au vert** (17 fichiers) ; lint, format, typecheck et build de production validés.
+  - **Phase 11 (PWA et écriture hors ligne — T055 à T057) implémentée et testée** :
+    - Configuration PWA avec `vite-plugin-pwa` dans `apps/web/vite.config.ts` : Service Worker Workbox en `generateSW`, précache de la coquille applicative (HTML, JS, CSS, polices, SVG), `navigateFallback` vers `/index.html` (avec exclusion des routes `/api/*`) et stratégie `NetworkFirst` pour les lectures d'API (cache `verso-api`, repli hors ligne) (T055, FR-045).
+    - Manifeste web statique `apps/web/public/manifest.json` (nom, icônes SVG, `display: standalone`, couleurs Encre & Papier) déclaré dans `index.html`, avec métadonnées mobiles (`theme-color`, `apple-mobile-web-app-*`) ; enregistrement du Service Worker via `registerSW` dans `main.tsx` (T055).
+    - Couche de persistance locale IndexedDB avec `idb` (`apps/web/src/lib/offline-storage.ts`) : brouillons (`drafts`), cache des textes (`songs`), file d'attente d'actions (`sync-queue`, index `by-song`) et helpers typés ; repli silencieux si IndexedDB est indisponible (T056, FR-046).
+    - Résolution de conflit pure `decideSyncAction` (`up-to-date` / `apply-local` / `conflict`) testée dans `apps/web/src/lib/offline-storage.test.ts` (4 tests).
+    - Hook `useOfflineSync.ts` (T057, FR-047) : persistance locale immédiate (IndexedDB + `localStorage` en repli), sauvegarde distante debouncée (< 500 ms), file d'attente rejouée au retour du réseau, indicateur de statut enrichi (`enregistré`, `hors ligne`, `conflit`) et compteur d'actions en attente.
+    - **Résolution de conflit par duplication** : si le texte a divergé côté serveur pendant la déconnexion, la version distante reste intacte et le contenu local est enregistré dans un nouveau brouillon intitulé `[Titre] (copie hors ligne)`, avec notification informative.
+    - Intégration à l'éditeur (`EditorPage.tsx`) : restauration prioritaire du brouillon IndexedDB, mise en cache du texte pour la consultation hors ligne, et `useAutoSave` remplacé par `useOfflineSync` (moteur unique de sauvegarde).
+    - Purge du cache local et du cache Workbox d'API à la déconnexion (`clearAllOfflineData`, appelée depuis `useAuth`) pour cloisonner les sessions.
+    - **Suite de tests totale : 143 tests au vert** (18 fichiers, dont 4 nouveaux tests web) ; lint, format, typecheck et build de production validés (Service Worker `dist/sw.js` généré, 50 entrées précachées, `dist/manifest.json` lié).
+  - **Phase 12 (Bonus : enregistrement vocal freestyle et suggestions de rimes — T058 à T059) implémentée et testée** :
+    - Schémas Zod et types des mémos vocaux dans `packages/shared/src/schemas/audio.ts` : formats `MediaRecorder` (`audio/webm`, `audio/mp4`, `audio/ogg`), limite de 25 Mo, `VoiceNoteItem` (T058, FR-048).
+    - Repository, service et routes des mémos vocaux (`voice-notes.repository.ts`, `voice-notes.service.ts`, `voice-notes.routes.ts`) : URL présignée PUT cloisonnée (`users/{userId}/songs/{songId}/voice/{uuid}.ext`), confirmation en base, liste avec URL de lecture signée et suppression base + objet S3 (T058).
+    - Routes montées sous `/api` : `POST /songs/:id/voice-notes/upload-url`, `POST /songs/:id/voice-notes/confirm`, `GET /songs/:id/voice-notes`, `DELETE /voice-notes/:id` (T058).
+    - Tests d'intégration `apps/api/tests/integration/voice-notes.test.ts` (7 tests) : génération d'URL, format refusé, cycle confirmation/liste/suppression, cloisonnement et authentification.
+    - Client API `audio-client.ts` enrichi (méthodes mémos vocaux + sélection du meilleur format `MediaRecorder`) et composant `VoiceRecorder.tsx` : capture micro, minuteur, téléversement présigné, liste avec lecture `<audio>` et suppression, intégré sous le lecteur d'instrumentales dans l'éditeur (T058).
+    - Base lexicale française embarquée `packages/shared/src/lyrics-engine/rhyme-dict.ts` : plus de 250 mots courants et moteur `findRhymes` classant les rimes riches (suffixe commun ≥ 3 caractères) et suffisantes, testé dans `packages/shared/tests/rhyme-dict.test.ts` (8 tests) (T059, FR-049).
+    - Normalisation partagée extraite (`normalizeRhymeWord`) réutilisée par le détecteur de rimes et le dictionnaire.
+    - Sélection de mot dans l'éditeur CodeMirror (`LyricEditor.onSelectionChange`) et tiroir latéral `RhymeSuggestionsDrawer.tsx` : ouverture à la sélection d'un mot, groupes « rimes riches » / « rimes suffisantes » et insertion de la rime en un clic (T059).
+    - **Suite de tests totale : 158 tests au vert** (20 fichiers) ; lint, format, typecheck et build de production validés.
+  - **Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) implémentée et testée** :
+    - Bascule de thème renommée et refondue en `apps/web/src/components/common/ThemeToggle.tsx` (chemin exact nommé par T060) : contrôle segmenté « Papier / Encre » accessible (`role="group"`, `aria-pressed`, libellé lecteur d'écran via `sr-only`) et respectueux de `prefers-reduced-motion` ; remplace l'ancien `ThemeSwitch` (7 imports mis à jour).
+    - Finitions `apps/web/src/index.css` conformes au skill `frontend-design` : anneau de focus visible cohérent au clavier, sélection de texte teintée à l'accent, barres de défilement discrètes accordées à la palette, rendu typographique optimisé et défilement doux.
+    - Durcissement sécurité (T062) : protection CSRF par validation stricte d'origine (`apps/api/src/plugins/csrf.plugin.ts`, hook posé à la racine pour englober toutes les routes) refusant (403) toute écriture dont l'`Origin`/`Referer` de navigateur n'appartient pas à `CLIENT_URL`, en complément des cookies `SameSite=Lax` et du CORS restrictif.
+    - Tests d'intégration `apps/api/tests/integration/security.test.ts` (10 tests) : en-têtes Helmet (`x-content-type-options`, `x-frame-options`, `referrer-policy`, `x-dns-prefetch-control`, `cross-origin-opener-policy`, absence de `x-powered-by`), CORS (origine autorisée reflétée avec credentials, origine étrangère jamais reflétée), CSRF (origine étrangère et référent étranger refusés, origine légitime acceptée, requête non-navigateur laissée passer, lecture GET jamais bloquée), isolation multi-tenant anti-IDOR (lecture/modification/suppression d'autrui refusées en 404, texte du propriétaire préservé) et absence de fuite du hash de mot de passe.
+    - Dépendance `@fastify/csrf-protection` retirée (non utilisée) ; `apps/api/package.json` et `pnpm-lock.yaml` resynchronisés, README corrigé.
+    - Validation complète (T061) : `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (**168 tests / 21 fichiers**) et builds `apps/web` et `apps/api` au vert. Les scénarios de `quickstart.md` sont couverts par les suites d'intégration correspondantes (auth & sessions, CRUD textes + sauvegarde, albums & réordonnancement, instrumentales, PDF & partage privé).
+    - **Suite de tests totale : 168 tests au vert** (21 fichiers) ; lint, format, typecheck et builds de production validés.
   - Branche `dev` active.
 - **Ce qui est en cours** :
-  - Phase 9 terminée : arrêt pour validation avant la Phase 10.
+  - Phase 13 terminée : les 13 phases / 62 tâches du plan Spec Kit sont intégralement implémentées et testées. Arrêt pour validation.
 - **Ce qui reste à faire** :
-  - **Phase 10** : Export PDF d'antériorité et liens de partage privés révocables (T051 à T054).
   - **Refonte Design Étape 4** : Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
+  - **Recette manuelle** : téléversements S3 réels (CORS bucket), OAuth contre les vrais fournisseurs, scénarios `quickstart.md` en navigateur (Service Worker/hors ligne, micro), icônes PWA PNG 192/512.
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de la Phase 9 (Aides à l'écriture : syllabes, rimes, mode concentration — T047 à T050) en respectant la constitution, la spec (FR-031 à FR-033) et la liste des tâches.
-- **Résultat** : moteurs partagés de syllabes et de rimes françaises, gouttière CodeMirror du décompte syllabique, surlignage coloré des rimes et mode concentration plein écran, 123 tests verts sur la branche `dev`.
+- **Action exécutée** : Implémentation de la Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) en respectant la constitution, la spec et le skill `frontend-design`.
+- **Résultat** : bascule de thème `ThemeToggle` accessible et finitions visuelles, protection CSRF par validation d'origine et tests d'audit de sécurité, validation complète du monorepo (168 tests verts) sur la branche `dev`.
 
 ## Décisions prises
 
@@ -114,11 +151,28 @@
 - **Moteur de rimes phonétique simplifié** : clé extraite de la dernière voyelle tonique avec normalisation des nasales, diphtongues et de la terminaison `[e]` (infinitifs, participes, imparfaits). Analyse sur la graphie, pas sur une transcription phonétique complète.
 - **Extensions CodeMirror indépendantes** : la gouttière calcule les syllabes à la volée lors du rendu de marge ; le surlignage des rimes se recalcule uniquement à chaque changement de document (`ViewPlugin`), sans bloquer la frappe.
 - **Mode zen via l'API Fullscreen** : l'état est synchronisé avec les événements `fullscreenchange` (sortie par Échap) et les éléments d'interface sont masqués en mode concentration.
+- **PDF d'antériorité généré en mémoire avec `pdfkit`** : le flux est accumulé en `Buffer` puis renvoyé avec `Content-Type: application/pdf` et `Content-Disposition: attachment`. L'horodatage affiché est celui de la dernière révision du texte (`updatedAt`).
+- **Jetons de partage jamais stockés en clair** : un jeton brut `sec_<32 octets base64url>` est généré à la création et l'URL complète n'est affichée qu'une seule fois ; seule l'empreinte SHA-256 (`tokenHash`) est conservée en base.
+- **Expiration optionnelle des liens** : `expiresInDays` (1 à 365 jours) ou `null` pour un lien sans expiration ; un lien expiré ou révoqué renvoie un message neutre (« Ce lien n'est plus actif ») sans révéler l'existence du texte.
+- **Consultation publique sous rate limiting strict** : `GET /api/public/shares/:token` limitée à 30 requêtes par minute par IP (via la configuration de route `@fastify/rate-limit`), sans transmission de cookie de session.
+- **Page publique hors authentification** : `/share/:token` est placée hors de la garde `RequireAuth` et affiche le texte en lecture seule avec le nom d'artiste (ou « Artiste Verso ») sans aucune métadonnée personnelle.
+- **Service Worker en `generateSW` (Workbox)** : précache de la coquille, `NetworkFirst` sur les lectures d'API (repli cache hors ligne), `navigateFallback` vers `index.html` sauf sous `/api/*`.
+- **Manifeste statique plutôt que généré** : `apps/web/public/manifest.json` est servi tel quel (`manifest: false` dans `vite-plugin-pwa`) et déclaré dans `index.html`, pour garder la main sur le contenu.
+- **Moteur unique de sauvegarde** : `useOfflineSync` remplace `useAutoSave` (supprimé) dans l'éditeur ; il combine persistance locale IndexedDB, sauvegarde distante debouncée, file d'attente et détection de conflit pour éviter tout double mécanisme concurrent.
+- **Détection de conflit côté client sans changement d'API** : avant d'appliquer une action en attente, `GET /api/songs/:id` est rejoué et comparé au contenu de base ; en cas de divergence, la copie `[Titre] (copie hors ligne)` est créée via l'API existante (`POST /api/songs`).
+- **Purge à la déconnexion** : `clearAllOfflineData` vide les stores IndexedDB et supprime le cache Workbox `verso-api` pour éviter toute fuite de données entre sessions.
+- **Mémos vocaux réutilisant l'infrastructure S3 existante** : même plugin de signatures présignées que les instrumentales, avec un préfixe de clé dédié `.../voice/` (aucun nouveau binaire en base, seul le `s3Key` est stocké).
+- **Format d'enregistrement négocié par le navigateur** : `pickVoiceRecorderFormat` sélectionne le premier format `MediaRecorder.isTypeSupported` parmi webm/opus, webm, mp4 et ogg, puis normalise le type MIME accepté par l'API.
+- **Dictionnaire de rimes embarqué plutôt qu'un index volumineux** : un lexique curé d'environ 250 mots courants est livré dans le bundle partagé, et la richesse d'une rime est déduite de la longueur du suffixe graphique commun (≥ 3 caractères = riche).
+- **Sélection de mot pilotée par CodeMirror** : `LyricEditor` remonte la sélection (`onSelectionChange`) ; l'éditeur ouvre le tiroir de rimes et remplace la sélection par la rime choisie via l'état React partagé (pas d'API impérative).
+- **Protection CSRF par validation d'origine plutôt que par jetons** : sur une API JSON à cookies `SameSite=Lax` consommée par une SPA de même origine, la vérification stricte de `Origin`/`Referer` sur les méthodes non sûres (recommandation OWASP) protège efficacement sans imposer un flux de jetons à tous les appels ; les clients non-navigateur (tests `app.inject`, appels serveur à serveur) sont laissés passer car ils ne peuvent pas rejouer de cookie ambiant.
+- **Bascule de thème `ThemeToggle`** : renommage de `ThemeSwitch` vers le chemin exact nommé par T060, refondu en contrôle segmenté « Papier / Encre » accessible.
+- **Dépendance `@fastify/csrf-protection` retirée** : non utilisée (remplacée par le hook de validation d'origine) ; `pnpm-lock.yaml` resynchronisé.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `2194d3b` — `feat: mode concentration plein écran sans distraction`
+- **Dernier commit** : `e015b13` — `security: vérification et durcissement des protections et en-têtes`
 
 ## Comment lancer le projet
 
@@ -183,6 +237,18 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 - **Comptage syllabique approximatif** : les diérèses (`lion`, `Pasiphaé`), les synérèses et les formes verbales en `-ent` (`parlent`) ne sont pas détectées. Le compteur vise une aide à l'écriture, pas une analyse prosodique exacte.
 - **Détection de rimes sur la graphie** : quelques homophones irréguliers peuvent échapper au regroupement ; les extensions CodeMirror ne sont pas couvertes par des tests de composants (React Testing Library non configuré).
 - **Build web volumineux** : CodeMirror 6 fait dépasser l'avertissement de taille de chunk de Vite (> 500 kB) ; un découpage `manualChunks` sera à prévoir.
+- **Export PDF mono-texte uniquement** : FR-040 mentionne aussi l'export d'un album entier ; seule l'exportation d'un texte individuel est implémentée à ce stade.
+- **Polices PDF standard** : le certificat utilise les polices intégrées `Helvetica` (encodage WinAnsi), suffisant pour les accents français ; un encodage/font embarqué serait nécessaire pour des caractères exotiques.
+- **Aucun test de composant frontend pour le partage** : `ShareModal` et `PublicSharePage` reposent sur les tests d'API, le typecheck et le lint (React Testing Library non configuré).
+- **Hook hors ligne non couvert par des tests de comportement** : seule la décision pure de conflit (`decideSyncAction`) est testée unitairement ; le cycle complet Service Worker/IndexedDB/reconnexion n'est pas automatisé (React Testing Library et un environnement navigateur ne sont pas configurés).
+- **Cache d'API Workbox** : les réponses `GET /api/*` sont mises en cache pour la consultation hors ligne et purgées à la déconnexion ; sans déconnexion explicite, elles persistent sur l'appareil (comme les brouillons IndexedDB).
+- **Icônes PWA en SVG uniquement** : le manifeste référence `favicon.svg` (`sizes: any`) ; des icônes PNG 192/512 restent à ajouter pour une compatibilité d'installation maximale (iOS notamment).
+- **Service Worker inactif en développement** : testable via `pnpm --filter @verso/web build && pnpm --filter @verso/web preview` ; `devOptions` volontairement désactivé pour éviter les caches persistants en dev.
+- **Enregistrement vocal non testé automatisé** : `MediaRecorder` et `getUserMedia` exigent un navigateur et un micro réels (React Testing Library non configuré) ; l'API (URL présignée, confirmation, liste, suppression) est couverte par 7 tests d'intégration.
+- **Formats d'enregistrement dépendants du navigateur** : le type produit varie (webm/opus sur Chrome/Firefox, mp4 sur Safari) ; l'API accepte webm, mp4 et ogg.
+- **Dictionnaire de rimes volontairement restreint** : environ 250 mots courants ; les suggestions se limitent à cette base embarquée et ne couvrent pas l'intégralité du lexique français.
+- **Richesse de rime heuristique** : déduite du suffixe graphique commun et non d'une transcription phonétique complète ; quelques classements riches/suffisantes peuvent être approximatifs.
+- **Boucle micro non libérée si l'onglet est fermé pendant l'enregistrement** : le composant arrête le flux et le `MediaRecorder` au démontage, mais une fermeture brutale de l'onglet peut laisser la piste active jusqu'à sa révision par le navigateur.
 - **Pas de tests de composants frontend** : l'éditeur, la sauvegarde automatique et le tableau de bord reposent sur les tests d'API et sur typecheck/lint ; React Testing Library n'est pas encore configuré.
 - Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification.
 - Ne jamais commiter de fichier `.env`, de secret ni de fichier audio de test.
@@ -190,10 +256,8 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Prochaine étape
 
-- **Commande recommandée** : `/speckit-implement` pour la Phase 10 (Export PDF et liens de partage privés — T051 à T054).
-- **Prompt recommandé** :
-  ```text
-  Implémente la phase 10 (export PDF d'antériorité et liens de partage privés — T051 à T054).
-  Travaille tâche par tâche, commit par tâche terminée avec un message Conventional
-  Commits en français, lance lint et tests, puis pousse sur dev et résume pour validation.
-  ```
+- **Plan Spec Kit complet** : les 13 phases / 62 tâches sont terminées. Aucune phase d'implémentation restante.
+- **Travaux suivants recommandés** :
+  - **Refonte Design Étape 4** : espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
+  - **Recette manuelle** : valider les téléversements S3 (CORS bucket), l'OAuth réel, les scénarios `quickstart.md` en navigateur (micro, hors ligne) et ajouter les icônes PWA PNG 192/512.
+  - **Tests de composants** : configurer React Testing Library pour couvrir éditeur, sauvegarde hors ligne, partage et enregistrement vocal.
