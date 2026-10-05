@@ -180,12 +180,19 @@
 - **Dépendance `@fastify/csrf-protection` retirée** : non utilisée (remplacée par le hook de validation d'origine) ; `pnpm-lock.yaml` resynchronisé.
 - **Chargement du `.env` depuis la racine du monorepo** : `dotenv` recherche le `.env` en remontant depuis le cwd (l'API étant lancée depuis `apps/api`), afin que `cp .env.example .env` à la racine suffise ; en mode test, les valeurs de repli déterministes sont utilisées.
 - **Erreurs API jamais exposées brutes** : gestionnaire d'erreurs global avec `requestId`, message générique et masquage des secrets dans les journaux ; le frontend mappe les statuts en messages français.
-- **Bouton unifié** : un seul composant `Button` gère icône positionnable, icône seule et indicateur de chargement remplaçant l'icône sans changer la largeur.
+- **Bouton unifié** : un seul composant `Button` (`apps/web/src/components/ui/Button.tsx`) centralise tous les boutons et liens stylés comme des boutons.
+  - **API** : `variant` (`primary`/`secondary`/`ghost`/`danger`), `size` (`sm`/`md`/`lg`/`icon`), `iconLeft`, `iconRight`, `loading` (+ alias `isLoading`), `loadingText`, `isSuccess`, `successText`, `shake`, `iconOnly`, `fullWidth`, `asChild` ; `icon`/`iconPosition` conservés pour la rétro-compatibilité.
+  - **Géométrie constante** : `inline-flex items-center justify-center gap-2 whitespace-nowrap`, largeur dictée par le contenu (ou `fullWidth`), hauteurs fixes par taille (`sm` 36 px, `md` 44 px, `lg` 48 px, `icon` 36×36) et padding horizontal identique avec ou sans icône.
+  - **Icônes** : emplacement unique de 20 px (`shrink-0`, `aria-hidden`) ; une seule icône par bouton. L'icône droite glisse de 2 px au survol (150 ms) et reste immobile sous `prefers-reduced-motion`.
+  - **Chargement/succès** : l'indicateur (`Loader2`/`Check`) remplace l'emplacement d'icône sans modifier la largeur ; le bouton est désactivé pendant l'opération.
+  - **Rendu uniforme** : `asChild` clone l'unique enfant (ex. `<Link>`) avec les mêmes classes, `aria-disabled` et contenu — un lien a le rendu exact d'un `<button>` (anti-régression du CTA de la landing empilant les SVG).
+  - **Usages convertis** : landing (`HeroSection`, `FinalCtaSection`, `Navbar`), tableau de bord, album, partage, thème, champ à icône et pages d'authentification (connexion, inscription, mot de passe oublié, OAuth). Démonstration complète sur `/design` (section 03 Boutons).
+  - **Vérification visuelle Playwright** : 126 contrôles analysés sur `/design` et la landing, à 320/768/1280 px en clair et sombre — aucun retour à la ligne, `gap` de 8 px, icônes de 20×20 px, hauteurs 36/44/48 et alignement icône/texte conforme.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `1108c79` — `fix: boutons avec icône unifiés et logos Google/ORCID officiels`
+- **Dernier commit** : `f4f29d2` — `fix: aligner icônes, états et liens du composant Button`
 
 ## Comment lancer le projet
 
@@ -262,7 +269,7 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 - **Dictionnaire de rimes volontairement restreint** : environ 250 mots courants ; les suggestions se limitent à cette base embarquée et ne couvrent pas l'intégralité du lexique français.
 - **Richesse de rime heuristique** : déduite du suffixe graphique commun et non d'une transcription phonétique complète ; quelques classements riches/suffisantes peuvent être approximatifs.
 - **Boucle micro non libérée si l'onglet est fermé pendant l'enregistrement** : le composant arrête le flux et le `MediaRecorder` au démontage, mais une fermeture brutale de l'onglet peut laisser la piste active jusqu'à sa révision par le navigateur.
-- **Pas de tests de composants frontend** : l'éditeur, la sauvegarde automatique et le tableau de bord reposent sur les tests d'API et sur typecheck/lint ; React Testing Library n'est pas encore configuré.
+- **Tests de composants frontend limités** : React Testing Library et `jsdom` sont désormais configurés (`@testing-library/react`, `@testing-library/dom`, `jsdom` en devDeps de `@verso/web`) et couvrent le composant `Button` (`Button.test.tsx`) ; l'éditeur, la sauvegarde automatique et le tableau de bord reposent encore sur les tests d'API et sur typecheck/lint.
 - **Autres pages d'authentification** : `ResetPasswordPage`, `SessionsPage` et `LinkAccountModal` n'utilisent pas encore `presentAuthError`/`FormError` (seules l'inscription et la connexion ont été traitées) ; à généraliser ultérieurement.
 - **Base de données de recette** : le `.env` local peut pointer vers une base PostgreSQL native (le rôle `verso` de `docker-compose` n'existe pas hors Docker) ; `GET /health` et le message de démarrage permettent de le détecter.
 - Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification.
@@ -275,4 +282,4 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 - **Travaux suivants recommandés** :
   - **Refonte Design Étape 4** : espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
   - **Recette manuelle** : valider les téléversements S3 (CORS bucket), l'OAuth réel, les scénarios `quickstart.md` en navigateur (micro, hors ligne) et ajouter les icônes PWA PNG 192/512.
-  - **Tests de composants** : configurer React Testing Library pour couvrir éditeur, sauvegarde hors ligne, partage et enregistrement vocal.
+  - **Tests de composants** : React Testing Library/`jsdom` est configuré et couvre `Button` ; étendre la couverture à l'éditeur, la sauvegarde hors ligne, le partage et l'enregistrement vocal.

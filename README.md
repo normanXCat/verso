@@ -29,7 +29,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 
 | **Socle** | **Docker & Base PostgreSQL (Phase 1)** | ✅ Fait | Docker Compose (PostgreSQL 16, MinIO S3), schéma Prisma et migration initiale appliquée (13 tables) |
 | **Socle** | **CI GitHub Actions (Phase 1)** | ✅ Fait | Pipeline CI automatisé (`.github/workflows/ci.yml`) testant lint, format, typecheck et tests |
-| **Socle** | **Design System « Encre & Papier »** | ✅ Fait | Tokens clair/sombre, typographie Fontsource (Instrument Serif, Geist), Framer Motion, page `/design` |
+| **Socle** | **Design System « Encre & Papier »** | ✅ Fait | Tokens clair/sombre, typographie Fontsource (Instrument Serif, Geist), Framer Motion, page `/design`, composant `Button` unifié (icônes, chargement, pleine largeur, `asChild`) |
 | **Socle** | **Landing Page « Encre & Papier »** | ✅ Fait | Hero asymétrique, feuille signature animée, mockup interactif, studio audio, frise d'antériorité |
 | **P1** | **Authentification sécurisée & Sessions** | ✅ Fait | Mots de passe Argon2id, sessions PostgreSQL en cookies HttpOnly/Secure/SameSite=Lax, emails transactionnels, rate limiting |
 | **P1** | **Espace personnel, recherche & filtres** | ✅ Fait | Tableau de bord `/app`, recherche plein texte en direct (titre et paroles), filtres brouillons/terminés/favoris, cloisonnement par utilisateur |
@@ -65,7 +65,7 @@ L'architecture technique conçue lors du plan d'implémentation repose sur :
 - **Stockage Audio** : Compatible S3 (MinIO en développement local, Cloudflare R2 en production) via URLs présignées (`@aws-sdk/client-s3` et `@aws-sdk/s3-request-presigner`), téléversement direct du binaire hors API
 - **Sécurité** : Hachage Argon2id, sessions PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax, protection CSRF par validation d'origine (`Origin`/`Referer`), en-têtes Helmet (HSTS, CSP en production), CORS restrictif, Arctic (OAuth Google/ORCID avec PKCE), `@fastify/rate-limit`
 - **Métrique & Rimes** : Module partagé `lyrics-engine` adapté aux spécificités de la langue française (comptage syllabique par vers, détection et coloration des rimes), exposé via des extensions CodeMirror 6
-- **Qualité & Tests** : Vitest (tests unitaires et d'intégration, exécution séquentielle), ESLint et Prettier (zéro warning toléré)
+- **Qualité & Tests** : Vitest (tests unitaires et d'intégration, exécution séquentielle), React Testing Library + `jsdom` (tests de composants, à partir de `Button`), ESLint et Prettier (zéro warning toléré)
 
 ---
 
