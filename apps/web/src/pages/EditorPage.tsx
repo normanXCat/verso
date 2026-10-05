@@ -251,7 +251,11 @@ export function EditorPage(): React.ReactElement {
       )}
 
       {isZen && (
-        <div className="fixed right-4 top-4 z-40">
+        <div
+          className="fixed right-4 z-40"
+          // Sous le bandeau de vérification email quand il est affiché (`--banner-h`).
+          style={{ top: 'calc(var(--banner-h, 0px) + 1rem)' }}
+        >
           <ZenModeToggle
             isActive
             onToggle={toggleZen}
