@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { PenLine } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth.js';
-import { AuthApiError } from '../../lib/auth-client.js';
+import { presentAuthError, type PresentedAuthError } from '../../lib/auth-errors.js';
 import { AuthLayout } from '../../components/auth/AuthLayout.js';
 import { Input } from '../../components/ui/Input.js';
 import { Button } from '../../components/ui/Button.js';
+import { FormError } from '../../components/ui/FormError.js';
 
 export function RegisterPage(): React.ReactElement {
   const { register } = useAuth();
@@ -13,7 +15,7 @@ export function RegisterPage(): React.ReactElement {
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<PresentedAuthError | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [shake, setShake] = useState(false);
@@ -29,8 +31,7 @@ export function RegisterPage(): React.ReactElement {
         /[^A-Za-z0-9]/.test(password)
       : undefined;
 
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
+  const submit = async (): Promise<void> => {
     setError(null);
     setShake(false);
     setIsLoading(true);
@@ -47,15 +48,16 @@ export function RegisterPage(): React.ReactElement {
       }, 600);
     } catch (err) {
       setShake(true);
-      if (err instanceof AuthApiError) {
-        setError(err.message);
-      } else {
-        setError("Une erreur inattendue est survenue lors de l'ouverture du carnet.");
-      }
+      setError(presentAuthError(err));
       setTimeout(() => setShake(false), 500);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent): void => {
+    e.preventDefault();
+    void submit();
   };
 
   return (
@@ -121,12 +123,8 @@ export function RegisterPage(): React.ReactElement {
           hint="8 caractères minimum, 1 majuscule, 1 chiffre et 1 symbole."
         />
 
-        {/* Message d'erreur */}
-        {error && (
-          <div className="p-3 rounded-lg border border-paper-accent/40 bg-paper-accent/10 text-xs font-mono text-paper-accent">
-            {error}
-          </div>
-        )}
+        {/* Message d'erreur accessible avec détail par champ et réessai */}
+        <FormError error={error} onRetry={() => void submit()} />
 
         {/* Bouton de soumission */}
         <Button
@@ -139,6 +137,7 @@ export function RegisterPage(): React.ReactElement {
           isSuccess={isSuccess}
           successText="Carnet initialisé avec succès"
           shake={shake}
+          icon={<PenLine className="w-5 h-5" aria-hidden="true" />}
         >
           Créer mon carnet d'écriture
         </Button>

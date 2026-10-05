@@ -15,30 +15,45 @@ export class AuthApiError extends Error {
     message: string,
     public statusCode: number,
     public errors?: unknown,
+    public retryAfterSeconds?: number,
   ) {
     super(message);
     this.name = 'AuthApiError';
   }
 }
 
+/**
+ * Effectue une requête vers l'API d'authentification.
+ * - Une coupure réseau (fetch qui rejette) devient un `AuthApiError` de statut 0.
+ * - Le délai de rate limiting (`retry-after`) est conservé pour l'affichage.
+ */
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  const response = await fetch(url, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  } catch {
+    // Panne réseau : le serveur est injoignable (statut 0 conventionnel).
+    throw new AuthApiError('Impossible de joindre le serveur', 0);
+  }
 
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    const retryAfter = Number(response.headers.get('retry-after'));
     throw new AuthApiError(
       data.message || `Erreur requête (${response.status})`,
       response.status,
       data.errors,
+      Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined,
     );
   }
 

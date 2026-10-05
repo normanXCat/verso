@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth.js';
-import { AuthApiError } from '../../lib/auth-client.js';
+import { presentAuthError, type PresentedAuthError } from '../../lib/auth-errors.js';
 import { AuthLayout } from '../../components/auth/AuthLayout.js';
 import { LinkAccountModal } from '../../components/auth/LinkAccountModal.js';
 import { Input } from '../../components/ui/Input.js';
 import { Button } from '../../components/ui/Button.js';
+import { FormError } from '../../components/ui/FormError.js';
 
 export function LoginPage(): React.ReactElement {
   const { login } = useAuth();
@@ -16,7 +18,7 @@ export function LoginPage(): React.ReactElement {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<PresentedAuthError | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [shake, setShake] = useState(false);
@@ -24,8 +26,7 @@ export function LoginPage(): React.ReactElement {
   // Validation email en direct
   const isEmailValid = email.length > 0 ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) : undefined;
 
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
+  const submit = async (): Promise<void> => {
     setError(null);
     setShake(false);
     setIsLoading(true);
@@ -38,15 +39,16 @@ export function LoginPage(): React.ReactElement {
       }, 600);
     } catch (err) {
       setShake(true);
-      if (err instanceof AuthApiError) {
-        setError(err.message);
-      } else {
-        setError('Identifiants incorrects ou service momentanément indisponible.');
-      }
+      setError(presentAuthError(err));
       setTimeout(() => setShake(false), 500);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent): void => {
+    e.preventDefault();
+    void submit();
   };
 
   return (
@@ -78,7 +80,10 @@ export function LoginPage(): React.ReactElement {
       <LinkAccountModal />
 
       {oauthError && (
-        <div className="mb-5 p-3 rounded-lg border border-paper-accent/40 bg-paper-accent/10 text-xs font-mono text-paper-accent">
+        <div
+          role="alert"
+          className="mb-5 p-3 rounded-lg border border-paper-accent/40 bg-paper-accent/10 text-xs font-sans text-paper-accent"
+        >
           La connexion via le fournisseur a échoué. Réessayez ou utilisez votre adresse email.
         </div>
       )}
@@ -134,12 +139,8 @@ export function LoginPage(): React.ReactElement {
           </label>
         </div>
 
-        {/* Message d'erreur avec slide doux */}
-        {error && (
-          <div className="p-3 rounded-lg border border-paper-accent/40 bg-paper-accent/10 text-xs font-mono text-paper-accent">
-            {error}
-          </div>
-        )}
+        {/* Message d'erreur accessible avec réessai */}
+        <FormError error={error} onRetry={() => void submit()} />
 
         {/* Bouton d'action avec gestion du chargement, du succès et de la secousse d'erreur */}
         <Button
@@ -152,6 +153,7 @@ export function LoginPage(): React.ReactElement {
           isSuccess={isSuccess}
           successText="Connexion réussie"
           shake={shake}
+          icon={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
         >
           Accéder à mon espace
         </Button>
