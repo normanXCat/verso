@@ -1,9 +1,9 @@
 import React, { forwardRef } from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
 export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
   variant?: ButtonVariant;
@@ -13,7 +13,12 @@ export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'>
   isSuccess?: boolean;
   successText?: string;
   shake?: boolean;
-  children: React.ReactNode;
+  /** Icône affichée dans un emplacement de taille fixe (20 px). */
+  icon?: React.ReactNode;
+  iconPosition?: 'left' | 'right';
+  /** Bouton icône seule : masque le texte et exige un `aria-label`. */
+  iconOnly?: boolean;
+  children?: React.ReactNode;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -26,6 +31,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       isSuccess = false,
       successText,
       shake = false,
+      icon,
+      iconPosition = 'left',
+      iconOnly = false,
       disabled,
       className = '',
       children,
@@ -51,7 +59,23 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       sm: 'px-3 py-1.5 text-xs',
       md: 'px-4 py-2.5 text-sm',
       lg: 'px-6 py-3.5 text-base',
+      icon: 'p-2 text-sm',
     };
+
+    const effectiveSize: ButtonSize = iconOnly && size !== 'icon' ? 'icon' : size;
+    const label =
+      isSuccess && successText ? successText : isLoading && loadingText ? loadingText : children;
+
+    const showIconSlot = icon !== undefined || isLoading || isSuccess;
+    const iconSlotContent = isSuccess ? (
+      <Check className="w-5 h-5" aria-hidden="true" />
+    ) : isLoading ? (
+      <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+    ) : (
+      <span className="inline-flex items-center justify-center w-5 h-5 [&>svg]:w-5 [&>svg]:h-5 [&>svg]:shrink-0">
+        {icon}
+      </span>
+    );
 
     return (
       <motion.button
@@ -60,28 +84,26 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         animate={shake ? { x: [-6, 6, -4, 4, -2, 2, 0] } : { x: 0 }}
         transition={{ duration: 0.4 }}
         disabled={disabled || isLoading || isSuccess}
-        className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${
-          isSuccess ? 'bg-emerald-600 border-emerald-500 text-white' : ''
-        } ${className}`}
+        className={`${baseStyles} ${variants[variant]} ${sizes[effectiveSize]} ${
+          iconOnly ? '' : 'gap-2'
+        } ${isSuccess ? 'bg-emerald-600 border-emerald-500 text-white' : ''} ${className}`}
         {...props}
       >
-        {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin text-current" />}
-        {isSuccess && (
-          <motion.span
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="mr-2 inline-flex"
-          >
-            ✓
-          </motion.span>
+        {showIconSlot && iconPosition === 'left' && (
+          <span className="inline-flex items-center justify-center w-5 h-5 shrink-0">
+            {iconSlotContent}
+          </span>
         )}
-        <span>
-          {isSuccess && successText
-            ? successText
-            : isLoading && loadingText
-              ? loadingText
-              : children}
-        </span>
+
+        {!iconOnly && label !== undefined && label !== null && label !== '' && (
+          <span className="whitespace-nowrap">{label}</span>
+        )}
+
+        {showIconSlot && iconPosition === 'right' && (
+          <span className="inline-flex items-center justify-center w-5 h-5 shrink-0">
+            {iconSlotContent}
+          </span>
+        )}
       </motion.button>
     );
   },

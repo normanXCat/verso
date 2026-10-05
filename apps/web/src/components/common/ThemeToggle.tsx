@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sun, Moon, type LucideIcon } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext.js';
+import { Button } from '../ui/Button.js';
 
 interface ThemeToggleProps {
   className?: string;
@@ -22,7 +23,8 @@ const OPTIONS: ThemeOption[] = [
 /**
  * Bascule de thème segmentée « Papier / Encre ».
  * Respecte les préférences système, persiste le choix et reste utilisable au clavier
- * et au lecteur d'écran (boutons à bascule `aria-pressed`).
+ * et au lecteur d'écran (boutons à bascule `aria-pressed`). Réutilise le composant
+ * `Button` unique pour garantir une icône de taille fixe et un alignement constant.
  */
 export function ThemeToggle({
   className = '',
@@ -39,27 +41,25 @@ export function ThemeToggle({
       {OPTIONS.map(({ value, label, hint, Icon }) => {
         const isActive = theme === value;
         return (
-          <button
+          <Button
             key={value}
             type="button"
-            onClick={() => setTheme(value)}
+            variant="ghost"
+            size="sm"
+            iconOnly={!showLabel}
             aria-pressed={isActive}
+            aria-label={hint}
             title={hint}
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-mono tracking-wide transition-all duration-paper ease-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper-accent focus-visible:ring-offset-1 focus-visible:ring-offset-paper-bg ${
+            onClick={() => setTheme(value)}
+            icon={<Icon className="w-5 h-5" aria-hidden="true" />}
+            className={`!rounded-full ${
               isActive
-                ? 'bg-paper-bg text-paper-text shadow-paper-sm'
+                ? '!bg-paper-bg !text-paper-text shadow-paper-sm'
                 : 'text-paper-muted hover:text-paper-text'
             }`}
           >
-            <Icon
-              className={`h-3.5 w-3.5 transition-transform duration-paper ease-paper ${
-                isActive ? 'scale-100' : 'scale-90'
-              } ${isActive && value === 'dark' ? 'rotate-[-12deg]' : ''}`}
-              aria-hidden
-            />
-            {showLabel && <span className="text-[11px]">{label}</span>}
-            <span className="sr-only">{label}</span>
-          </button>
+            {showLabel ? <span className="text-[11px] tracking-wide">{label}</span> : undefined}
+          </Button>
         );
       })}
     </div>
