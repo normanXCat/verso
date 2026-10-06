@@ -6,7 +6,7 @@
 - **Phase d'implémentation Spec Kit** : **Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) terminée**. **Les 13 phases / 62 tâches du plan sont désormais toutes implémentées et testées.**
 - **Ce qui est terminé** :
   - Ratification et amendement de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `2.0.0`) avec ses 7 principes non négociables intégrant la collaboration sécurisée.
-  - Spécification fonctionnelle complète de la collaboration entre auteurs ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) avec ses priorités (P1 partage et commentaires, P2 crédits et studio, P3 temps réel) et checklist validée à 100% (16/16).
+  - Spécification fonctionnelle complète de la collaboration entre auteurs ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) avec ses priorités (P1, P2, P3), clarification interactive (`/speckit-clarify`) sur les 5 arbitrages critiques, et checklist validée à 100% (16/16).
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
   - Clarification interactive (`/speckit-clarify`) sur les 5 points critiques.
   - Planification d'implémentation technique complète (`/speckit-plan`) et analyse de cohérence (`/speckit-analyze`).
@@ -113,6 +113,18 @@
   - **Recette manuelle** : téléversements S3 réels (CORS bucket), OAuth contre les vrais fournisseurs, scénarios `quickstart.md` en navigateur (Service Worker/hors ligne, micro), icônes PWA PNG 192/512.
 
 ## Dernière action
+
+- **Action exécutée** : Clarification interactive des arbitrages de collaboration ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) via `/speckit-clarify`.
+- **Arbitrages tranchés (5/5 questions)** :
+  1. **Suppression de compte du propriétaire** : Transfert automatique de propriété au co-auteur le plus ancien sur le texte, qui hérite de l'intégralité des droits d'administration de l'œuvre (`FR-002a`).
+  2. **Départ ou révocation d'un collaborateur** : Maintien des paroles rédigées dans le texte et l'historique des versions, fermeture immédiate de l'accès sans copie personnelle, et anonymisation/purge de tous ses commentaires passés (`FR-005a`).
+  3. **Droits sur les instrumentales audio** : Parité totale des droits audio pour les co-auteurs (import dans le quota global de 3 pistes, activation, métadonnées et suppression définitive) (`FR-001`).
+  4. **Conflits de modification asynchrones** : La première écriture validée met à jour le texte courant ; la modification concurrente est automatiquement archivée comme révision étiquetée « Conflit » dans l'historique partagé, avec alerte et vue comparative côte à côte (`FR-023`).
+  5. **Impact du blocage entre utilisateurs** : Révocation immédiate des accès sur les œuvres du bloqueur, retrait du bloqueur des œuvres du bloqué, et neutralisation/masquage mutuel des mentions et notifications sur les projets communs d'un tiers (`FR-032`).
+  - **Précisions complémentaires** : Expiration par défaut des invitations fixée à 7 jours (`FR-008`), et plafond maximal fixé à 10 collaborateurs simultanés par texte (`FR-008a`).
+- **Résultat** : Spécification et checklist [requirements.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/checklists/requirements.md) mises à jour à 100% (16/16), prêtes pour `/speckit-plan`.
+
+### Action précédente
 
 - **Action exécutée** : Spécification fonctionnelle de la collaboration entre auteurs ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) via `/speckit-specify`.
 - **Détails de la spécification** :
@@ -324,9 +336,8 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 ## Prochaine étape
 
 - **Collaboration entre auteurs (`002-author-collaboration`)** :
-  - **Clarification interactive optionnelle** : `/speckit-clarify` pour affiner les choix ergonomiques clés (ex. affichage de la sélection de lignes en marge, modalités du mode session studio).
-  - **Planification technique** : `/speckit-plan` pour concevoir l'architecture de la collaboration (modèle de données Prisma, fonction centrale `can`, endpoints d'invitations et de commentaires, gestion des conflits).
-  - **Découpage des tâches** : `/speckit-tasks` pour générer la liste ordonnancée des tâches d'implémentation.
+  - **Planification technique (`/speckit-plan`)** : concevoir l'architecture technique complète (modèle relationnel Prisma pour rôles, invitations hachées, commentaires ancrés et crédits ; fonction centrale unique d'autorisation `can` ; contrats d'API Zod ; gestion des conflits asynchrones et synchronisation studio).
+  - **Découpage des tâches (`/speckit-tasks`)** : générer la liste ordonnancée des tâches d'implémentation découpées par priorités P1, P2 et P3.
 - **Autres chantiers en parallèle** :
   - **Refonte Design Étape 4** : espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
   - **Recette manuelle** : valider les téléversements S3 (CORS bucket), l'OAuth réel, les scénarios `quickstart.md` en navigateur (micro, hors ligne) et ajouter les icônes PWA PNG 192/512.

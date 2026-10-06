@@ -8,6 +8,15 @@
 
 **Input**: User description: "Ajouter la collaboration entre auteurs dans Verso. Décris le quoi, pas la technique, par priorité. P1 : partage et commentaires (invitations, rôles, gestion accès, espace 'Partagés avec moi', commentaires sur lignes/sélection, attribution des versions, notifications in-app/email, gestion des conflits). P2 : crédits et studio (crédits avec parts %, export PDF, profil auteur minimal sans email visible, blocage/signalement, activité récente). P3 : temps réel (écriture simultanée, curseurs colorés, présence, mode session avec instru et métronome partagés). Hors périmètre : discussions publiques, réseau social, marketplace, collaboration sans compte."
 
+## Clarifications
+
+### Session 2026-10-06
+- Q: Que doivent devenir les textes partagés et leurs révisions lorsqu'un auteur propriétaire décide de supprimer définitivement son compte Verso ? → A: Transfert automatique de la propriété au co-auteur le plus ancien sur le texte, qui hérite de l'intégralité des droits d'administration de l'œuvre.
+- Q: Qu'advient-il de l'accès et des contributions d'un co-auteur lorsqu'il décide de quitter un projet ou que le propriétaire révoque son accès ? → A: Les paroles restent intégrées au texte et à l'historique des versions, mais l'accès au projet est immédiatement fermé sans création de copie personnelle, et tous ses commentaires et discussions passés sont anonymisés ou purgés de l'espace de travail.
+- Q: Quels doivent être les droits accordés aux co-auteurs sur les instrumentales audio associées à un texte partagé ? → A: Les co-auteurs disposent de droits complets sur les instrumentales associées au texte, équivalents à ceux du propriétaire (importation dans la limite du quota global de 3 pistes, sélection de la piste active, modification des métadonnées et suppression définitive).
+- Q: Comment le système doit-il concilier deux modifications concurrentes sur un même texte partagé en cas de conflit asynchrone pour garantir le zéro perte de paroles ? → A: La première modification reçue met à jour le texte courant ; la modification concurrente est automatiquement archivée comme version spéciale étiquetée « Conflit » dans l'historique du texte partagé, avec notification aux co-auteurs et vue comparative.
+- Q: Quel doit être l'impact immédiat du blocage d'un utilisateur sur les projets et textes partagés sur lesquels les deux artistes collaborent déjà ? → A: Le blocage révoque immédiatement l'accès de l'utilisateur bloqué sur les œuvres dont le bloqueur est propriétaire ; si le bloqueur collaborait sur une œuvre du bloqué, il la quitte immédiatement ; sur les œuvres d'un tiers où tous deux collaborent, leurs mentions, notifications et échanges directs sont mutuellement neutralisés et invisibilisés.
+
 ---
 
 ## User Scenarios & Testing *(mandatory)*
@@ -151,12 +160,15 @@ En tant que groupe d'auteurs réunis à distance ou en studio, nous souhaitons v
 ### Edge Cases
 
 - **Révocation d'accès en cours de session** : Si un collaborateur est en train de lire ou d'éditer un texte et que le propriétaire révoque son accès, sa prochaine tentative d'action ou de rafraîchissement doit immédiatement renvoyer une réponse "introuvable" (HTTP 404), sans message différencié trahissant la révocation.
-- **Conflit d'édition concurrente asynchrone** : Lorsque deux co-auteurs éditent les mêmes lignes hors ligne ou sans connexion temps réel, aucune écriture ne doit écraser l'autre. Le système conserve les deux versions : la première enregistrée devient la révision courante et la seconde est isolée dans un instantané de conciliation explicite avec notification aux deux auteurs.
+- **Conflit d'édition concurrente asynchrone** : Lorsque deux co-auteurs éditent les mêmes lignes hors ligne ou sans session temps réel active, la première modification arrivée met à jour le texte courant ; la révision concurrente est automatiquement archivée comme version étiquetée « Conflit » dans l'historique partagé, déclenchant une alerte visible dans l'éditeur avec comparaison côte à côte pour conciliation sans écrasement.
+- **Suppression du compte du propriétaire** : Si le créateur d'une œuvre partagée supprime son compte personnel, la propriété de l'œuvre est automatiquement transférée au co-auteur dont l'accès est le plus ancien, préservant ainsi le texte, l'historique et les collaborations actives sans rupture.
 - **Suppression ou détachement d'une œuvre partagée** : Seul le propriétaire légitime peut supprimer définitivement un texte ou un album. Si un album partagé est supprimé par son propriétaire, les textes qui le composent sont simplement détachés de l'album sans être détruits, conformément aux règles fondamentales de Verso.
-- **Départ d'un co-auteur** : Lorsqu'un co-auteur quitte un projet de son propre chef, ses contributions passées restent consignées dans l'historique sous son nom d'artiste, mais il perd immédiatement tout droit de lecture et d'écriture futur.
+- **Départ ou révocation d'un collaborateur** : Lorsqu'un collaborateur quitte un projet ou que son accès est révoqué par le propriétaire, les paroles qu'il a rédigées restent intégrées au texte et à l'historique des versions, mais son accès au projet est immédiatement révoqué sans création de copie personnelle dans son espace, et ses commentaires et échanges passés sont anonymisés (mention « Ancien collaborateur ») ou purgés pour respecter la clôture de la collaboration.
+- **Blocage et collaborations existantes** : Le blocage d'un utilisateur rompt immédiatement toute collaboration directe (révocation des accès accordés sur les projets du bloqueur et retrait du bloqueur des projets du bloqué) ; sur les projets d'un tiers partagés en commun, leurs interactions directes (mentions, notifications) sont mutuellement neutralisées et masquées pour préserver la sécurité de l'artiste.
 - **Tentative d'invitation d'un utilisateur bloqué** : Si un utilisateur tente d'inviter une personne qu'il a bloquée ou par laquelle il est bloqué, la demande est rejetée de manière neutre sans confirmer l'existence du blocage.
 - **Expiration et réutilisation d'invitation** : Un lien ou une invitation expirée ou déjà acceptée ne peut être rejouée ; elle renvoie un message neutre d'indisponibilité.
 - **Neutralisation des contenus malveillants** : Tout texte collaboratif (commentaires, réponses, pseudonymes, crédits) contenant des balises ou du code exécutable doit être strictement neutralisé à l'affichage pour écarter tout risque d'injection visuelle ou applicative.
+- **Gestion concurrente des instrumentales** : La suppression, la modification ou le téléversement d'une instrumentale par un co-auteur s'applique immédiatement à l'ensemble des collaborateurs du projet ; le plafond collectif strict de 3 pistes audio par texte demeure infranchissable.
 - **Saturation des requêtes (Rate Limiting)** : Tout envoi massif d'invitations, de commentaires ou de recherches d'utilisateurs doit déclencher une invitation à patienter, protégeant les artistes contre le harcèlement et le spam.
 
 ---
@@ -167,18 +179,21 @@ En tant que groupe d'auteurs réunis à distance ou en studio, nous souhaitons v
 
 #### 1. Rôles et Autorisations Centralisées
 - **FR-001**: Le système DOIT définir trois rôles collaboratifs distincts sur un texte ou un album :
-  - **Co-auteur** : lecture, écriture de paroles, ajout/résolution de commentaires, proposition de versions, téléversement de mémos vocaux, consultation des crédits et de l'historique.
+  - **Co-auteur** : lecture, écriture de paroles, gestion intégrale des instrumentales audio (importation dans la limite du quota de 3 pistes, activation de la piste active, modification des métadonnées et suppression définitive), ajout/résolution de commentaires, proposition de versions, téléversement de mémos vocaux, consultation des crédits et de l'historique.
   - **Commentateur** : lecture du texte et des instrumentales, ajout de commentaires et réponses, consultation des crédits. Aucune modification directe des paroles.
   - **Lecteur** : lecture seule du texte, des instrumentales et des crédits, sans droit de commentaire ni d'édition.
 - **FR-002**: Seul le propriétaire créateur de l'œuvre DOIT pouvoir inviter de nouveaux collaborateurs, modifier leurs rôles, révoquer les accès et supprimer l'œuvre.
+- **FR-002a**: Lors de la suppression définitive du compte d'un propriétaire, la propriété de chaque texte partagé DOIT être automatiquement transférée au co-auteur le plus ancien sur l'œuvre, qui hérite de l'intégralité des droits d'administration ; en l'absence de tout co-auteur, l'œuvre est définitivement supprimée.
 - **FR-003**: Toute décision d'accès (lecture, écriture, commentaire, partage, suppression) DOIT impérativement passer par une fonction centrale unique de contrôle d'accès, sans aucune exception ni contournement par une route ou une interface.
 - **FR-004**: En cas d'accès refusé ou de ressource inexistante, le système DOIT toujours renvoyer une réponse identique "introuvable", interdisant formellement toute fuite d'information sur l'existence de l'œuvre.
 - **FR-005**: Tout collaborateur (co-auteur, commentateur, lecteur) DOIT pouvoir quitter volontairement une œuvre partagée à tout moment.
+- **FR-005a**: En cas de révocation d'accès ou de départ volontaire d'un collaborateur, ses paroles rédigées DOIVENT rester intégrées au texte et à l'historique des versions, son accès est immédiatement fermé sans création de copie personnelle, et l'ensemble de ses commentaires et discussions passés DOIVENT être anonymisés (mention "Ancien collaborateur") ou purgés du projet.
 
 #### 2. Invitations et Partage Contrôlé
 - **FR-006**: Les invitations DOIVENT pouvoir être adressées soit par nom d'utilisateur existant, soit par adresse email.
 - **FR-007**: Les invitations DOIVENT être acceptées ou refusées de manière explicite par le destinataire avant de donner accès à l'œuvre.
-- **FR-008**: Toute invitation générée DOIT comporter une date d'expiration stricte et demeurer révocable à tout moment par le propriétaire avant son acceptation.
+- **FR-008**: Toute invitation générée DOIT comporter une date d'expiration stricte (7 jours calendaires par défaut) et demeurer révocable à tout moment par le propriétaire avant son acceptation.
+- **FR-008a**: Le système DOIT limiter à un maximum de 10 collaborateurs actifs simultanés par texte partagé, afin de préserver l'ergonomie d'écriture et de prévenir les abus de masse.
 - **FR-009**: Les invitations générées par lien DOIVENT reposer sur une empreinte cryptographique aléatoire sécurisée et stockée sous forme hachée, jamais en clair.
 - **FR-010**: L'attribution d'un rôle sur un album DOIT accorder automatiquement ce même rôle sur l'ensemble des morceaux actuels et futurs rattachés à cet album.
 
@@ -199,7 +214,7 @@ En tant que groupe d'auteurs réunis à distance ou en studio, nous souhaitons v
 - **FR-020**: Chaque révision d'un texte partagé DOIT enregistrer et afficher l'identité de son auteur réel ainsi que son horodatage exact.
 - **FR-021**: L'historique des versions DOIT conserver l'intégralité des révisions de tous les co-auteurs sans limite de temps ni écrasement.
 - **FR-022**: La restauration d'une version passée DOIT consigner nominativement l'auteur ayant effectué l'opération et archiver l'état courant avant d'appliquer la restauration.
-- **FR-023**: En cas de modifications concurrentes asynchrones, le système DOIT garantir une tolérance absolue à la perte de données : aucune saisie d'un co-auteur ne peut être écrasée silencieusement par celle d'un autre.
+- **FR-023**: En cas de modifications concurrentes asynchrones ou hors ligne, le système DOIT appliquer une stratégie de conciliation non destructive : la première modification validée devient le texte courant, tandis que la seconde est automatiquement archivée dans l'historique comme révision étiquetée « Conflit » portant le nom de son auteur, accompagnée d'un bandeau d'alerte et d'un outil de comparaison côte à côte des vers.
 
 #### 6. Notifications In-App et Emails
 - **FR-024**: Le système DOIT émettre des notifications dans l'application lors des événements suivants : réception d'une invitation, acceptation ou refus d'invitation, nouveau commentaire sur un texte, réponse à son commentaire, mention `@pseudonyme`.
@@ -214,7 +229,7 @@ En tant que groupe d'auteurs réunis à distance ou en studio, nous souhaitons v
 #### 8. Profil Minimal, Confidentialité et Modération
 - **FR-030**: Le profil public visible par les autres artistes DOIT être strictement limité au nom d'affichage, à un avatar optionnel et à une courte biographie.
 - **FR-031**: L'adresse email d'un utilisateur ne DOIT JAMAIS être divulguée à un autre utilisateur sans son accord exprès.
-- **FR-032**: Tout utilisateur DOIT pouvoir bloquer un autre utilisateur, ce qui empêche immédiatement toute invitation, toute mention et toute interaction réciproque.
+- **FR-032**: Tout utilisateur DOIT pouvoir bloquer un autre utilisateur : cela empêche immédiatement toute invitation, mention ou recherche réciproque ; révoque immédiatement l'accès du compte bloqué sur les œuvres dont le bloqueur est propriétaire ; retire immédiatement le bloqueur des œuvres dont le bloqué est propriétaire ; et neutralise mutuellement leurs mentions et notifications sur les projets communs détenus par un tiers.
 - **FR-033**: Tout utilisateur DOIT pouvoir signaler un contenu ou un comportement abusif via un motif formalisé.
 - **FR-034**: Le système DOIT présenter un fil d'activité récente sur chaque texte partagé résumant les actions clés (modifications, commentaires, résolutions).
 

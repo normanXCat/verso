@@ -33,5 +33,6 @@
 
 - **Validation Date**: 2026-10-06
 - **Status**: 100% Complete (16/16 items validés).
+- **Session Clarify (2026-10-06)** : 5 questions critiques clarifiées (transfert de propriété à la suppression de compte, rétention/anonymisation des commentaires d'un co-auteur retiré, parité des droits audio pour les co-auteurs, conciliation des conflits asynchrones par révision étiquetée, et rupture nette/neutralisation lors d'un blocage).
 - **Constitution Alignment**: Strictement aligné sur la Constitution v2.0.0 de Verso (cloisonnement et rôles, fonction centrale `can`, réponse uniforme 404 introuvable, invitations révocables à tokens hachés, attribution des versions, modération/blocage sans fuite d'email, rate limiting et protection XSS intégrale).
-- Spécification prête pour la suite du workflow (`/speckit-clarify` ou `/speckit-plan`).
+- Spécification finalisée, prête pour la planification technique (`/speckit-plan`).
