@@ -7,6 +7,7 @@
 - **Ce qui est terminé** :
   - Ratification et amendement de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `2.0.0`) avec ses 7 principes non négociables intégrant la collaboration sécurisée.
   - Spécification fonctionnelle complète de la collaboration entre auteurs ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) avec ses priorités (P1, P2, P3), clarification interactive (`/speckit-clarify`) sur les 5 arbitrages critiques, et checklist validée à 100% (16/16).
+  - Planification technique complète de la collaboration entre auteurs ([specs/002-author-collaboration/plan.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/plan.md)) via `/speckit-plan` : décisions d'architecture (Phase 0, `research.md`), modèle relationnel Prisma étendu (`data-model.md`), 6 contrats d'API Zod / SSE / WebSocket (`contracts/*.md`) et scénarios de validation exécutables (`quickstart.md`).
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
   - Clarification interactive (`/speckit-clarify`) sur les 5 points critiques.
   - Planification d'implémentation technique complète (`/speckit-plan`) et analyse de cohérence (`/speckit-analyze`).
@@ -113,6 +114,24 @@
   - **Recette manuelle** : téléversements S3 réels (CORS bucket), OAuth contre les vrais fournisseurs, scénarios `quickstart.md` en navigateur (Service Worker/hors ligne, micro), icônes PWA PNG 192/512.
 
 ## Dernière action
+
+- **Action exécutée** : Planification technique complète de la collaboration entre auteurs ([specs/002-author-collaboration/plan.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/plan.md)) via `/speckit-plan`.
+- **Détails de la planification (Phase 0 & Phase 1)** :
+  - **Phase 0 — Recherche & Arbitrages techniques (`research.md`)** :
+    1. *Autorisations & Contrôle d'accès* : Module central unique `can(user, resource, action)` en pur TypeScript (zéro dépendance lourde tierce), exhaustivité testée à 100% de couverture, réponse identique HTTP 404 neutre en cas de refus d'accès pour interdire toute fuite d'existence.
+    2. *Gestion des conflits asynchrones (P1)* : Verrouillage optimiste basé sur un champ `Song.revision: Int`. Tout enregistrement concurrent désynchronisé est rejeté en HTTP 409 et automatiquement archivé dans l'historique sous forme d'une version étiquetée « Conflit » avec `authorId`, sans perte de frappe.
+    3. *Écriture collaborative temps réel & Studio (P3)* : Yjs avec binding CodeMirror 6 (`@y-rb/y-codemirror`), WebSocket sous Fastify authentifié par session de cookie, présence/curseurs colorés, et session audio synchrone (état de lecture et métronome partagés).
+    4. *Notifications* : Server-Sent Events (`/api/notifications/stream`) pour les alertes in-app temps réel (sans surcharge WebSocket) et service Resend avec debounce de 3 minutes pour le regroupement des emails d'activité.
+    5. *Recherche d'utilisateurs & Vie privée* : Correspondance exacte stricte (`exact_username` ou `exact_email`) sous rate limiting de 10 req/min, ne renvoyant jamais l'adresse email d'un tiers dans le payload.
+    6. *Schéma relationnel Prisma* : Relations multi-propriétaires et rôles (`Collaborator`), jetons hachés (`Invitation`), discussions ancrées sur lignes (`Comment`), alertes (`Notification`), quotes-parts artistiques (`SongCredit`), blocage mutuel (`UserBlock`) et modération (`AbuseReport`).
+  - **Phase 1 — Artefacts de conception & Contrats** :
+    - [`data-model.md`](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/data-model.md) : Modèle relationnel complet avec contraintes d'intégrité, indexes de performance et règles de suppression en cascade.
+    - [`contracts/`](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/contracts/) : 6 contrats formels Zod / REST / SSE / WS (`collaboration-api.md`, `comments-api.md`, `credits-api.md`, `moderation-api.md`, `notifications-api.md`, `realtime-protocol.md`).
+    - [`quickstart.md`](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/quickstart.md) : 5 scénarios de validation exécutables de bout en bout couvrant les 3 priorités P1, P2 et P3.
+    - [`plan.md`](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/plan.md) : Plan d'implémentation global validé à 100% contre la Constitution v2.0.0.
+- **Résultat** : Architecture technique intégralement documentée, validée et prête pour le découpage des tâches (`/speckit-tasks`).
+
+### Action précédente
 
 - **Action exécutée** : Clarification interactive des arbitrages de collaboration ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) via `/speckit-clarify`.
 - **Arbitrages tranchés (5/5 questions)** :
@@ -243,11 +262,16 @@
 - **`NavLink`, primitive manquante du design system** : les liens de navigation disposent désormais d'un composant dédié (trait animé par `transform` en 150 ms, état actif `aria-current`, focus visible) au lieu d'utilitaires ad hoc répétés. Le diagnostic est consigné : ce n'était pas le reset de Tailwind mais l'absence de cette primitive.
 - **Modes de remise des emails explicites** : `resolveEmailDelivery(nodeEnv, hasTransport)` rend le comportement testable — `sent` (transport configuré), `simulated` (aperçu console hors production), `blocked` (production sans transport, contenu jamais journalisé).
 - **Amendement constitutionnel v2.0.0 (Collaboration sécurisée)** : Passage à la version `2.0.0` (incrément MAJOR) actant l'ouverture de Verso au travail collaboratif : substitution de l'isolation exclusive par un modèle d'accès partagé basé sur les rôles, sécurisé par une fonction centrale unique `can(utilisateur, ressource, action)`, une réponse 404 anti-fuite d'existence, la traçabilité des auteurs dans l'historique, des invitations révocables à tokens hachés, la modération/blocage et la protection contre le harcèlement et les injections XSS.
+- **Module central d'autorisation `can` en TypeScript pur** : pas de dépendance externe lourde (Casbin/Cerbos rejetés) ; la fonction `can(user, resource, action)` gère les rôles (`OWNER`, `CO_AUTHOR`, `COMMENTER`, `READER`) avec typage strict, est testée à 100% de couverture et lève une réponse 404 neutre en cas de refus d'accès pour garantir l'absence de fuite d'existence.
+- **Gestion des conflits d'édition P1 par verrouillage optimiste** : ajout de `revision: Int` sur `Song`. Tout enregistrement concurrent désynchronisé est rejeté en HTTP 409 et automatiquement archivé dans l'historique sous forme d'une version étiquetée « Conflit » avec `authorId`, sans aucune perte de contenu.
+- **Collaboration temps réel P3 basée sur Yjs et Fastify WebSockets** : intégration CodeMirror 6 préservée (`@y-rb/y-codemirror`), WebSocket sous Fastify authentifié par session, diffusion de la présence/curseurs colorés, et session audio synchrone (état de lecture et métronome partagés).
+- **Notifications in-app par flux SSE et emails groupés par fenêtre debounce** : flux persistant HTTP `/api/notifications/stream` sans complexité WebSocket pour les alertes in-app ; emails transactionnels Resend temporisés par un debounce de 3 minutes pour éviter le spam lors des sessions d'écriture intensives.
+- **Recherche d'utilisateurs stricte anti-énumération** : recherche exacte par nom d'utilisateur ou email (`q`), sans énumération ni auto-complétion, masquage total de l'adresse email dans la réponse, et limitation stricte à 10 requêtes/minute par utilisateur.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `dd0a209` — `docs(spec): clarifier les arbitrages critiques de la collaboration (002-author-collaboration)`
+- **Dernier commit** : `7e59d52` — `docs(plan): planifier l'architecture technique de la collaboration (002-author-collaboration)`
 
 ## Comment lancer le projet
 
@@ -336,8 +360,7 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 ## Prochaine étape
 
 - **Collaboration entre auteurs (`002-author-collaboration`)** :
-  - **Planification technique (`/speckit-plan`)** : concevoir l'architecture technique complète (modèle relationnel Prisma pour rôles, invitations hachées, commentaires ancrés et crédits ; fonction centrale unique d'autorisation `can` ; contrats d'API Zod ; gestion des conflits asynchrones et synchronisation studio).
-  - **Découpage des tâches (`/speckit-tasks`)** : générer la liste ordonnancée des tâches d'implémentation découpées par priorités P1, P2 et P3.
+  - **Découpage des tâches d'implémentation (`/speckit-tasks`)** : générer le fichier ordonnancé `specs/002-author-collaboration/tasks.md` découpé en phases testables isolément par priorités P1 (partage, rôles, commentaires ancrés, détection et résolution de conflits sans perte), P2 (crédits artistiques, profils minimaux, blocage/modération) et P3 (temps réel Yjs, session studio audio).
 - **Autres chantiers en parallèle** :
   - **Refonte Design Étape 4** : espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
   - **Recette manuelle** : valider les téléversements S3 (CORS bucket), l'OAuth réel, les scénarios `quickstart.md` en navigateur (micro, hors ligne) et ajouter les icônes PWA PNG 192/512.

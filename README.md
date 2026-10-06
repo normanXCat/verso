@@ -26,6 +26,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **Socle** | **Planification Technique Verso Core** | ✅ Fait | Architecture monorepo, schéma Prisma, contrats d'API et quickstart ([specs/001-verso-core/plan.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/plan.md)) |
 | **Socle** | **Découpage des Tâches d'Implémentation** | ✅ Fait | 62 tâches en 13 phases ordonnancées, testables et priorisées ([specs/001-verso-core/tasks.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/tasks.md)) |
 | **P3** | **Spécification Fonctionnelle Collaboration Auteurs** | ✅ Fait | Spécification complète et clarifiée (5 arbitrages clés), priorisée (P1, P2, P3) avec checklist validée à 100% ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) |
+| **P3** | **Planification Technique Collaboration Auteurs** | ✅ Fait | Architecture centrale `can()`, modèle relationnel Prisma étendu, contrats REST/SSE/WS, verrouillage optimiste P1 et quickstart ([specs/002-author-collaboration/plan.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/plan.md)) |
 | **Socle** | **Monorepo & Outillage Qualité (Phase 1)** | ✅ Fait | Monorepo pnpm (`apps/api`, `apps/web`, `packages/shared`), TS strict, ESLint/Prettier zéro warning |
 
 | **Socle** | **Docker & Base PostgreSQL (Phase 1)** | ✅ Fait | Docker Compose (PostgreSQL 16, MinIO S3), schéma Prisma et migration initiale appliquée (13 tables) |
@@ -138,15 +139,23 @@ verso/
 │   └── shared/                 # Bibliothèque partagée (@verso/shared)
 │       └── src/                # Schémas Zod, types et moteur poétique
 ├── specs/                      # Spécifications fonctionnelles et techniques
-│   └── 001-verso-core/         # Spécification complète et plan de la plateforme Verso
+│   ├── 001-verso-core/         # Spécification complète et plan de la plateforme Verso
+│   │   ├── checklists/         # Checklist de qualité (16/16)
+│   │   ├── contracts/          # Contrats d'API REST Zod
+│   │   ├── data-model.md       # Modèle relationnel détaillé Prisma / PostgreSQL
+│   │   ├── plan.md             # Plan d'implémentation technique global
+│   │   ├── quickstart.md       # Scénarios de validation exécutables
+│   │   ├── research.md         # Décisions d'architecture
+│   │   ├── spec.md             # Spécification fonctionnelle validée
+│   │   └── tasks.md            # Découpage des 62 tâches ordonnancées
+│   └── 002-author-collaboration/ # Spécification et planification de la collaboration entre auteurs
 │       ├── checklists/         # Checklist de qualité (16/16)
-│       ├── contracts/          # Contrats d'API REST Zod
-│       ├── data-model.md       # Modèle relationnel détaillé Prisma / PostgreSQL
+│       ├── contracts/          # Contrats d'API REST Zod, SSE et WebSocket
+│       ├── data-model.md       # Modèle relationnel Prisma étendu (Collaborator, Comment, etc.)
 │       ├── plan.md             # Plan d'implémentation technique global
 │       ├── quickstart.md       # Scénarios de validation exécutables
-│       ├── research.md         # Décisions d'architecture
-│       ├── spec.md             # Spécification fonctionnelle validée
-│       └── tasks.md            # Découpage des 62 tâches ordonnancées
+│       ├── research.md         # Décisions d'architecture (can, conflits P1, Yjs P3)
+│       └── spec.md             # Spécification fonctionnelle clarifiée
 ├── docs/
 │   └── brand/
 │       └── logo-wordmark.svg   # Logotype Verso (Instrument Serif converti en tracés)
