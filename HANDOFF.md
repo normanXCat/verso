@@ -6,6 +6,7 @@
 - **Phase d'implémentation Spec Kit** : **Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) terminée**. **Les 13 phases / 62 tâches du plan sont désormais toutes implémentées et testées.**
 - **Ce qui est terminé** :
   - Ratification et amendement de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `2.0.0`) avec ses 7 principes non négociables intégrant la collaboration sécurisée.
+  - Spécification fonctionnelle complète de la collaboration entre auteurs ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) avec ses priorités (P1 partage et commentaires, P2 crédits et studio, P3 temps réel) et checklist validée à 100% (16/16).
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
   - Clarification interactive (`/speckit-clarify`) sur les 5 points critiques.
   - Planification d'implémentation technique complète (`/speckit-plan`) et analyse de cohérence (`/speckit-analyze`).
@@ -112,6 +113,19 @@
   - **Recette manuelle** : téléversements S3 réels (CORS bucket), OAuth contre les vrais fournisseurs, scénarios `quickstart.md` en navigateur (Service Worker/hors ligne, micro), icônes PWA PNG 192/512.
 
 ## Dernière action
+
+- **Action exécutée** : Spécification fonctionnelle de la collaboration entre auteurs ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) via `/speckit-specify`.
+- **Détails de la spécification** :
+  - **Périmètre et priorisation** :
+    - **P1 (Partage et commentaires)** : Invitations sur textes et albums (rôles co-auteur, commentateur, lecteur), gestion des accès et départ volontaire, espace dédié "Partagés avec moi" (filtres rôle/propriétaire), commentaires ancrés sur ligne/sélection avec réponses hiérarchisées, mentions `@pseudonyme` et statut résolu/rouvert, attribution des versions par auteur et restauration tracée, notifications in-app et emails paramétrables, gestion des conflits d'édition concurrente sans perte de texte.
+    - **P2 (Crédits et studio)** : Déclaration des crédits artistiques (auteurs, feats, beatmakers, compositeurs) avec quote-part en pourcentage et export PDF horodaté fidèle, profil auteur minimal (nom, avatar, bio courte) garantissant le masquage absolu de l'email, modération (blocage bilatéral, signalement d'abus), journal d'activité récente des textes partagés.
+    - **P3 (Temps réel)** : Écriture simultanée avec curseurs colorés et présence, "Mode session studio" synchronisant l'instrumentale audio et le métronome.
+    - **Hors périmètre explicite** : Discussions publiques, réseau social, marketplace, collaboration sans compte utilisateur authentifié.
+  - **Exigences fonctionnelles** : 38 exigences fonctionnelles formalisées (FR-001 à FR-038) et 8 critères de succès mesurables (SC-001 à SC-008).
+  - **Validation qualité** : Checklist [requirements.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/checklists/requirements.md) validée à 100% (16/16 critères passants, zéro marqueur de clarification en attente, aucune fuite de détails techniques d'implémentation).
+- **Résultat** : Spécification complète et validée, prête pour l'étape suivante (`/speckit-clarify` ou `/speckit-plan`).
+
+### Action précédente
 
 - **Action exécutée** : Amendement de la constitution de Verso ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md)) en version `2.0.0` pour intégrer la collaboration sécurisée.
 - **Détails de l'amendement** :
@@ -309,8 +323,11 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 
 ## Prochaine étape
 
-- **Plan Spec Kit complet** : les 13 phases / 62 tâches sont terminées. Aucune phase d'implémentation restante.
-- **Travaux suivants recommandés** :
+- **Collaboration entre auteurs (`002-author-collaboration`)** :
+  - **Clarification interactive optionnelle** : `/speckit-clarify` pour affiner les choix ergonomiques clés (ex. affichage de la sélection de lignes en marge, modalités du mode session studio).
+  - **Planification technique** : `/speckit-plan` pour concevoir l'architecture de la collaboration (modèle de données Prisma, fonction centrale `can`, endpoints d'invitations et de commentaires, gestion des conflits).
+  - **Découpage des tâches** : `/speckit-tasks` pour générer la liste ordonnancée des tâches d'implémentation.
+- **Autres chantiers en parallèle** :
   - **Refonte Design Étape 4** : espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
   - **Recette manuelle** : valider les téléversements S3 (CORS bucket), l'OAuth réel, les scénarios `quickstart.md` en navigateur (micro, hors ligne) et ajouter les icônes PWA PNG 192/512.
-  - **Tests de composants** : React Testing Library/`jsdom` est configuré et couvre `Button` ; étendre la couverture à l'éditeur, la sauvegarde hors ligne, le partage et l'enregistrement vocal.
+  - **Tests de composants** : étendre la couverture React Testing Library aux composants clés.
