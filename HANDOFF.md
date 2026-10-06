@@ -235,7 +235,7 @@
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `bb13f64` — `docs: amender la constitution en v2.0.0 pour intégrer la collaboration sécurisée`
+- **Dernier commit** : `67faa28` — `docs(spec): spécifier la collaboration entre auteurs (002-author-collaboration)`
 
 ## Comment lancer le projet
 
