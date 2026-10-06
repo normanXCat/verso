@@ -221,7 +221,7 @@
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `20ca602` — `chore: afficher les emails simulés en développement et exiger un transport en production`
+- **Dernier commit** : `bb13f64` — `docs: amender la constitution en v2.0.0 pour intégrer la collaboration sécurisée`
 
 ## Comment lancer le projet
 
