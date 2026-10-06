@@ -5,7 +5,7 @@
 - **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
 - **Phase d'implémentation Spec Kit** : **Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) terminée**. **Les 13 phases / 62 tâches du plan sont désormais toutes implémentées et testées.**
 - **Ce qui est terminé** :
-  - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
+  - Ratification et amendement de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `2.0.0`) avec ses 7 principes non négociables intégrant la collaboration sécurisée.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
   - Clarification interactive (`/speckit-clarify`) sur les 5 points critiques.
   - Planification d'implémentation technique complète (`/speckit-plan`) et analyse de cohérence (`/speckit-analyze`).
@@ -113,6 +113,21 @@
 
 ## Dernière action
 
+- **Action exécutée** : Amendement de la constitution de Verso ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md)) en version `2.0.0` pour intégrer la collaboration sécurisée.
+- **Détails de l'amendement** :
+  - **Cloisonnement et accès aux données** : Remplacement de la règle d'isolation stricte par : « Un utilisateur n'accède qu'à ses propres données et à celles qui ont été explicitement partagées avec lui, selon son rôle. »
+  - **Autorisation centralisée unique (`can`)** : Toute décision d'accès (lecture, écriture, commentaire, partage, suppression) passe par une fonction centrale unique (par exemple `can(utilisateur, ressource, action)`), testée de façon exhaustive. Aucune route ni aucun composant ne contourne cette fonction.
+  - **Confidentialité et anti-fuite d'existence** : Réponse identique « introuvable » (HTTP 404) lorsqu'une ressource n'est pas accessible (pas de fuite d'existence).
+  - **Gestion des invitations & tokens** : Les invitations sont acceptées explicitement, expirent, et sont révocables. Un lien d'invitation est un token haché en base.
+  - **Attribution des modifications & Historique des versions** : Chaque modification d'un texte partagé est attribuée à son auteur. L'historique conserve l'auteur de chaque version.
+  - **Protection des utilisateurs, modération & Vie privée** : Un utilisateur peut bloquer un autre utilisateur et signaler un abus. Aucune donnée personnelle (email) n'est révélée à un autre utilisateur sans son accord.
+  - **Limitation de débit (Rate Limiting)** : Rate limiting OBLIGATOIRE sur les invitations, commentaires et recherche d'utilisateurs (en plus de l'auth et des liens publics), pour éviter le harcèlement et l'énumération de comptes.
+  - **Contenu collaboratif sans injection HTML** : Tout contenu collaboratif (commentaires, noms) est affiché sans injection de HTML (neutralisation XSS stricte).
+  - **Tests et Quality Gates** : Exigence de tests exhaustifs pour la fonction centrale d'autorisation `can`, renforcement des standards techniques et enrichissement du palier P3.
+- **Résultat** : Constitution mise à jour en version `2.0.0` (incrément MAJOR), `README.md` et `HANDOFF.md` synchronisés.
+
+### Action précédente
+
 - **Action exécutée** : Correctifs visuels (bandeau de vérification email, logotype, barre de navigation) et emails de développement sans Docker.
 - **Bandeau de vérification d'email** (`apps/web/src/components/common/EmailVerificationBanner.tsx`) : placé **dans le flux**, en tête du document donc au-dessus de la barre — il ne peut plus la recouvrir. Il publie sa hauteur réelle dans la variable CSS `--banner-h` (`ResizeObserver`) ; la barre fixe se décale de cette valeur tant qu'il est à l'écran puis revient à `0` après 48 px de défilement, et le bouton flottant du mode concentration de l'éditeur s'en décale aussi. Nouveau texte « Vérifie ton adresse email (adresse@exemple.com) pour activer ton compte. » sur **une seule ligne** dès `md` et retour à la ligne propre en dessous ; le bouton « Renvoyer l'email » ne chevauche jamais le texte (rangée en `flex-wrap` sur mobile), passe à l'état « **Email envoyé** » avec un délai de 30 s avant un nouvel envoi (compte à rebours, bouton désactivé), et un **bouton de fermeture** masque le rappel pour la session (`sessionStorage`). Couleurs uniquement issues des jetons (`paper-surface`, `paper-border`, `paper-text`, `paper-muted`, `paper-accent`) — plus aucun marron codé en dur — et `role="status"`.
 - **Logotype** (`apps/web/src/components/common/Logo.tsx`, `docs/brand/logo-wordmark.svg`, `apps/web/public/logo-wordmark.svg`) : `logo-wordmark.svg` devient la **source unique** du logotype. Le V signature et le lettrage « erso » sont les **contours réels d'Instrument Serif Regular** (Fontsource) convertis en tracés avec `fontTools`, positionnés dans le repère de la police (unités/1000 em, hauteur de capitale 720) : le V touche le « e » sans trou et le point vermillon, posé sur la ligne de base, est accolé au « o ». Le composant l'intègre **en ligne** (import `?raw`) : l'encre `#14110F` devient `currentColor` (elle suit la couleur du texte et le survol) et le point `#D9421C` devient `var(--color-accent)`. Le lettrage étant vectoriel, le logotype ne dépend **d'aucune fonte à charger** (aucun saut de mise en page possible) ; la fonte d'affichage reste préchargée pour les titres (`apps/web/src/lib/font-preload.ts`, `font-display: swap` de Fontsource, repli Georgia via `font-serif`). Tailles `sm` 20 px / `md` 24 px / `lg` 28 px, proportions du `viewBox` 1989 × 730 (aucune distorsion).
@@ -201,6 +216,7 @@
 - **`logo-wordmark.svg` comme source unique du logotype** : le mot-symbole est un fichier SVG dont le lettrage est constitué des **tracés réels** d'Instrument Serif (convertis avec `fontTools`), intègre en ligne par le composant `Logo` (import `?raw`). Ce choix supprime toute dépendance à une fonte côté logotype (aucun décalage de mise en page), permet de suivre le thème via `currentColor` et `var(--color-accent)`, et garde un seul artefact de marque à maintenir (`docs/brand/` + `apps/web/public/`).
 - **`NavLink`, primitive manquante du design system** : les liens de navigation disposent désormais d'un composant dédié (trait animé par `transform` en 150 ms, état actif `aria-current`, focus visible) au lieu d'utilitaires ad hoc répétés. Le diagnostic est consigné : ce n'était pas le reset de Tailwind mais l'absence de cette primitive.
 - **Modes de remise des emails explicites** : `resolveEmailDelivery(nodeEnv, hasTransport)` rend le comportement testable — `sent` (transport configuré), `simulated` (aperçu console hors production), `blocked` (production sans transport, contenu jamais journalisé).
+- **Amendement constitutionnel v2.0.0 (Collaboration sécurisée)** : Passage à la version `2.0.0` (incrément MAJOR) actant l'ouverture de Verso au travail collaboratif : substitution de l'isolation exclusive par un modèle d'accès partagé basé sur les rôles, sécurisé par une fonction centrale unique `can(utilisateur, ressource, action)`, une réponse 404 anti-fuite d'existence, la traçabilité des auteurs dans l'historique, des invitations révocables à tokens hachés, la modération/blocage et la protection contre le harcèlement et les injections XSS.
 
 ## Branche et dernier commit
 

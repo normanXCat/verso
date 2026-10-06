@@ -18,7 +18,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 
 | Priorité | Fonctionnalité | Statut | Description |
 | :---: | :--- | :---: | :--- |
-| **Socle** | **Constitution & Gouvernance v1.1.0** | ✅ Fait | 7 principes non négociables inscrits dans la constitution |
+| **Socle** | **Constitution & Gouvernance v2.0.0** | ✅ Fait | 7 principes non négociables, amendés pour intégrer la collaboration sécurisée (fonction centrale `can`, rôles, anti-fuite 404, historique multi-auteurs, invitations hachées, modération/blocage, rate limiting et protection XSS) |
 | **Socle** | **Discipline Git & Protection des données** | ✅ Fait | Branche `dev`, blocage des `.env`, secrets et audio via `.gitignore` |
 | **Socle** | **Documentation & Handoff permanent** | ✅ Fait | `HANDOFF.md` et `README.md` mis à jour avant chaque commit |
 | **Socle** | **Outillage Spec Kit** | ✅ Fait | Workflows et scripts de spécification, planification et tâches |
