@@ -271,7 +271,7 @@
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `7e59d52` — `docs(plan): planifier l'architecture technique de la collaboration (002-author-collaboration)`
+- **Dernier commit** : `f65932b` — `docs(plan): planifier l'architecture technique de la collaboration (002-author-collaboration)`
 
 ## Comment lancer le projet
 
