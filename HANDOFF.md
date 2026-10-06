@@ -247,7 +247,7 @@
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `67faa28` — `docs(spec): spécifier la collaboration entre auteurs (002-author-collaboration)`
+- **Dernier commit** : `dd0a209` — `docs(spec): clarifier les arbitrages critiques de la collaboration (002-author-collaboration)`
 
 ## Comment lancer le projet
 
