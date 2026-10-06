@@ -289,7 +289,7 @@
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `f65932b` — `docs(plan): planifier l'architecture technique de la collaboration (002-author-collaboration)`
+- **Dernier commit** : `96adc9c` — `docs(tasks): découper les 79 tâches d'implémentation de la collaboration (002-author-collaboration)`
 
 ## Comment lancer le projet
 
