@@ -18,18 +18,21 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 
 | Priorité | Fonctionnalité | Statut | Description |
 | :---: | :--- | :---: | :--- |
-| **Socle** | **Constitution & Gouvernance v1.1.0** | ✅ Fait | 7 principes non négociables inscrits dans la constitution |
+| **Socle** | **Constitution & Gouvernance v2.0.0** | ✅ Fait | 7 principes non négociables, amendés pour intégrer la collaboration sécurisée (fonction centrale `can`, rôles, anti-fuite 404, historique multi-auteurs, invitations hachées, modération/blocage, rate limiting et protection XSS) |
 | **Socle** | **Discipline Git & Protection des données** | ✅ Fait | Branche `dev`, blocage des `.env`, secrets et audio via `.gitignore` |
 | **Socle** | **Documentation & Handoff permanent** | ✅ Fait | `HANDOFF.md` et `README.md` mis à jour avant chaque commit |
 | **Socle** | **Outillage Spec Kit** | ✅ Fait | Workflows et scripts de spécification, planification et tâches |
 | **Socle** | **Spécification Fonctionnelle Verso Core** | ✅ Fait | Spécification complète et clarifiée ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) |
 | **Socle** | **Planification Technique Verso Core** | ✅ Fait | Architecture monorepo, schéma Prisma, contrats d'API et quickstart ([specs/001-verso-core/plan.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/plan.md)) |
 | **Socle** | **Découpage des Tâches d'Implémentation** | ✅ Fait | 62 tâches en 13 phases ordonnancées, testables et priorisées ([specs/001-verso-core/tasks.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/tasks.md)) |
+| **P3** | **Spécification Fonctionnelle Collaboration Auteurs** | ✅ Fait | Spécification complète et clarifiée (5 arbitrages clés), priorisée (P1, P2, P3) avec checklist validée à 100% ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) |
+| **P3** | **Planification Technique Collaboration Auteurs** | ✅ Fait | Architecture centrale `can()`, modèle relationnel Prisma étendu, contrats REST/SSE/WS, verrouillage optimiste P1 et quickstart ([specs/002-author-collaboration/plan.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/plan.md)) |
+| **P3** | **Découpage des Tâches Collaboration Auteurs** | ✅ Fait | 79 tâches ordonnancées en 11 phases testables isolément ([specs/002-author-collaboration/tasks.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/tasks.md)), traçabilité par récit (US1 à US8) et priorités P1/P2/P3 |
 | **Socle** | **Monorepo & Outillage Qualité (Phase 1)** | ✅ Fait | Monorepo pnpm (`apps/api`, `apps/web`, `packages/shared`), TS strict, ESLint/Prettier zéro warning |
 
 | **Socle** | **Docker & Base PostgreSQL (Phase 1)** | ✅ Fait | Docker Compose (PostgreSQL 16, MinIO S3), schéma Prisma et migration initiale appliquée (13 tables) |
 | **Socle** | **CI GitHub Actions (Phase 1)** | ✅ Fait | Pipeline CI automatisé (`.github/workflows/ci.yml`) testant lint, format, typecheck et tests |
-| **Socle** | **Design System « Encre & Papier »** | ✅ Fait | Tokens clair/sombre, typographie Fontsource (Instrument Serif, Geist), Framer Motion, page `/design` |
+| **Socle** | **Design System « Encre & Papier »** | ✅ Fait | Tokens clair/sombre, typographie Fontsource (Instrument Serif, Geist), Framer Motion, page `/design`, composant `Button` unifié (icônes, chargement, pleine largeur, `asChild`), `NavLink` (trait au survol en 150 ms, état actif) et logotype `Logo` vectoriel |
 | **Socle** | **Landing Page « Encre & Papier »** | ✅ Fait | Hero asymétrique, feuille signature animée, mockup interactif, studio audio, frise d'antériorité |
 | **P1** | **Authentification sécurisée & Sessions** | ✅ Fait | Mots de passe Argon2id, sessions PostgreSQL en cookies HttpOnly/Secure/SameSite=Lax, emails transactionnels, rate limiting |
 | **P1** | **Espace personnel, recherche & filtres** | ✅ Fait | Tableau de bord `/app`, recherche plein texte en direct (titre et paroles), filtres brouillons/terminés/favoris, cloisonnement par utilisateur |
@@ -65,7 +68,7 @@ L'architecture technique conçue lors du plan d'implémentation repose sur :
 - **Stockage Audio** : Compatible S3 (MinIO en développement local, Cloudflare R2 en production) via URLs présignées (`@aws-sdk/client-s3` et `@aws-sdk/s3-request-presigner`), téléversement direct du binaire hors API
 - **Sécurité** : Hachage Argon2id, sessions PostgreSQL avec cookies HttpOnly/Secure/SameSite=Lax, protection CSRF par validation d'origine (`Origin`/`Referer`), en-têtes Helmet (HSTS, CSP en production), CORS restrictif, Arctic (OAuth Google/ORCID avec PKCE), `@fastify/rate-limit`
 - **Métrique & Rimes** : Module partagé `lyrics-engine` adapté aux spécificités de la langue française (comptage syllabique par vers, détection et coloration des rimes), exposé via des extensions CodeMirror 6
-- **Qualité & Tests** : Vitest (tests unitaires et d'intégration, exécution séquentielle), ESLint et Prettier (zéro warning toléré)
+- **Qualité & Tests** : Vitest (tests unitaires et d'intégration, exécution séquentielle), React Testing Library + `jsdom` (tests de composants, à partir de `Button`), ESLint et Prettier (zéro warning toléré)
 
 ---
 
@@ -137,15 +140,27 @@ verso/
 │   └── shared/                 # Bibliothèque partagée (@verso/shared)
 │       └── src/                # Schémas Zod, types et moteur poétique
 ├── specs/                      # Spécifications fonctionnelles et techniques
-│   └── 001-verso-core/         # Spécification complète et plan de la plateforme Verso
+│   ├── 001-verso-core/         # Spécification complète et plan de la plateforme Verso
+│   │   ├── checklists/         # Checklist de qualité (16/16)
+│   │   ├── contracts/          # Contrats d'API REST Zod
+│   │   ├── data-model.md       # Modèle relationnel détaillé Prisma / PostgreSQL
+│   │   ├── plan.md             # Plan d'implémentation technique global
+│   │   ├── quickstart.md       # Scénarios de validation exécutables
+│   │   ├── research.md         # Décisions d'architecture
+│   │   ├── spec.md             # Spécification fonctionnelle validée
+│   │   └── tasks.md            # Découpage des 62 tâches ordonnancées
+│   └── 002-author-collaboration/ # Spécification et planification de la collaboration entre auteurs
 │       ├── checklists/         # Checklist de qualité (16/16)
-│       ├── contracts/          # Contrats d'API REST Zod
-│       ├── data-model.md       # Modèle relationnel détaillé Prisma / PostgreSQL
+│       ├── contracts/          # Contrats d'API REST Zod, SSE et WebSocket
+│       ├── data-model.md       # Modèle relationnel Prisma étendu (Collaborator, Comment, etc.)
 │       ├── plan.md             # Plan d'implémentation technique global
 │       ├── quickstart.md       # Scénarios de validation exécutables
-│       ├── research.md         # Décisions d'architecture
-│       ├── spec.md             # Spécification fonctionnelle validée
-│       └── tasks.md            # Découpage des 62 tâches ordonnancées
+│       ├── research.md         # Décisions d'architecture (can, conflits P1, Yjs P3)
+│       ├── spec.md             # Spécification fonctionnelle clarifiée
+│       └── tasks.md            # Découpage des 79 tâches ordonnancées
+├── docs/
+│   └── brand/
+│       └── logo-wordmark.svg   # Logotype Verso (Instrument Serif converti en tracés)
 ├── .dockerignore               # Exclusion Docker
 ├── .env.example                # Modèle de variables d'environnement
 ├── .gitignore                  # Exclusion des dépendances, secrets et médias audio
@@ -185,6 +200,29 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 | `GOOGLE_CLIENT_SECRET` | Secret client de l'application OAuth Google |
 | `ORCID_CLIENT_ID` | Identifiant client de l'application OAuth ORCID |
 | `ORCID_CLIENT_SECRET` | Secret client de l'application OAuth ORCID |
+| `RESEND_API_KEY` | Clé API du transport d'emails transactionnels (Resend) — **obligatoire en production** |
+| `EMAIL_FROM` | Expéditeur des emails transactionnels (défaut `Verso <noreply@verso.fr>`) |
+
+---
+
+## Dépannage
+
+### Erreur 500 sur toutes les requêtes de l'API
+
+Un 500 global signifie presque toujours que la base de données est injoignable ou que la configuration est incomplète. L'API répond désormais un message générique accompagné d'un identifiant de requête (`requestId`) et journalise l'erreur détaillée côté serveur (jamais la pile ni de secret).
+
+1. **Vérifier l'état de l'API et de la base** :
+   ```bash
+   curl http://localhost:4000/health
+   ```
+   - `{"status":"ok","database":"up"}` → la base répond.
+   - `{"status":"error","database":"down"}` (HTTP 503) → PostgreSQL est arrêté ou `DATABASE_URL` est incorrecte.
+2. **Vérifier les variables d'environnement** : à la racine du projet, `cp .env.example .env`. `DATABASE_URL` et `SESSION_SECRET` sont obligatoires ; l'API refuse de démarrer et nomme explicitement la variable manquante. Le `.env` de la racine est chargé quel que soit le répertoire de lancement.
+3. **Démarrer la base** : `docker compose up -d` (PostgreSQL 16 + MinIO).
+4. **Appliquer les migrations** : `pnpm --filter @verso/api exec prisma migrate dev`.
+5. **Régénérer le client Prisma** si nécessaire : `pnpm --filter @verso/api exec prisma generate`.
+6. **Emails en développement (sans Docker ni SMTP)** : sans `RESEND_API_KEY` et hors production, l'API affiche dans la console l'email complet — destinataire, objet, contenu et **lien de vérification** — encadré par un bandeau `EMAIL SIMULÉ`, et l'inscription n'échoue jamais (le compte est créé, l'envoi peut être redemandé). En **production**, l'absence de transport d'email empêche le démarrage de l'API (message nommant `RESEND_API_KEY`) : aucun lien de vérification n'est jamais journalisé en production.
+7. **Proxy Vite, CORS et CSRF** : le frontend appelle `/api/*`, redirigé vers l'API par le proxy de développement Vite. `CLIENT_URL` doit correspondre à l'origine du frontend (défaut `http://localhost:5173`) pour le CORS et la protection CSRF.
 
 ---
 

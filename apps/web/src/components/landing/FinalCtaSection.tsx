@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { PenLine, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/Button.js';
 
 export function FinalCtaSection(): React.ReactElement {
@@ -25,17 +25,15 @@ export function FinalCtaSection(): React.ReactElement {
         </p>
 
         <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link to="/register">
-            <Button
-              variant="primary"
-              size="lg"
-              className="text-base px-8 py-4 bg-[#D9421C] hover:bg-[#bf3614] text-white shadow-lg shadow-black/40"
-            >
-              <PenLine className="w-4 h-4 mr-2" />
-              Ouvrir mon carnet d'écriture
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
+          <Button
+            asChild
+            variant="primary"
+            size="lg"
+            iconRight={<ArrowRight />}
+            className="bg-[#D9421C] hover:bg-[#bf3614] text-white shadow-lg shadow-black/40"
+          >
+            <Link to="/register">Ouvrir mon carnet d'écriture</Link>
+          </Button>
         </div>
 
         <div className="pt-8 text-xs font-mono text-[#9A9183] flex items-center justify-center gap-6">

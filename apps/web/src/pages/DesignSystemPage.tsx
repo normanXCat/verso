@@ -7,6 +7,7 @@ import { Tag } from '../components/ui/Tag.js';
 import { Modal } from '../components/ui/Modal.js';
 import { useToast } from '../components/ui/Toast.js';
 import { ThemeToggle } from '../components/common/ThemeToggle.js';
+import { ArrowRight, Download, PenLine, Plus } from 'lucide-react';
 
 export function DesignSystemPage(): React.ReactElement {
   const { toast } = useToast();
@@ -131,35 +132,129 @@ export function DesignSystemPage(): React.ReactElement {
           <h2 className="font-serif text-2xl tracking-tight flex items-center gap-3">
             <span>03.</span> Boutons
           </h2>
-          <div className="p-6 rounded-panel border border-paper-border bg-paper-surface space-y-6 shadow-paper-sm">
-            <div className="flex flex-wrap items-center gap-4">
-              <Button variant="primary">Bouton Primaire</Button>
-              <Button variant="secondary">Bouton Secondaire</Button>
-              <Button variant="ghost">Bouton Fantôme</Button>
-              <Button variant="danger">Bouton Danger</Button>
+          <div className="p-6 rounded-panel border border-paper-border bg-paper-surface space-y-8 shadow-paper-sm">
+            {/* Variantes */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-mono uppercase tracking-widest text-paper-muted">
+                Variantes
+              </h3>
+              <div className="flex flex-wrap items-center gap-4">
+                <Button variant="primary">Primaire</Button>
+                <Button variant="secondary">Secondaire</Button>
+                <Button variant="ghost">Fantôme</Button>
+                <Button variant="danger">Danger</Button>
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-paper-border/60">
-              <Button size="sm" variant="secondary">
-                Taille SM
-              </Button>
-              <Button size="md" variant="secondary">
-                Taille MD
-              </Button>
-              <Button size="lg" variant="secondary">
-                Taille LG
-              </Button>
-              <Button
-                variant="primary"
-                isLoading={isBtnLoading}
-                onClick={simulateLoading}
-                loadingText="Sauvegarde..."
-              >
-                Tester l'état de chargement
-              </Button>
-              <Button variant="primary" disabled>
-                Désactivé
-              </Button>
+            {/* Tailles (hauteurs fixes) */}
+            <div className="space-y-3 pt-6 border-t border-paper-border/60">
+              <h3 className="text-xs font-mono uppercase tracking-widest text-paper-muted">
+                Tailles (hauteurs fixes)
+              </h3>
+              <div className="flex flex-wrap items-center gap-4">
+                <Button size="sm" variant="secondary">
+                  Petit
+                </Button>
+                <Button size="md" variant="secondary">
+                  Moyen
+                </Button>
+                <Button size="lg" variant="secondary">
+                  Grand
+                </Button>
+              </div>
+            </div>
+
+            {/* Icônes */}
+            <div className="space-y-3 pt-6 border-t border-paper-border/60">
+              <h3 className="text-xs font-mono uppercase tracking-widest text-paper-muted">
+                Icônes (20 px, alignées sur une seule ligne)
+              </h3>
+              <div className="flex flex-wrap items-center gap-4">
+                <Button variant="primary" iconRight={<ArrowRight />}>
+                  Icône à droite
+                </Button>
+                <Button variant="secondary" iconLeft={<PenLine />}>
+                  Icône à gauche
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  iconOnly
+                  iconLeft={<Download />}
+                  aria-label="Télécharger le texte"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  iconOnly
+                  iconLeft={<Plus />}
+                  aria-label="Ajouter un texte"
+                />
+              </div>
+            </div>
+
+            {/* États */}
+            <div className="space-y-3 pt-6 border-t border-paper-border/60">
+              <h3 className="text-xs font-mono uppercase tracking-widest text-paper-muted">
+                États
+              </h3>
+              <div className="flex flex-wrap items-center gap-4">
+                <Button variant="primary" loading loadingText="Chargement…">
+                  Chargement
+                </Button>
+                <Button
+                  variant="primary"
+                  iconRight={<ArrowRight />}
+                  loading
+                  loadingText="Chargement…"
+                >
+                  Chargement avec icône
+                </Button>
+                <Button variant="primary" disabled>
+                  Désactivé
+                </Button>
+                <Button variant="secondary" disabled iconLeft={<PenLine />}>
+                  Désactivé avec icône
+                </Button>
+                <Button
+                  variant="primary"
+                  isLoading={isBtnLoading}
+                  onClick={simulateLoading}
+                  loadingText="Sauvegarde..."
+                >
+                  Simuler le chargement
+                </Button>
+              </div>
+            </div>
+
+            {/* Pleine largeur */}
+            <div className="space-y-3 pt-6 border-t border-paper-border/60">
+              <h3 className="text-xs font-mono uppercase tracking-widest text-paper-muted">
+                Pleine largeur
+              </h3>
+              <div className="max-w-sm space-y-3">
+                <Button variant="primary" fullWidth iconRight={<ArrowRight />}>
+                  Action principale
+                </Button>
+                <Button variant="secondary" fullWidth>
+                  Action secondaire
+                </Button>
+              </div>
+            </div>
+
+            {/* Lien stylé comme un bouton */}
+            <div className="space-y-3 pt-6 border-t border-paper-border/60">
+              <h3 className="text-xs font-mono uppercase tracking-widest text-paper-muted">
+                Lien aligné comme un bouton (asChild)
+              </h3>
+              <div className="flex flex-wrap items-center gap-4">
+                <Button asChild variant="primary" iconRight={<ArrowRight />}>
+                  <Link to="/register">Créer un carnet</Link>
+                </Button>
+                <Button asChild variant="ghost" iconLeft={<PenLine />}>
+                  <a href="#accueil">Retour en haut</a>
+                </Button>
+              </div>
             </div>
           </div>
         </section>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sun, Moon, type LucideIcon } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext.js';
+import { Button } from '../ui/Button.js';
 
 interface ThemeToggleProps {
   className?: string;
@@ -21,8 +22,11 @@ const OPTIONS: ThemeOption[] = [
 
 /**
  * Bascule de thème segmentée « Papier / Encre ».
- * Respecte les préférences système, persiste le choix et reste utilisable au clavier
- * et au lecteur d'écran (boutons à bascule `aria-pressed`).
+ *
+ * Couleurs **plates** issues des jetons du thème (aucun dégradé, aucune transparence
+ * ni ombre) et hauteur alignée sur les autres éléments de la barre : le groupe mesure
+ * 36 px (`h-9`) comme les boutons `sm`, ses segments internes 32 px.
+ * Reste utilisable au clavier et au lecteur d'écran (`role="group"`, `aria-pressed`).
  */
 export function ThemeToggle({
   className = '',
@@ -34,32 +38,28 @@ export function ThemeToggle({
     <div
       role="group"
       aria-label="Thème de l'interface"
-      className={`inline-flex items-center gap-0.5 rounded-full border border-paper-border bg-paper-surface/70 p-0.5 backdrop-blur-sm ${className}`}
+      className={`inline-flex h-9 shrink-0 items-center gap-0.5 rounded-paper border border-paper-border bg-paper-surface p-0.5 ${className}`}
     >
       {OPTIONS.map(({ value, label, hint, Icon }) => {
         const isActive = theme === value;
         return (
-          <button
+          <Button
             key={value}
             type="button"
-            onClick={() => setTheme(value)}
+            variant="ghost"
+            size="icon"
+            iconOnly={!showLabel}
             aria-pressed={isActive}
+            aria-label={hint}
             title={hint}
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-mono tracking-wide transition-all duration-paper ease-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper-accent focus-visible:ring-offset-1 focus-visible:ring-offset-paper-bg ${
-              isActive
-                ? 'bg-paper-bg text-paper-text shadow-paper-sm'
-                : 'text-paper-muted hover:text-paper-text'
-            }`}
+            onClick={() => setTheme(value)}
+            iconLeft={<Icon className="h-4 w-4" aria-hidden="true" />}
+            className={`!h-8 !rounded-paper ${
+              showLabel ? '!w-auto !gap-1.5 !px-2' : '!w-8'
+            } ${isActive ? '!bg-paper-bg !text-paper-text' : 'text-paper-muted hover:text-paper-text'}`}
           >
-            <Icon
-              className={`h-3.5 w-3.5 transition-transform duration-paper ease-paper ${
-                isActive ? 'scale-100' : 'scale-90'
-              } ${isActive && value === 'dark' ? 'rotate-[-12deg]' : ''}`}
-              aria-hidden
-            />
-            {showLabel && <span className="text-[11px]">{label}</span>}
-            <span className="sr-only">{label}</span>
-          </button>
+            {showLabel ? <span className="text-[11px] tracking-wide">{label}</span> : undefined}
+          </Button>
         );
       })}
     </div>

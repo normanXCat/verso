@@ -222,9 +222,9 @@ export function AlbumDetailPage(): React.ReactElement {
                   type="button"
                   variant="secondary"
                   size="sm"
+                  iconLeft={<Plus />}
                   onClick={() => setIsPickerOpen(true)}
                 >
-                  <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
                   Ajouter un texte
                 </Button>
               </div>

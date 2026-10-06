@@ -5,7 +5,10 @@
 - **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
 - **Phase d'implémentation Spec Kit** : **Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) terminée**. **Les 13 phases / 62 tâches du plan sont désormais toutes implémentées et testées.**
 - **Ce qui est terminé** :
-  - Ratification de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `1.1.0`) avec ses 7 principes non négociables.
+  - Ratification et amendement de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `2.0.0`) avec ses 7 principes non négociables intégrant la collaboration sécurisée.
+  - Spécification fonctionnelle complète de la collaboration entre auteurs ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) avec ses priorités (P1, P2, P3), clarification interactive (`/speckit-clarify`) sur les 5 arbitrages critiques, et checklist validée à 100% (16/16).
+  - Planification technique complète de la collaboration entre auteurs ([specs/002-author-collaboration/plan.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/plan.md)) via `/speckit-plan` : décisions d'architecture (Phase 0, `research.md`), modèle relationnel Prisma étendu (`data-model.md`), 6 contrats d'API Zod / SSE / WebSocket (`contracts/*.md`) et scénarios de validation exécutables (`quickstart.md`).
+  - Découpage complet des tâches d'implémentation de la collaboration ([specs/002-author-collaboration/tasks.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/tasks.md)) via `/speckit-tasks` : 79 tâches ordonnancées en 11 phases testables isolément, avec traçabilité par récit (US1 à US8), contraintes de modèle citées textuellement et MVP ciblé sur US1.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
   - Clarification interactive (`/speckit-clarify`) sur les 5 points critiques.
   - Planification d'implémentation technique complète (`/speckit-plan`) et analyse de cohérence (`/speckit-analyze`).
@@ -106,15 +109,109 @@
     - **Suite de tests totale : 168 tests au vert** (21 fichiers) ; lint, format, typecheck et builds de production validés.
   - Branche `dev` active.
 - **Ce qui est en cours** :
-  - Phase 13 terminée : les 13 phases / 62 tâches du plan Spec Kit sont intégralement implémentées et testées. Arrêt pour validation.
+  - Phase 13 terminée. Correctifs visuels (bandeau de vérification email, logotype, barre de navigation) et emails de développement sans Docker : implémentés, testés (`190 tests / 24 fichiers`) et vérifiés visuellement (142 contrôles Playwright, 0 problème).
 - **Ce qui reste à faire** :
   - **Refonte Design Étape 4** : Espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
   - **Recette manuelle** : téléversements S3 réels (CORS bucket), OAuth contre les vrais fournisseurs, scénarios `quickstart.md` en navigateur (Service Worker/hors ligne, micro), icônes PWA PNG 192/512.
 
 ## Dernière action
 
-- **Action exécutée** : Implémentation de la Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) en respectant la constitution, la spec et le skill `frontend-design`.
-- **Résultat** : bascule de thème `ThemeToggle` accessible et finitions visuelles, protection CSRF par validation d'origine et tests d'audit de sécurité, validation complète du monorepo (168 tests verts) sur la branche `dev`.
+- **Action exécutée** : Découpage ordonnancé des tâches d'implémentation de la collaboration ([specs/002-author-collaboration/tasks.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/tasks.md)) via `/speckit-tasks`.
+- **Détails du découpage (79 tâches, 11 phases)** :
+  - **Phase 1: Setup (T001 à T008)** : Dépendances (`@fastify/websocket`, `yjs`, `@y-rb/y-codemirror`), énumérations et interfaces TypeScript, schémas Zod partagés (`collaboration.ts`, `comment.ts`, `credit.ts`, `moderation.ts`, `notification.ts`) avec contraintes textuelles strictes du modèle.
+  - **Phase 2: Foundational (T009 à T014)** : Migration relationnelle Prisma (7 tables et extensions `Song`/`SongVersion`/`User`), module central unique d'autorisation `can(user, resource, action)` testé unitairement à 100% de couverture, garde HTTP 404 anti-fuite d'existence.
+  - **Phase 3: US1 - Invitations et gestion des accès (T015 à T023 - MVP 🎯)** : Cycles d'invitations par token SHA-256 (expiration 7j, max 10 collaborateurs), transmission de propriété à suppression du compte (`FR-002a`), formulaires et modale d'accès `CollaboratorsModal.tsx`.
+  - **Phase 4: US2 - Espace "Partagés avec moi" (T024 à T030)** : Vue dédiée `SharedWithMePage.tsx`, badge de statut `SharedBadge.tsx`, page de gestion des invitations `InvitationsPage.tsx`, filtres par rôle et par propriétaire.
+  - **Phase 5: US3 - Commentaires contextualisés et mentions (T031 à T039)** : Commentaires ancrés sur vers, assainissement XSS, mentions `@pseudonyme`, anonymisation post-départ (`FR-005a`), extension CodeMirror 6 et tiroir latéral `CommentThreadDrawer.tsx`.
+  - **Phase 6: US4 - Traçabilité des versions et gestion des conflits (T040 à T045)** : Verrouillage optimiste sur `Song.revision`, auto-archivage en cas de conflit 409 (`isConflict: true`, `authorId`), modale comparative `ConflictDiffModal.tsx` sans perte de texte.
+  - **Phase 7: US5 - Notifications collaboratives (T046 à T053)** : Flux in-app temps réel SSE (`/api/notifications/stream`), digest emails Resend avec debounce de 3 min, cloche d'alertes `NotificationBell.tsx` et réglages de préférences.
+  - **Phase 8: US6 - Crédits artistiques et export PDF (T054 à T059)** : Déclaration des quotes-parts (0 à 100%), calcul du total, intégration dans le certificat officiel PDF d'antériorité et modale `CreditsEditorModal.tsx`.
+  - **Phase 9: US7 - Profil auteur minimal, confidentialité et modération (T060 à T066)** : Recherche exacte sans énumération ni fuite d'email, profil public minimal `AuthorProfileModal.tsx`, rupture bilatérale immédiate par blocage (`FR-032`), signalement d'abus et journal d'activité récente.
+  - **Phase 10: US8 - Temps réel et sessions studio (T067 à T074)** : Écriture synchrone CRDT Yjs WebSockets sur CodeMirror 6, présence et curseurs distants colorés, mode studio audio avec transport et métronome synchronisés.
+  - **Phase 11: Polish et Cross-Cutting Concerns (T075 à T079)** : Audit de sécurité multi-tenant IDOR, exécution des 5 scénarios de validation `quickstart.md`, contrôle qualité global et synchronisation documentaire.
+- **Résultat** : Découpage complet, strictement ordonnancé et immédiatement exécutable par un agent de code.
+
+### Action précédente
+
+- **Action exécutée** : Planification technique complète de la collaboration entre auteurs ([specs/002-author-collaboration/plan.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/plan.md)) via `/speckit-plan`.
+- **Détails de la planification (Phase 0 & Phase 1)** :
+  - **Phase 0 — Recherche & Arbitrages techniques (`research.md`)** :
+    1. *Autorisations & Contrôle d'accès* : Module central unique `can(user, resource, action)` en pur TypeScript (zéro dépendance lourde tierce), exhaustivité testée à 100% de couverture, réponse identique HTTP 404 neutre en cas de refus d'accès pour interdire toute fuite d'existence.
+    2. *Gestion des conflits asynchrones (P1)* : Verrouillage optimiste basé sur un champ `Song.revision: Int`. Tout enregistrement concurrent désynchronisé est rejeté en HTTP 409 et automatiquement archivé dans l'historique sous forme d'une version étiquetée « Conflit » avec `authorId`, sans perte de frappe.
+    3. *Écriture collaborative temps réel & Studio (P3)* : Yjs avec binding CodeMirror 6 (`@y-rb/y-codemirror`), WebSocket sous Fastify authentifié par session de cookie, présence/curseurs colorés, et session audio synchrone (état de lecture et métronome partagés).
+    4. *Notifications* : Server-Sent Events (`/api/notifications/stream`) pour les alertes in-app temps réel (sans surcharge WebSocket) et service Resend avec debounce de 3 minutes pour le regroupement des emails d'activité.
+    5. *Recherche d'utilisateurs & Vie privée* : Correspondance exacte stricte (`exact_username` ou `exact_email`) sous rate limiting de 10 req/min, ne renvoyant jamais l'adresse email d'un tiers dans le payload.
+    6. *Schéma relationnel Prisma* : Relations multi-propriétaires et rôles (`Collaborator`), jetons hachés (`Invitation`), discussions ancrées sur lignes (`Comment`), alertes (`Notification`), quotes-parts artistiques (`SongCredit`), blocage mutuel (`UserBlock`) et modération (`AbuseReport`).
+  - **Phase 1 — Artefacts de conception & Contrats** :
+    - [`data-model.md`](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/data-model.md) : Modèle relationnel complet avec contraintes d'intégrité, indexes de performance et règles de suppression en cascade.
+    - [`contracts/`](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/contracts/) : 6 contrats formels Zod / REST / SSE / WS (`collaboration-api.md`, `comments-api.md`, `credits-api.md`, `moderation-api.md`, `notifications-api.md`, `realtime-protocol.md`).
+    - [`quickstart.md`](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/quickstart.md) : 5 scénarios de validation exécutables de bout en bout couvrant les 3 priorités P1, P2 et P3.
+    - [`plan.md`](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/plan.md) : Plan d'implémentation global validé à 100% contre la Constitution v2.0.0.
+- **Résultat** : Architecture technique intégralement documentée, validée et prête pour le découpage des tâches (`/speckit-tasks`).
+
+### Action précédente
+
+- **Action exécutée** : Clarification interactive des arbitrages de collaboration ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) via `/speckit-clarify`.
+- **Arbitrages tranchés (5/5 questions)** :
+  1. **Suppression de compte du propriétaire** : Transfert automatique de propriété au co-auteur le plus ancien sur le texte, qui hérite de l'intégralité des droits d'administration de l'œuvre (`FR-002a`).
+  2. **Départ ou révocation d'un collaborateur** : Maintien des paroles rédigées dans le texte et l'historique des versions, fermeture immédiate de l'accès sans copie personnelle, et anonymisation/purge de tous ses commentaires passés (`FR-005a`).
+  3. **Droits sur les instrumentales audio** : Parité totale des droits audio pour les co-auteurs (import dans le quota global de 3 pistes, activation, métadonnées et suppression définitive) (`FR-001`).
+  4. **Conflits de modification asynchrones** : La première écriture validée met à jour le texte courant ; la modification concurrente est automatiquement archivée comme révision étiquetée « Conflit » dans l'historique partagé, avec alerte et vue comparative côte à côte (`FR-023`).
+  5. **Impact du blocage entre utilisateurs** : Révocation immédiate des accès sur les œuvres du bloqueur, retrait du bloqueur des œuvres du bloqué, et neutralisation/masquage mutuel des mentions et notifications sur les projets communs d'un tiers (`FR-032`).
+  - **Précisions complémentaires** : Expiration par défaut des invitations fixée à 7 jours (`FR-008`), et plafond maximal fixé à 10 collaborateurs simultanés par texte (`FR-008a`).
+- **Résultat** : Spécification et checklist [requirements.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/checklists/requirements.md) mises à jour à 100% (16/16), prêtes pour `/speckit-plan`.
+
+### Action précédente
+
+- **Action exécutée** : Spécification fonctionnelle de la collaboration entre auteurs ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) via `/speckit-specify`.
+- **Détails de la spécification** :
+  - **Périmètre et priorisation** :
+    - **P1 (Partage et commentaires)** : Invitations sur textes et albums (rôles co-auteur, commentateur, lecteur), gestion des accès et départ volontaire, espace dédié "Partagés avec moi" (filtres rôle/propriétaire), commentaires ancrés sur ligne/sélection avec réponses hiérarchisées, mentions `@pseudonyme` et statut résolu/rouvert, attribution des versions par auteur et restauration tracée, notifications in-app et emails paramétrables, gestion des conflits d'édition concurrente sans perte de texte.
+    - **P2 (Crédits et studio)** : Déclaration des crédits artistiques (auteurs, feats, beatmakers, compositeurs) avec quote-part en pourcentage et export PDF horodaté fidèle, profil auteur minimal (nom, avatar, bio courte) garantissant le masquage absolu de l'email, modération (blocage bilatéral, signalement d'abus), journal d'activité récente des textes partagés.
+    - **P3 (Temps réel)** : Écriture simultanée avec curseurs colorés et présence, "Mode session studio" synchronisant l'instrumentale audio et le métronome.
+    - **Hors périmètre explicite** : Discussions publiques, réseau social, marketplace, collaboration sans compte utilisateur authentifié.
+  - **Exigences fonctionnelles** : 38 exigences fonctionnelles formalisées (FR-001 à FR-038) et 8 critères de succès mesurables (SC-001 à SC-008).
+  - **Validation qualité** : Checklist [requirements.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/checklists/requirements.md) validée à 100% (16/16 critères passants, zéro marqueur de clarification en attente, aucune fuite de détails techniques d'implémentation).
+- **Résultat** : Spécification complète et validée, prête pour l'étape suivante (`/speckit-clarify` ou `/speckit-plan`).
+
+### Action précédente
+
+- **Action exécutée** : Amendement de la constitution de Verso ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md)) en version `2.0.0` pour intégrer la collaboration sécurisée.
+- **Détails de l'amendement** :
+  - **Cloisonnement et accès aux données** : Remplacement de la règle d'isolation stricte par : « Un utilisateur n'accède qu'à ses propres données et à celles qui ont été explicitement partagées avec lui, selon son rôle. »
+  - **Autorisation centralisée unique (`can`)** : Toute décision d'accès (lecture, écriture, commentaire, partage, suppression) passe par une fonction centrale unique (par exemple `can(utilisateur, ressource, action)`), testée de façon exhaustive. Aucune route ni aucun composant ne contourne cette fonction.
+  - **Confidentialité et anti-fuite d'existence** : Réponse identique « introuvable » (HTTP 404) lorsqu'une ressource n'est pas accessible (pas de fuite d'existence).
+  - **Gestion des invitations & tokens** : Les invitations sont acceptées explicitement, expirent, et sont révocables. Un lien d'invitation est un token haché en base.
+  - **Attribution des modifications & Historique des versions** : Chaque modification d'un texte partagé est attribuée à son auteur. L'historique conserve l'auteur de chaque version.
+  - **Protection des utilisateurs, modération & Vie privée** : Un utilisateur peut bloquer un autre utilisateur et signaler un abus. Aucune donnée personnelle (email) n'est révélée à un autre utilisateur sans son accord.
+  - **Limitation de débit (Rate Limiting)** : Rate limiting OBLIGATOIRE sur les invitations, commentaires et recherche d'utilisateurs (en plus de l'auth et des liens publics), pour éviter le harcèlement et l'énumération de comptes.
+  - **Contenu collaboratif sans injection HTML** : Tout contenu collaboratif (commentaires, noms) est affiché sans injection de HTML (neutralisation XSS stricte).
+  - **Tests et Quality Gates** : Exigence de tests exhaustifs pour la fonction centrale d'autorisation `can`, renforcement des standards techniques et enrichissement du palier P3.
+- **Résultat** : Constitution mise à jour en version `2.0.0` (incrément MAJOR), `README.md` et `HANDOFF.md` synchronisés.
+
+### Action précédente
+
+- **Action exécutée** : Correctifs visuels (bandeau de vérification email, logotype, barre de navigation) et emails de développement sans Docker.
+- **Bandeau de vérification d'email** (`apps/web/src/components/common/EmailVerificationBanner.tsx`) : placé **dans le flux**, en tête du document donc au-dessus de la barre — il ne peut plus la recouvrir. Il publie sa hauteur réelle dans la variable CSS `--banner-h` (`ResizeObserver`) ; la barre fixe se décale de cette valeur tant qu'il est à l'écran puis revient à `0` après 48 px de défilement, et le bouton flottant du mode concentration de l'éditeur s'en décale aussi. Nouveau texte « Vérifie ton adresse email (adresse@exemple.com) pour activer ton compte. » sur **une seule ligne** dès `md` et retour à la ligne propre en dessous ; le bouton « Renvoyer l'email » ne chevauche jamais le texte (rangée en `flex-wrap` sur mobile), passe à l'état « **Email envoyé** » avec un délai de 30 s avant un nouvel envoi (compte à rebours, bouton désactivé), et un **bouton de fermeture** masque le rappel pour la session (`sessionStorage`). Couleurs uniquement issues des jetons (`paper-surface`, `paper-border`, `paper-text`, `paper-muted`, `paper-accent`) — plus aucun marron codé en dur — et `role="status"`.
+- **Logotype** (`apps/web/src/components/common/Logo.tsx`, `docs/brand/logo-wordmark.svg`, `apps/web/public/logo-wordmark.svg`) : `logo-wordmark.svg` devient la **source unique** du logotype. Le V signature et le lettrage « erso » sont les **contours réels d'Instrument Serif Regular** (Fontsource) convertis en tracés avec `fontTools`, positionnés dans le repère de la police (unités/1000 em, hauteur de capitale 720) : le V touche le « e » sans trou et le point vermillon, posé sur la ligne de base, est accolé au « o ». Le composant l'intègre **en ligne** (import `?raw`) : l'encre `#14110F` devient `currentColor` (elle suit la couleur du texte et le survol) et le point `#D9421C` devient `var(--color-accent)`. Le lettrage étant vectoriel, le logotype ne dépend **d'aucune fonte à charger** (aucun saut de mise en page possible) ; la fonte d'affichage reste préchargée pour les titres (`apps/web/src/lib/font-preload.ts`, `font-display: swap` de Fontsource, repli Georgia via `font-serif`). Tailles `sm` 20 px / `md` 24 px / `lg` 28 px, proportions du `viewBox` 1989 × 730 (aucune distorsion).
+- **Barre de navigation** (`apps/web/src/components/landing/Navbar.tsx` + nouveau `apps/web/src/components/ui/NavLink.tsx`) : **cause identifiée** du « les styles du design system ne s'appliquent pas » — il n'existait aucune primitive de lien dans le design system : les liens étaient stylés au cas par cas (animation sur `width`, donc un reflow, en 200 ms, sans état actif) ; le reset de Tailwind (`text-decoration: inherit`) n'était pas en cause. Le nouveau `NavLink` centralise le style : aucun soulignement natif, texte secondaire au repos et principal au survol, trait vermillon de 1 px dessiné en **150 ms via `transform` (aucun reflow)**, état actif persistant (`aria-current="true"`, section visible détectée à 35 % de l'écran) et focus visible (anneau global). Sélecteur de thème **aplati** : plus de dégradé ni de transparence, fond plat `paper-surface`, segments actifs `paper-bg`/`paper-text`, hauteur **36 px** comme le reste de la barre. Bouton du nom d'utilisateur rendu par `Button` (variante `ghost`, icône `User`) en **police de l'interface** (plus de `font-mono`) et sans soulignement ; « Mon espace » passe en variante `primary` (plus de bloc blanc isolé) ; tous les éléments partagent la même hauteur et la même ligne centrale. Le bouton du menu mobile utilise aussi `Button` (fin du `focus:outline-none` qui supprimait l'anneau de focus).
+- **Emails en développement** (`apps/api/src/modules/auth/email.service.ts`, `apps/api/src/config/env.ts`) : hors production et sans transport configuré, l'API affiche dans la console l'**email complet** (de, à, objet, corps et **lien de vérification**) encadré par un bandeau `EMAIL SIMULÉ` — plus besoin de Docker ni de SMTP pour tester l'inscription, et l'inscription n'échoue jamais. En **production**, `RESEND_API_KEY` est obligatoire : `validateEnv` refuse la configuration et `server.ts` arrête le démarrage avec un message explicite ; une branche `blocked` garantit qu'aucun contenu d'email (donc aucun lien de vérification) n'est journalisé si le transport manquait. Le mode de remise est isolé dans la fonction pure `resolveEmailDelivery(nodeEnv, hasTransport)` (`sent` / `simulated` / `blocked`) et testé unitairement.
+- **Résultat** : `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (**190 tests / 24 fichiers**) et `pnpm build` au vert, sur la branche `dev`. Vérification Playwright de bout en bout sur le build de production : **142 contrôles, 0 problème** et 24 captures à 375/768/1440 px, en clair et en sombre, avec et sans bandeau, connecté (vérifié et non vérifié) et déconnecté.
+
+### Action précédente
+
+- **Action exécutée** : Correctifs de stabilisation backend et formulaires d'authentification (hors phase Spec Kit).
+- **Cause racine du 500** : la base PostgreSQL était injoignable (`DATABASE_URL` invalide — rôle `verso` inexistant / mot de passe incorrect) ; de plus le fichier `.env` de la racine n'était pas chargé lorsque l'API tourne depuis `apps/api`, et aucune erreur non gérée n'était interceptée, si bien que Prisma renvoyait au navigateur un 500 brut avec sa pile et ses détails internes.
+- **Corrections apportées** :
+  - `apps/api/src/config/env.ts` charge désormais le `.env` le plus proche en remontant depuis le répertoire courant (donc la racine du monorepo quel que soit le cwd) ; en mode test le `.env` machine est ignoré au profit de valeurs déterministes. La validation Zod nomme explicitement chaque variable manquante.
+  - `apps/api/src/server.ts` importe l'environnement dans un `try/catch` : en cas de configuration invalide, le serveur s'arrête avec un message clair nommant la variable, sans pile d'appels. Une sonde PostgreSQL non bloquante au démarrage journalise immédiatement une base injoignable.
+  - `GET /health` teste réellement la base (`SELECT 1`) : `200 {status:"ok",database:"up"}` ou `503 {status:"error",database:"down"}`.
+  - Gestionnaire d'erreurs global (`apps/api/src/plugins/error-handler.ts`) posé à la racine : journalise l'erreur complète (messages et pile masqués des secrets via `redactSecrets`), renvoie un message générique et un identifiant de requête (`requestId`), sans jamais exposer la pile ; les erreurs d'infrastructure (base) deviennent un `503`.
+  - L'échec d'envoi d'email de vérification ne fait plus échouer l'inscription : le compte est créé et le message invite à redemander l'envoi (`POST /api/auth/resend-verification`).
+  - Nouveaux tests d'intégration `apps/api/tests/integration/robustness.test.ts` (5) : health check, inscription complète, inscription malgré échec email, base indisponible (503 générique + `requestId`, sans fuite) et erreur inattendue (500 générique, sans fuite).
+  - Frontend : `apps/web/src/lib/auth-errors.ts` mappe les erreurs en messages français (400 avec détail par champ, 401, 403, 409, 429 avec délai, 500/503, réseau) ; `FormError.tsx` affiche ces messages dans une zone `role="alert"` avec bouton « Réessayer » quand l'erreur est temporaire ; `auth-client.ts` convertit les coupures réseau (statut 0) et conserve `retry-after`.
+  - Boutons : `apps/web/src/components/ui/Button.tsx` gère désormais une icône à gauche/droite et l'icône seule (emplacement de 20 px, `shrink-0`, indicateur de chargement qui remplace l'icône) ; boutons OAuth, bascule du mot de passe et bascule de thème unifiés dessus, avec les logos officiels Google (4 couleurs) et ORCID (vert `#A6CE39`).
+- **Résultat** : inscription réussie en bout-en-bout avec base correcte (201), base indisponible renvoyant un 503 générique sans fuite, `pnpm lint`/`format:check`/`typecheck` au vert, **178 tests verts** (23 fichiers) et build web validé, sur la branche `dev`.
 
 ## Décisions prises
 
@@ -168,11 +265,31 @@
 - **Protection CSRF par validation d'origine plutôt que par jetons** : sur une API JSON à cookies `SameSite=Lax` consommée par une SPA de même origine, la vérification stricte de `Origin`/`Referer` sur les méthodes non sûres (recommandation OWASP) protège efficacement sans imposer un flux de jetons à tous les appels ; les clients non-navigateur (tests `app.inject`, appels serveur à serveur) sont laissés passer car ils ne peuvent pas rejouer de cookie ambiant.
 - **Bascule de thème `ThemeToggle`** : renommage de `ThemeSwitch` vers le chemin exact nommé par T060, refondu en contrôle segmenté « Papier / Encre » accessible.
 - **Dépendance `@fastify/csrf-protection` retirée** : non utilisée (remplacée par le hook de validation d'origine) ; `pnpm-lock.yaml` resynchronisé.
+- **Chargement du `.env` depuis la racine du monorepo** : `dotenv` recherche le `.env` en remontant depuis le cwd (l'API étant lancée depuis `apps/api`), afin que `cp .env.example .env` à la racine suffise ; en mode test, les valeurs de repli déterministes sont utilisées.
+- **Erreurs API jamais exposées brutes** : gestionnaire d'erreurs global avec `requestId`, message générique et masquage des secrets dans les journaux ; le frontend mappe les statuts en messages français.
+- **Bouton unifié** : un seul composant `Button` (`apps/web/src/components/ui/Button.tsx`) centralise tous les boutons et liens stylés comme des boutons.
+  - **API** : `variant` (`primary`/`secondary`/`ghost`/`danger`), `size` (`sm`/`md`/`lg`/`icon`), `iconLeft`, `iconRight`, `loading` (+ alias `isLoading`), `loadingText`, `isSuccess`, `successText`, `shake`, `iconOnly`, `fullWidth`, `asChild` ; `icon`/`iconPosition` conservés pour la rétro-compatibilité.
+  - **Géométrie constante** : `inline-flex items-center justify-center gap-2 whitespace-nowrap`, largeur dictée par le contenu (ou `fullWidth`), hauteurs fixes par taille (`sm` 36 px, `md` 44 px, `lg` 48 px, `icon` 36×36) et padding horizontal identique avec ou sans icône.
+  - **Icônes** : emplacement unique de 20 px (`shrink-0`, `aria-hidden`) ; une seule icône par bouton. L'icône droite glisse de 2 px au survol (150 ms) et reste immobile sous `prefers-reduced-motion`.
+  - **Chargement/succès** : l'indicateur (`Loader2`/`Check`) remplace l'emplacement d'icône sans modifier la largeur ; le bouton est désactivé pendant l'opération.
+  - **Rendu uniforme** : `asChild` clone l'unique enfant (ex. `<Link>`) avec les mêmes classes, `aria-disabled` et contenu — un lien a le rendu exact d'un `<button>` (anti-régression du CTA de la landing empilant les SVG).
+  - **Usages convertis** : landing (`HeroSection`, `FinalCtaSection`, `Navbar`), tableau de bord, album, partage, thème, champ à icône et pages d'authentification (connexion, inscription, mot de passe oublié, OAuth). Démonstration complète sur `/design` (section 03 Boutons).
+  - **Vérification visuelle Playwright** : 126 contrôles analysés sur `/design` et la landing, à 320/768/1280 px en clair et sombre — aucun retour à la ligne, `gap` de 8 px, icônes de 20×20 px, hauteurs 36/44/48 et alignement icône/texte conforme.
+- **Bandeau de vérification dans le flux, barre décalée par `--banner-h`** : le bandeau ne recouvre jamais la navigation parce qu'il est rendu **avant** elle dans le flux ; sa hauteur mesurée alimente `--banner-h`, que la barre fixe consomme (`top: var(--banner-h)`) tant qu'il est visible. Fermeture par session (`sessionStorage`) plutôt que définitive : le rappel revient à la prochaine session, sans jamais harceler.
+- **`logo-wordmark.svg` comme source unique du logotype** : le mot-symbole est un fichier SVG dont le lettrage est constitué des **tracés réels** d'Instrument Serif (convertis avec `fontTools`), intègre en ligne par le composant `Logo` (import `?raw`). Ce choix supprime toute dépendance à une fonte côté logotype (aucun décalage de mise en page), permet de suivre le thème via `currentColor` et `var(--color-accent)`, et garde un seul artefact de marque à maintenir (`docs/brand/` + `apps/web/public/`).
+- **`NavLink`, primitive manquante du design system** : les liens de navigation disposent désormais d'un composant dédié (trait animé par `transform` en 150 ms, état actif `aria-current`, focus visible) au lieu d'utilitaires ad hoc répétés. Le diagnostic est consigné : ce n'était pas le reset de Tailwind mais l'absence de cette primitive.
+- **Modes de remise des emails explicites** : `resolveEmailDelivery(nodeEnv, hasTransport)` rend le comportement testable — `sent` (transport configuré), `simulated` (aperçu console hors production), `blocked` (production sans transport, contenu jamais journalisé).
+- **Amendement constitutionnel v2.0.0 (Collaboration sécurisée)** : Passage à la version `2.0.0` (incrément MAJOR) actant l'ouverture de Verso au travail collaboratif : substitution de l'isolation exclusive par un modèle d'accès partagé basé sur les rôles, sécurisé par une fonction centrale unique `can(utilisateur, ressource, action)`, une réponse 404 anti-fuite d'existence, la traçabilité des auteurs dans l'historique, des invitations révocables à tokens hachés, la modération/blocage et la protection contre le harcèlement et les injections XSS.
+- **Module central d'autorisation `can` en TypeScript pur** : pas de dépendance externe lourde (Casbin/Cerbos rejetés) ; la fonction `can(user, resource, action)` gère les rôles (`OWNER`, `CO_AUTHOR`, `COMMENTER`, `READER`) avec typage strict, est testée à 100% de couverture et lève une réponse 404 neutre en cas de refus d'accès pour garantir l'absence de fuite d'existence.
+- **Gestion des conflits d'édition P1 par verrouillage optimiste** : ajout de `revision: Int` sur `Song`. Tout enregistrement concurrent désynchronisé est rejeté en HTTP 409 et automatiquement archivé dans l'historique sous forme d'une version étiquetée « Conflit » avec `authorId`, sans aucune perte de contenu.
+- **Collaboration temps réel P3 basée sur Yjs et Fastify WebSockets** : intégration CodeMirror 6 préservée (`@y-rb/y-codemirror`), WebSocket sous Fastify authentifié par session, diffusion de la présence/curseurs colorés, et session audio synchrone (état de lecture et métronome partagés).
+- **Notifications in-app par flux SSE et emails groupés par fenêtre debounce** : flux persistant HTTP `/api/notifications/stream` sans complexité WebSocket pour les alertes in-app ; emails transactionnels Resend temporisés par un debounce de 3 minutes pour éviter le spam lors des sessions d'écriture intensives.
+- **Recherche d'utilisateurs stricte anti-énumération** : recherche exacte par nom d'utilisateur ou email (`q`), sans énumération ni auto-complétion, masquage total de l'adresse email dans la réponse, et limitation stricte à 10 requêtes/minute par utilisateur.
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `e015b13` — `security: vérification et durcissement des protections et en-têtes`
+- **Dernier commit** : `96adc9c` — `docs(tasks): découper les 79 tâches d'implémentation de la collaboration (002-author-collaboration)`
 
 ## Comment lancer le projet
 
@@ -219,7 +336,7 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 - `GOOGLE_CLIENT_SECRET` : Secret client OAuth Google.
 - `ORCID_CLIENT_ID` : Identifiant client OAuth ORCID.
 - `ORCID_CLIENT_SECRET` : Secret client OAuth ORCID.
-- `RESEND_API_KEY` : Clé API des emails transactionnels (Resend).
+- `RESEND_API_KEY` : Clé API des emails transactionnels (Resend). **Obligatoire en production** : sans elle le serveur refuse de démarrer (les liens de vérification ne doivent jamais finir dans les journaux de production). Hors production, son absence déclenche l'affichage de l'email complet dans la console.
 - `EMAIL_FROM` : Expéditeur des emails transactionnels.
 
 ## Problèmes connus et points d'attention
@@ -249,15 +366,20 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 - **Dictionnaire de rimes volontairement restreint** : environ 250 mots courants ; les suggestions se limitent à cette base embarquée et ne couvrent pas l'intégralité du lexique français.
 - **Richesse de rime heuristique** : déduite du suffixe graphique commun et non d'une transcription phonétique complète ; quelques classements riches/suffisantes peuvent être approximatifs.
 - **Boucle micro non libérée si l'onglet est fermé pendant l'enregistrement** : le composant arrête le flux et le `MediaRecorder` au démontage, mais une fermeture brutale de l'onglet peut laisser la piste active jusqu'à sa révision par le navigateur.
-- **Pas de tests de composants frontend** : l'éditeur, la sauvegarde automatique et le tableau de bord reposent sur les tests d'API et sur typecheck/lint ; React Testing Library n'est pas encore configuré.
+- **Tests de composants frontend limités** : React Testing Library et `jsdom` sont désormais configurés (`@testing-library/react`, `@testing-library/dom`, `jsdom` en devDeps de `@verso/web`) et couvrent le composant `Button` (`Button.test.tsx`) ; l'éditeur, la sauvegarde automatique et le tableau de bord reposent encore sur les tests d'API et sur typecheck/lint. `EmailVerificationBanner`, `Logo`, `NavLink` et `ThemeToggle` sont vérifiés visuellement par Playwright mais n'ont pas encore de test de composant.
+- **Bandeau de vérification masquable par session** : le rappel disparaît pour la session du navigateur (`sessionStorage`) une fois fermé ; il réapparaît à la session suivante. Il n'existe volontairement aucune option « ne plus afficher » définitive, car l'adresse non vérifiée bloque la récupération de compte.
+- **Vérification Playwright hors dépôt** : le script de vérification visuelle s'appuie sur `playwright-core` installé hors du dépôt (Chromium système), pour ne pas ajouter de dépendance au projet ; les captures ne sont donc pas versionnées.
+- **Autres pages d'authentification** : `ResetPasswordPage`, `SessionsPage` et `LinkAccountModal` n'utilisent pas encore `presentAuthError`/`FormError` (seules l'inscription et la connexion ont été traitées) ; à généraliser ultérieurement.
+- **Base de données de recette** : le `.env` local peut pointer vers une base PostgreSQL native (le rôle `verso` de `docker-compose` n'existe pas hors Docker) ; `GET /health` et le message de démarrage permettent de le détecter.
 - Toujours vérifier que la branche active est `dev` ou une branche de fonctionnalité avant toute modification.
 - Ne jamais commiter de fichier `.env`, de secret ni de fichier audio de test.
 - Respecter scrupuleusement le protocole de fin de tâche dans l'ordre strict des 6 étapes.
 
 ## Prochaine étape
 
-- **Plan Spec Kit complet** : les 13 phases / 62 tâches sont terminées. Aucune phase d'implémentation restante.
-- **Travaux suivants recommandés** :
+- **Collaboration entre auteurs (`002-author-collaboration`)** :
+  - **Analyse de cohérence (`/speckit-analyze`) ou Implémentation (`/speckit-implement`)** : exécuter la Phase 1 (Setup - T001 à T008 : dépendances et schémas partagés) puis la Phase 2 (Foundational - T009 à T014 : migration Prisma, fonction `can` et tests unitaires exhaustifs).
+- **Autres chantiers en parallèle** :
   - **Refonte Design Étape 4** : espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
   - **Recette manuelle** : valider les téléversements S3 (CORS bucket), l'OAuth réel, les scénarios `quickstart.md` en navigateur (micro, hors ligne) et ajouter les icônes PWA PNG 192/512.
-  - **Tests de composants** : configurer React Testing Library pour couvrir éditeur, sauvegarde hors ligne, partage et enregistrement vocal.
+  - **Tests de composants** : étendre la couverture React Testing Library aux composants clés.

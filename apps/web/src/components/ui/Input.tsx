@@ -1,6 +1,7 @@
 import React, { forwardRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Check, X } from 'lucide-react';
+import { Button } from './Button.js';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -95,15 +96,24 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {/* Icône de validation interactive */}
             <div className="absolute right-0 flex items-center gap-1.5">
               {isPassword && (
-                <button
+                <Button
                   type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
+                  variant="ghost"
+                  size="icon"
+                  iconOnly
                   tabIndex={-1}
-                  className="p-1 text-paper-muted hover:text-paper-text transition-colors"
+                  onClick={() => setShowPassword((prev) => !prev)}
                   aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+                  title={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  className="text-paper-muted hover:text-paper-text"
+                  iconLeft={
+                    showPassword ? (
+                      <EyeOff className="w-4 h-4" aria-hidden="true" />
+                    ) : (
+                      <Eye className="w-4 h-4" aria-hidden="true" />
+                    )
+                  }
+                />
               )}
 
               {isValid !== undefined && (
@@ -114,7 +124,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                       animate={{ scale: 1, rotate: 0 }}
                       className="text-emerald-500 inline-block"
                     >
-                      <Check className="w-4 h-4" />
+                      <Check className="w-4 h-4" aria-hidden="true" />
                     </motion.span>
                   ) : error ? (
                     <motion.span
@@ -122,7 +132,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                       animate={{ scale: 1, rotate: 0 }}
                       className="text-paper-accent inline-block"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-4 h-4" aria-hidden="true" />
                     </motion.span>
                   ) : null}
                 </span>

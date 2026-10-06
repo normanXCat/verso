@@ -11,6 +11,51 @@ export interface SentEmail {
 const sentEmailsHistory: SentEmail[] = [];
 
 /**
+ * Mode de remise d'un email selon l'environnement.
+ * - `sent` : un transport est configuré (Resend), l'email part réellement.
+ * - `simulated` : aucun transport, hors production — l'email est affiché dans la console.
+ * - `blocked` : aucune configuration en production — l'email n'est pas envoyé et son
+ *   contenu (donc le lien de vérification) ne doit jamais être journalisé.
+ */
+export type EmailDelivery = 'sent' | 'simulated' | 'blocked';
+
+export function resolveEmailDelivery(nodeEnv: string, hasTransport: boolean): EmailDelivery {
+  if (hasTransport) {
+    return 'sent';
+  }
+  return nodeEnv === 'production' ? 'blocked' : 'simulated';
+}
+
+/**
+ * Met en forme l'email simulé affiché en développement : en-têtes lisibles et contenu
+ * intégral, lien de vérification compris, pour tester le parcours sans Docker ni SMTP.
+ */
+export function formatSimulatedEmail({
+  from,
+  to,
+  subject,
+  text,
+}: {
+  from: string;
+  to: string;
+  subject: string;
+  text: string;
+}): string {
+  return [
+    '',
+    '══════════ Verso · EMAIL SIMULÉ (développement) ══════════',
+    "Aucun transport d'email configuré (RESEND_API_KEY absente).",
+    `De     : ${from}`,
+    `À      : ${to}`,
+    `Objet  : ${subject}`,
+    '─────────────────────────────────────────────────────────',
+    text,
+    '═════════════════════════════════════════════════════════',
+    '',
+  ].join('\n');
+}
+
+/**
  * Envoie un email de vérification d'adresse avec le lien contenant le token brut.
  */
 export async function sendVerificationEmail(to: string, rawToken: string): Promise<boolean> {
@@ -82,36 +127,48 @@ async function sendEmail({
 
   sentEmailsHistory.push(emailRecord);
 
-  if (env.RESEND_API_KEY) {
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${env.RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-          from: env.EMAIL_FROM,
-          to: [to],
-          subject,
-          text,
-          html,
-        }),
-      });
+  const delivery = resolveEmailDelivery(env.NODE_ENV, Boolean(env.RESEND_API_KEY));
 
-      return response.ok;
-    } catch {
-      return false;
+  // Configuration d'envoi absente alors qu'on est en production : on n'écrit JAMAIS le
+  // contenu de l'email (donc jamais le lien de vérification) dans les journaux.
+  if (delivery === 'blocked') {
+    console.error(
+      "[EmailService] Aucun transport d'email configuré (RESEND_API_KEY absente) : email non envoyé.",
+    );
+    return false;
+  }
+
+  // Développement local sans Docker ni serveur SMTP : l'email complet (contenu et lien
+  // inclus) est affiché dans la console pour pouvoir tester le parcours de bout en bout.
+  // Le mode test reste silencieux.
+  if (delivery === 'simulated') {
+    if (env.NODE_ENV !== 'test') {
+      // eslint-disable-next-line no-console
+      console.log(formatSimulatedEmail({ from: env.EMAIL_FROM, to, subject, text }));
     }
+    return true;
   }
 
-  // Mode local ou test
-  if (env.NODE_ENV !== 'test') {
-    // eslint-disable-next-line no-console
-    console.log(`[EmailService] Simulation d'envoi à ${to}: "${subject}"`);
-  }
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: env.EMAIL_FROM,
+        to: [to],
+        subject,
+        text,
+        html,
+      }),
+    });
 
-  return true;
+    return response.ok;
+  } catch {
+    return false;
+  }
 }
 
 /**

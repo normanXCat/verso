@@ -147,20 +147,20 @@ export function DashboardPage(): React.ReactElement {
               type="button"
               variant="secondary"
               size="md"
+              iconLeft={<Disc3 />}
               onClick={() => setIsAlbumModalOpen(true)}
             >
-              <Disc3 className="mr-1.5 h-4 w-4" aria-hidden="true" />
               Nouvel album
             </Button>
             <Button
               type="button"
               variant="primary"
               size="md"
+              iconLeft={<Plus />}
               onClick={() => createSong.mutate()}
               isLoading={createSong.isPending}
               loadingText="Création…"
             >
-              <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
               Nouveau texte
             </Button>
           </div>

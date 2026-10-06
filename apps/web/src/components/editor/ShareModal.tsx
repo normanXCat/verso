@@ -148,9 +148,9 @@ export function ShareModal({
               size="sm"
               isLoading={pdfMutation.isPending}
               loadingText="Génération…"
+              iconLeft={<Download />}
               onClick={() => pdfMutation.mutate()}
             >
-              <Download className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
               Exporter en PDF
             </Button>
           </div>
@@ -184,9 +184,9 @@ export function ShareModal({
               size="sm"
               isLoading={createMutation.isPending}
               loadingText="Création…"
+              iconLeft={<Link2 />}
               onClick={() => createMutation.mutate()}
             >
-              <Link2 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
               Générer un lien privé
             </Button>
           </div>
