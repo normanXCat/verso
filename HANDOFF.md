@@ -8,6 +8,7 @@
   - Ratification et amendement de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `2.0.0`) avec ses 7 principes non négociables intégrant la collaboration sécurisée.
   - Spécification fonctionnelle complète de la collaboration entre auteurs ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) avec ses priorités (P1, P2, P3), clarification interactive (`/speckit-clarify`) sur les 5 arbitrages critiques, et checklist validée à 100% (16/16).
   - Planification technique complète de la collaboration entre auteurs ([specs/002-author-collaboration/plan.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/plan.md)) via `/speckit-plan` : décisions d'architecture (Phase 0, `research.md`), modèle relationnel Prisma étendu (`data-model.md`), 6 contrats d'API Zod / SSE / WebSocket (`contracts/*.md`) et scénarios de validation exécutables (`quickstart.md`).
+  - Découpage complet des tâches d'implémentation de la collaboration ([specs/002-author-collaboration/tasks.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/tasks.md)) via `/speckit-tasks` : 79 tâches ordonnancées en 11 phases testables isolément, avec traçabilité par récit (US1 à US8), contraintes de modèle citées textuellement et MVP ciblé sur US1.
   - Spécification fonctionnelle complète de la plateforme Verso ([specs/001-verso-core/spec.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/spec.md)) avec checklist validée à 100% (16/16).
   - Clarification interactive (`/speckit-clarify`) sur les 5 points critiques.
   - Planification d'implémentation technique complète (`/speckit-plan`) et analyse de cohérence (`/speckit-analyze`).
@@ -114,6 +115,23 @@
   - **Recette manuelle** : téléversements S3 réels (CORS bucket), OAuth contre les vrais fournisseurs, scénarios `quickstart.md` en navigateur (Service Worker/hors ligne, micro), icônes PWA PNG 192/512.
 
 ## Dernière action
+
+- **Action exécutée** : Découpage ordonnancé des tâches d'implémentation de la collaboration ([specs/002-author-collaboration/tasks.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/tasks.md)) via `/speckit-tasks`.
+- **Détails du découpage (79 tâches, 11 phases)** :
+  - **Phase 1: Setup (T001 à T008)** : Dépendances (`@fastify/websocket`, `yjs`, `@y-rb/y-codemirror`), énumérations et interfaces TypeScript, schémas Zod partagés (`collaboration.ts`, `comment.ts`, `credit.ts`, `moderation.ts`, `notification.ts`) avec contraintes textuelles strictes du modèle.
+  - **Phase 2: Foundational (T009 à T014)** : Migration relationnelle Prisma (7 tables et extensions `Song`/`SongVersion`/`User`), module central unique d'autorisation `can(user, resource, action)` testé unitairement à 100% de couverture, garde HTTP 404 anti-fuite d'existence.
+  - **Phase 3: US1 - Invitations et gestion des accès (T015 à T023 - MVP 🎯)** : Cycles d'invitations par token SHA-256 (expiration 7j, max 10 collaborateurs), transmission de propriété à suppression du compte (`FR-002a`), formulaires et modale d'accès `CollaboratorsModal.tsx`.
+  - **Phase 4: US2 - Espace "Partagés avec moi" (T024 à T030)** : Vue dédiée `SharedWithMePage.tsx`, badge de statut `SharedBadge.tsx`, page de gestion des invitations `InvitationsPage.tsx`, filtres par rôle et par propriétaire.
+  - **Phase 5: US3 - Commentaires contextualisés et mentions (T031 à T039)** : Commentaires ancrés sur vers, assainissement XSS, mentions `@pseudonyme`, anonymisation post-départ (`FR-005a`), extension CodeMirror 6 et tiroir latéral `CommentThreadDrawer.tsx`.
+  - **Phase 6: US4 - Traçabilité des versions et gestion des conflits (T040 à T045)** : Verrouillage optimiste sur `Song.revision`, auto-archivage en cas de conflit 409 (`isConflict: true`, `authorId`), modale comparative `ConflictDiffModal.tsx` sans perte de texte.
+  - **Phase 7: US5 - Notifications collaboratives (T046 à T053)** : Flux in-app temps réel SSE (`/api/notifications/stream`), digest emails Resend avec debounce de 3 min, cloche d'alertes `NotificationBell.tsx` et réglages de préférences.
+  - **Phase 8: US6 - Crédits artistiques et export PDF (T054 à T059)** : Déclaration des quotes-parts (0 à 100%), calcul du total, intégration dans le certificat officiel PDF d'antériorité et modale `CreditsEditorModal.tsx`.
+  - **Phase 9: US7 - Profil auteur minimal, confidentialité et modération (T060 à T066)** : Recherche exacte sans énumération ni fuite d'email, profil public minimal `AuthorProfileModal.tsx`, rupture bilatérale immédiate par blocage (`FR-032`), signalement d'abus et journal d'activité récente.
+  - **Phase 10: US8 - Temps réel et sessions studio (T067 à T074)** : Écriture synchrone CRDT Yjs WebSockets sur CodeMirror 6, présence et curseurs distants colorés, mode studio audio avec transport et métronome synchronisés.
+  - **Phase 11: Polish et Cross-Cutting Concerns (T075 à T079)** : Audit de sécurité multi-tenant IDOR, exécution des 5 scénarios de validation `quickstart.md`, contrôle qualité global et synchronisation documentaire.
+- **Résultat** : Découpage complet, strictement ordonnancé et immédiatement exécutable par un agent de code.
+
+### Action précédente
 
 - **Action exécutée** : Planification technique complète de la collaboration entre auteurs ([specs/002-author-collaboration/plan.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/plan.md)) via `/speckit-plan`.
 - **Détails de la planification (Phase 0 & Phase 1)** :
@@ -360,7 +378,7 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 ## Prochaine étape
 
 - **Collaboration entre auteurs (`002-author-collaboration`)** :
-  - **Découpage des tâches d'implémentation (`/speckit-tasks`)** : générer le fichier ordonnancé `specs/002-author-collaboration/tasks.md` découpé en phases testables isolément par priorités P1 (partage, rôles, commentaires ancrés, détection et résolution de conflits sans perte), P2 (crédits artistiques, profils minimaux, blocage/modération) et P3 (temps réel Yjs, session studio audio).
+  - **Analyse de cohérence (`/speckit-analyze`) ou Implémentation (`/speckit-implement`)** : exécuter la Phase 1 (Setup - T001 à T008 : dépendances et schémas partagés) puis la Phase 2 (Foundational - T009 à T014 : migration Prisma, fonction `can` et tests unitaires exhaustifs).
 - **Autres chantiers en parallèle** :
   - **Refonte Design Étape 4** : espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
   - **Recette manuelle** : valider les téléversements S3 (CORS bucket), l'OAuth réel, les scénarios `quickstart.md` en navigateur (micro, hors ligne) et ajouter les icônes PWA PNG 192/512.

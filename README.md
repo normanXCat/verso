@@ -27,6 +27,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **Socle** | **Découpage des Tâches d'Implémentation** | ✅ Fait | 62 tâches en 13 phases ordonnancées, testables et priorisées ([specs/001-verso-core/tasks.md](file:///home/normanxcat/Lab/verso/specs/001-verso-core/tasks.md)) |
 | **P3** | **Spécification Fonctionnelle Collaboration Auteurs** | ✅ Fait | Spécification complète et clarifiée (5 arbitrages clés), priorisée (P1, P2, P3) avec checklist validée à 100% ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) |
 | **P3** | **Planification Technique Collaboration Auteurs** | ✅ Fait | Architecture centrale `can()`, modèle relationnel Prisma étendu, contrats REST/SSE/WS, verrouillage optimiste P1 et quickstart ([specs/002-author-collaboration/plan.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/plan.md)) |
+| **P3** | **Découpage des Tâches Collaboration Auteurs** | ✅ Fait | 79 tâches ordonnancées en 11 phases testables isolément ([specs/002-author-collaboration/tasks.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/tasks.md)), traçabilité par récit (US1 à US8) et priorités P1/P2/P3 |
 | **Socle** | **Monorepo & Outillage Qualité (Phase 1)** | ✅ Fait | Monorepo pnpm (`apps/api`, `apps/web`, `packages/shared`), TS strict, ESLint/Prettier zéro warning |
 
 | **Socle** | **Docker & Base PostgreSQL (Phase 1)** | ✅ Fait | Docker Compose (PostgreSQL 16, MinIO S3), schéma Prisma et migration initiale appliquée (13 tables) |
@@ -155,7 +156,8 @@ verso/
 │       ├── plan.md             # Plan d'implémentation technique global
 │       ├── quickstart.md       # Scénarios de validation exécutables
 │       ├── research.md         # Décisions d'architecture (can, conflits P1, Yjs P3)
-│       └── spec.md             # Spécification fonctionnelle clarifiée
+│       ├── spec.md             # Spécification fonctionnelle clarifiée
+│       └── tasks.md            # Découpage des 79 tâches ordonnancées
 ├── docs/
 │   └── brand/
 │       └── logo-wordmark.svg   # Logotype Verso (Instrument Serif converti en tracés)
