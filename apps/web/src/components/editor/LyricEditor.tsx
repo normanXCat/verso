@@ -4,6 +4,11 @@ import { EditorView, keymap, placeholder as placeholderExtension } from '@codemi
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { syllablesGutter } from './extensions/syllablesGutter.js';
 import { rhymeHighlighter } from './extensions/rhymeHighlighter.js';
+import {
+  commentMarkers,
+  setCommentAnchorsEffect,
+  type CommentAnchor,
+} from './extensions/commentMarkers.js';
 
 interface LyricEditorProps {
   value: string;
@@ -17,6 +22,12 @@ interface LyricEditorProps {
   showRhymes?: boolean;
   /** Signale la sélection courante (mot sélectionné et ses positions). */
   onSelectionChange?: (selection: { text: string; from: number; to: number }) => void;
+  /** Ancres de commentaires à afficher dans la gouttière */
+  commentAnchors?: CommentAnchor[];
+  /** Clic sur un marqueur de commentaire */
+  onSelectComment?: (commentId: string) => void;
+  /** Signale la plage de vers sélectionnés */
+  onLineSelectionChange?: (range: { startLine: number; endLine: number } | null) => void;
   className?: string;
 }
 
@@ -67,12 +78,17 @@ export function LyricEditor({
   showSyllables = true,
   showRhymes = true,
   onSelectionChange,
+  commentAnchors,
+  onSelectComment,
+  onLineSelectionChange,
   className = '',
 }: LyricEditorProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
   const onSelectionChangeRef = useRef(onSelectionChange);
+  const onSelectCommentRef = useRef(onSelectComment);
+  const onLineSelectionChangeRef = useRef(onLineSelectionChange);
   const initialValueRef = useRef(value);
 
   useEffect(() => {
@@ -82,6 +98,14 @@ export function LyricEditor({
   useEffect(() => {
     onSelectionChangeRef.current = onSelectionChange;
   }, [onSelectionChange]);
+
+  useEffect(() => {
+    onSelectCommentRef.current = onSelectComment;
+  }, [onSelectComment]);
+
+  useEffect(() => {
+    onLineSelectionChangeRef.current = onLineSelectionChange;
+  }, [onLineSelectionChange]);
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -104,6 +128,16 @@ export function LyricEditor({
           const range = update.state.selection.main;
           const text = update.state.sliceDoc(range.from, range.to);
           onSelectionChangeRef.current({ text, from: range.from, to: range.to });
+
+          if (onLineSelectionChangeRef.current) {
+            if (range.from !== range.to) {
+              const startLine = update.state.doc.lineAt(range.from).number;
+              const endLine = update.state.doc.lineAt(range.to).number;
+              onLineSelectionChangeRef.current({ startLine, endLine });
+            } else {
+              onLineSelectionChangeRef.current(null);
+            }
+          }
         }
       }),
     ];
@@ -120,6 +154,12 @@ export function LyricEditor({
       extensions.push(rhymeHighlighter());
     }
 
+    extensions.push(
+      commentMarkers({
+        onSelectComment: (id) => onSelectCommentRef.current?.(id),
+      }),
+    );
+
     const state = EditorState.create({ doc: initialValueRef.current, extensions });
     const view = new EditorView({ state, parent: containerRef.current });
     viewRef.current = view;
@@ -129,6 +169,17 @@ export function LyricEditor({
       viewRef.current = null;
     };
   }, [readOnly, ariaLabel, placeholder, showSyllables, showRhymes]);
+
+  // Synchronise les marqueurs d'ancres de commentaires
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view || !commentAnchors) {
+      return;
+    }
+    view.dispatch({
+      effects: setCommentAnchorsEffect.of(commentAnchors),
+    });
+  }, [commentAnchors]);
 
   // Synchronise une valeur externe (restauration de brouillon) sans casser la frappe.
   useEffect(() => {

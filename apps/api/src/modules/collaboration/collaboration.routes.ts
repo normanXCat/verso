@@ -23,7 +23,11 @@ const idParamSchema = z.object({ id: z.string().min(1) });
 const collaboratorParamSchema = z.object({ id: z.string().min(1), userId: z.string().min(1) });
 const tokenParamSchema = z.object({ token: z.string().min(1) });
 const leaveParamSchema = z.object({
-  resourceType: z.enum(['song', 'album']),
+  resourceType: z
+    .enum(['song', 'songs', 'album', 'albums'])
+    .transform((val): 'song' | 'album' =>
+      val === 'songs' ? 'song' : val === 'albums' ? 'album' : val,
+    ),
   resourceId: z.string().min(1),
 });
 

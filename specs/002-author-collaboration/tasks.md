@@ -94,18 +94,18 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T031 [P] [US3] Écrire la suite de tests d'intégration pour les commentaires ancrés, les fils de réponses, les mentions et la résolution dans `apps/api/tests/integration/comments.test.ts`
+- [X] T031 [P] [US3] Écrire la suite de tests d'intégration pour les commentaires ancrés, les fils de réponses, les mentions et la résolution dans `apps/api/tests/integration/comments.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T032 [P] [US3] Implémenter le repository des commentaires dans `apps/api/src/modules/comments/comments.repository.ts`
-- [ ] T033 [US3] Implémenter le service de commentaires dans `apps/api/src/modules/comments/comments.service.ts` (avec les contraintes textuelles `content String` max 2000 caractères, assainissement anti-XSS strict, détection des mentions `@pseudonyme`, anonymisation `isAnonymized: true` lors du départ d'un collaborateur `FR-005a`)
-- [ ] T034 [US3] Implémenter les routes d'API Fastify pour les commentaires dans `apps/api/src/modules/comments/comments.routes.ts` (`POST/GET /api/songs/:id/comments`, `POST /api/comments/:id/replies`, `PATCH /api/comments/:id/resolve`, `PATCH /api/comments/:id/reopen`) avec rate limiting de 20 req/min
-- [ ] T035 [P] [US3] Implémenter le client API des commentaires dans `apps/web/src/lib/comments-client.ts`
-- [ ] T036 [P] [US3] Implémenter le composant de saisie de commentaire `CommentComposer.tsx` avec auto-complétion des mentions `@` dans `apps/web/src/components/comments/CommentComposer.tsx`
-- [ ] T037 [P] [US3] Implémenter l'extension CodeMirror 6 pour les marqueurs et gouttière de commentaires dans `apps/web/src/components/editor/extensions/commentMarkers.ts`
-- [ ] T038 [US3] Implémenter le tiroir latéral des discussions `CommentThreadDrawer.tsx` avec affichage des fils, réponses et action de résolution dans `apps/web/src/components/comments/CommentThreadDrawer.tsx`
-- [ ] T039 [US3] Intégrer l'extension de commentaires et le tiroir latéral dans `apps/web/src/components/editor/LyricEditor.tsx` et `apps/web/src/pages/EditorPage.tsx`
+- [X] T032 [P] [US3] Implémenter le repository des commentaires dans `apps/api/src/modules/comments/comments.repository.ts`
+- [X] T033 [US3] Implémenter le service de commentaires dans `apps/api/src/modules/comments/comments.service.ts` (avec les contraintes textuelles `content String` max 2000 caractères, assainissement anti-XSS strict, détection des mentions `@pseudonyme`, anonymisation `isAnonymized: true` lors du départ d'un collaborateur `FR-005a`)
+- [X] T034 [US3] Implémenter les routes d'API Fastify pour les commentaires dans `apps/api/src/modules/comments/comments.routes.ts` (`POST/GET /api/songs/:id/comments`, `POST /api/comments/:id/replies`, `PATCH /api/comments/:id/resolve`, `PATCH /api/comments/:id/reopen`) avec rate limiting de 20 req/min
+- [X] T035 [P] [US3] Implémenter le client API des commentaires dans `apps/web/src/lib/comments-client.ts`
+- [X] T036 [P] [US3] Implémenter le composant de saisie de commentaire `CommentComposer.tsx` avec auto-complétion des mentions `@` dans `apps/web/src/components/comments/CommentComposer.tsx`
+- [X] T037 [P] [US3] Implémenter l'extension CodeMirror 6 pour les marqueurs et gouttière de commentaires dans `apps/web/src/components/editor/extensions/commentMarkers.ts`
+- [X] T038 [US3] Implémenter le tiroir latéral des discussions `CommentThreadDrawer.tsx` avec affichage des fils, réponses et action de résolution dans `apps/web/src/components/comments/CommentThreadDrawer.tsx`
+- [X] T039 [US3] Intégrer l'extension de commentaires et le tiroir latéral dans `apps/web/src/components/editor/LyricEditor.tsx` et `apps/web/src/pages/EditorPage.tsx`
 
 **Checkpoint**: Les commentaires ancrés et le système de relecture collaborative sont pleinement opérationnels.
 

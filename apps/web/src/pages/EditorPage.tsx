@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, BookOpen, History, Share2, Trash2, Users } from 'lucide-react';
+import { ArrowLeft, BookOpen, History, MessageSquare, Share2, Trash2, Users } from 'lucide-react';
 import type { SongDetail, SongListItem, UpdateSongInput } from '@verso/shared';
 import { useAuth } from '../hooks/useAuth.js';
 import { songsClient, SongsApiError } from '../lib/songs-client.js';
+import { commentsClient } from '../lib/comments-client.js';
+import { collaborationClient } from '../lib/collaboration-client.js';
 import { readDraft } from '../lib/draft-storage.js';
 import { cacheSong, getDraft } from '../lib/offline-storage.js';
 import { useOfflineSync } from '../hooks/useOfflineSync.js';
@@ -21,6 +23,7 @@ import { RhymeSuggestionsDrawer } from '../components/editor/RhymeSuggestionsDra
 import { AudioPlayerBar } from '../components/audio/AudioPlayerBar.js';
 import { VoiceRecorder } from '../components/audio/VoiceRecorder.js';
 import { CollaboratorsModal } from '../components/collaboration/CollaboratorsModal.js';
+import { CommentThreadDrawer } from '../components/comments/CommentThreadDrawer.js';
 
 /**
  * Espace d'écriture d'un texte : éditeur épuré avec sauvegarde automatique,
@@ -52,10 +55,45 @@ export function EditorPage(): React.ReactElement {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isRhymesOpen, setIsRhymesOpen] = useState(false);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
+  const [selectedLineRange, setSelectedLineRange] = useState<{
+    startLine: number;
+    endLine: number;
+  } | null>(null);
   const [selection, setSelection] = useState<{ text: string; from: number; to: number } | null>(
     null,
   );
   const [isZen, setIsZen] = useState(false);
+
+  const { data: comments = [] } = useQuery({
+    queryKey: ['songs', id, 'comments'],
+    queryFn: () => commentsClient.listComments(id),
+    enabled: id.length > 0 && initialised,
+  });
+
+  const { data: collabData } = useQuery({
+    queryKey: ['collaborations', 'song', id],
+    queryFn: () => collaborationClient.getSongCollaborators(id),
+    enabled: id.length > 0 && initialised,
+  });
+
+  const mentionableUsers = [
+    ...(user ? [{ id: user.id, displayName: user.displayName, avatarUrl: null }] : []),
+    ...(collabData?.collaborators.map((c) => ({
+      id: c.userId,
+      displayName: c.user?.displayName || null,
+      avatarUrl: c.user?.avatarUrl || null,
+    })) || []),
+  ];
+
+  const openCommentsCount = comments.filter((c) => !c.isResolved).length;
+  const commentAnchors = comments.map((c) => ({
+    id: c.id,
+    startLine: c.startLine,
+    endLine: c.endLine,
+    isResolved: c.isResolved,
+  }));
 
   // Initialise depuis le serveur, en priorisant un brouillon local non synchronisé
   // (IndexedDB, puis `localStorage` en repli) et met le texte en cache hors ligne.
@@ -231,6 +269,20 @@ export function EditorPage(): React.ReactElement {
               </button>
               <button
                 type="button"
+                onClick={() => setIsCommentsOpen(true)}
+                aria-label="Discussions et commentaires"
+                title="Discussions et commentaires"
+                className="relative rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+              >
+                <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                {openCommentsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-bold text-white">
+                    {openCommentsCount}
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
                 onClick={() => setIsShareOpen(true)}
                 aria-label="Partager ce texte"
                 title="Partager (PDF et lien privé)"
@@ -310,6 +362,12 @@ export function EditorPage(): React.ReactElement {
                   value={content}
                   onChange={setContent}
                   onSelectionChange={handleSelectionChange}
+                  commentAnchors={commentAnchors}
+                  onSelectComment={(commentId) => {
+                    setActiveCommentId(commentId);
+                    setIsCommentsOpen(true);
+                  }}
+                  onLineSelectionChange={setSelectedLineRange}
                   placeholder="Posez vos premières rimes…"
                   ariaLabel="Paroles du texte"
                   className={isZen ? 'min-h-[60vh]' : 'min-h-[22rem]'}
@@ -381,6 +439,20 @@ export function EditorPage(): React.ReactElement {
           resourceTitle={title || song.title}
           isOwner={user?.id === song.userId}
           onLeft={() => navigate('/app')}
+        />
+      )}
+
+      {song && (
+        <CommentThreadDrawer
+          songId={song.id}
+          isOpen={isCommentsOpen}
+          onClose={() => setIsCommentsOpen(false)}
+          collaborators={mentionableUsers}
+          activeCommentId={activeCommentId}
+          onActiveCommentChange={setActiveCommentId}
+          selectedLines={selectedLineRange}
+          currentUserId={user?.id}
+          isOwner={user?.id === song.userId}
         />
       )}
     </div>
