@@ -117,6 +117,18 @@ export function DashboardPage(): React.ReactElement {
               {user?.displayName || user?.email}
             </span>
             <Link
+              to="/shared-with-me"
+              className="text-xs font-mono text-paper-muted hover:text-paper-text transition-colors"
+            >
+              Partagés avec moi
+            </Link>
+            <Link
+              to="/invitations"
+              className="text-xs font-mono text-paper-muted hover:text-paper-text transition-colors"
+            >
+              Invitations
+            </Link>
+            <Link
               to="/sessions"
               className="text-xs font-mono text-paper-muted hover:text-paper-text transition-colors"
             >

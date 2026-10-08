@@ -63,6 +63,7 @@ function toAlbumTrack(song: AlbumDetailRow['songs'][number], fallbackPosition: n
 function toAlbumDetail(album: AlbumDetailRow): AlbumDetail {
   return {
     id: album.id,
+    userId: album.userId,
     title: album.title,
     description: album.description,
     coverImageUrl: null,
@@ -82,10 +83,14 @@ export async function listAlbums(userId: string): Promise<AlbumListItem[]> {
   return albums.map(toAlbumListItem);
 }
 
-/** Récupère un album et sa tracklist ordonnée en imposant l'appartenance à l'utilisateur. */
-export async function findAlbumById(userId: string, albumId: string): Promise<AlbumDetail | null> {
-  const album = await prisma.album.findFirst({
-    where: { id: albumId, userId },
+/** Récupère un album et sa tracklist ordonnée. */
+export async function findAlbumById(
+  albumIdOrUserId: string,
+  maybeAlbumId?: string,
+): Promise<AlbumDetail | null> {
+  const albumId = maybeAlbumId ?? albumIdOrUserId;
+  const album = await prisma.album.findUnique({
+    where: { id: albumId },
     include: ALBUM_DETAIL_INCLUDE,
   });
   return album ? toAlbumDetail(album) : null;

@@ -28,21 +28,89 @@ enum SongStatus {
   COMPLETED
 }
 
+enum CollaboratorRole {
+  CO_AUTHOR
+  COMMENTER
+  READER
+}
+
+enum CollaboratorStatus {
+  ACTIVE
+  REVOKED
+  LEFT
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+  EXPIRED
+}
+
+enum NotificationType {
+  INVITATION_RECEIVED
+  INVITATION_ACCEPTED
+  INVITATION_DECLINED
+  COMMENT_ADDED
+  COMMENT_REPLY
+  MENTION
+  CONFLICT_DETECTED
+}
+
+enum CreditRole {
+  AUTHOR
+  FEATURING
+  PRODUCER
+  COMPOSER
+}
+
+enum ReportReason {
+  HARASSMENT
+  SPAM
+  INAPPROPRIATE_CONTENT
+  COPYRIGHT_INFRINGEMENT
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+  RESOLVED
+}
+
 model User {
   id              String          @id @default(uuid())
   email           String          @unique
   passwordHash    String?
   emailVerified   DateTime?
   displayName     String?
+  avatarUrl       String?         @map("avatar_url")
+  bio             String?         @db.VarChar(280)
   themePreference ThemePreference @default(SYSTEM)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
-  accounts Account[]
-  sessions Session[]
-  albums   Album[]
-  songs    Song[]
-  tags     Tag[]
+  accounts            Account[]
+  sessions            Session[]
+  albums              Album[]
+  songs               Song[]
+  tags                Tag[]
+  collaborations      Collaborator[]
+  invitedMembers      Collaborator[] @relation("InvitedCollaborators")
+  sentInvitations     Invitation[]   @relation("SentInvitations")
+  receivedInvitations Invitation[]   @relation("ReceivedInvitations")
+  comments            Comment[]
+  resolvedComments    Comment[]      @relation("ResolvedComments")
+  notifications       Notification[] @relation("UserNotifications")
+  actedNotifications  Notification[] @relation("ActorNotifications")
+  credits             SongCredit[]
+  blockedUsers        UserBlock[]    @relation("BlockingUsers")
+  blockedByUsers      UserBlock[]    @relation("BlockedUsers")
+  reportedAbuses      AbuseReport[]  @relation("ReportedAbuses")
+  accusedAbuses       AbuseReport[]  @relation("AccusedAbuses")
+  songVersions        SongVersion[]
 
   @@map("users")
 }
@@ -98,8 +166,10 @@ model Album {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  songs Song[]
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  songs         Song[]
+  collaborators Collaborator[]
+  invitations   Invitation[]
 
   @@index([userId])
   @@map("albums")
@@ -114,6 +184,7 @@ model Song {
   status          SongStatus @default(DRAFT)
   isFavorite      Boolean    @default(false)
   positionInAlbum Int?
+  revision        Int        @default(1)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
@@ -124,6 +195,10 @@ model Song {
   shareLinks    ShareLink[]
   voiceNotes    VoiceNote[]
   tags          SongTag[]
+  collaborators Collaborator[]
+  invitations   Invitation[]
+  comments      Comment[]
+  credits       SongCredit[]
 
   @@index([userId])
   @@index([albumId])
@@ -131,15 +206,19 @@ model Song {
 }
 
 model SongVersion {
-  id        String   @id @default(uuid())
-  songId    String
-  title     String
-  content   String
-  createdAt DateTime @default(now())
+  id         String   @id @default(uuid())
+  songId     String
+  title      String
+  content    String
+  authorId   String?  @map("author_id")
+  isConflict Boolean  @default(false) @map("is_conflict")
+  createdAt  DateTime @default(now())
 
-  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+  song   Song  @relation(fields: [songId], references: [id], onDelete: Cascade)
+  author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([songId])
+  @@index([authorId])
   @@map("song_versions")
 }
 
@@ -216,4 +295,177 @@ model VoiceNote {
 
   @@index([songId])
   @@map("voice_notes")
+}
+
+model Collaborator {
+  id          String             @id @default(uuid())
+  role        CollaboratorRole
+  status      CollaboratorStatus @default(ACTIVE)
+
+  userId      String             @map("user_id")
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  songId      String?            @map("song_id")
+  song        Song?              @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  albumId     String?            @map("album_id")
+  album       Album?             @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  invitedById String             @map("invited_by_id")
+  invitedBy   User               @relation("InvitedCollaborators", fields: [invitedById], references: [id], onDelete: Restrict)
+
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+
+  @@unique([userId, songId], name: "unique_user_song_collaborator")
+  @@unique([userId, albumId], name: "unique_user_album_collaborator")
+  @@index([userId, status])
+  @@index([songId, status])
+  @@index([albumId, status])
+  @@map("collaborators")
+}
+
+model Invitation {
+  id            String           @id @default(uuid())
+  tokenHash     String           @unique @map("token_hash")
+  role          CollaboratorRole
+  status        InvitationStatus @default(PENDING)
+
+  invitedEmail  String?          @map("invited_email")
+  invitedUserId String?          @map("invited_user_id")
+  invitedUser   User?            @relation("ReceivedInvitations", fields: [invitedUserId], references: [id], onDelete: SetNull)
+
+  inviterId     String           @map("inviter_id")
+  inviter       User             @relation("SentInvitations", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  songId        String?          @map("song_id")
+  song          Song?            @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  albumId       String?          @map("album_id")
+  album         Album?           @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  expiresAt     DateTime         @map("expires_at")
+  acceptedAt    DateTime?        @map("accepted_at")
+
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  @@index([tokenHash])
+  @@index([invitedUserId, status])
+  @@index([invitedEmail, status])
+  @@index([songId, status])
+  @@index([expiresAt])
+  @@map("invitations")
+}
+
+model Comment {
+  id           String       @id @default(uuid())
+  content      String
+  startLine    Int          @map("start_line")
+  endLine      Int          @map("end_line")
+
+  songId       String       @map("song_id")
+  song         Song         @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  authorId     String       @map("author_id")
+  author       User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  parentId     String?      @map("parent_id")
+  parent       Comment?     @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies      Comment[]    @relation("CommentReplies")
+
+  isResolved   Boolean      @default(false) @map("is_resolved")
+  resolvedById String?      @map("resolved_by_id")
+  resolvedBy   User?        @relation("ResolvedComments", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedAt   DateTime?    @map("resolved_at")
+
+  isAnonymized Boolean      @default(false) @map("is_anonymized")
+
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  @@index([songId, isResolved])
+  @@index([parentId])
+  @@index([authorId])
+  @@map("comments")
+}
+
+model Notification {
+  id           String           @id @default(uuid())
+  type         NotificationType
+  isRead       Boolean          @default(false) @map("is_read")
+
+  recipientId  String           @map("recipient_id")
+  recipient    User             @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  actorId      String?          @map("actor_id")
+  actor        User?            @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: SetNull)
+
+  songId       String?          @map("song_id")
+  albumId      String?          @map("album_id")
+  commentId    String?          @map("comment_id")
+  invitationId String?          @map("invitation_id")
+
+  createdAt    DateTime         @default(now()) @map("created_at")
+
+  @@index([recipientId, isRead, createdAt])
+  @@map("notifications")
+}
+
+model SongCredit {
+  id         String     @id @default(uuid())
+  name       String
+  role       CreditRole
+  percentage Float?
+  order      Int        @default(0)
+
+  songId     String     @map("song_id")
+  song       Song       @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  userId     String?    @map("user_id")
+  user       User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  @@index([songId, order])
+  @@map("song_credits")
+}
+
+model UserBlock {
+  id        String   @id @default(uuid())
+  blockerId String   @map("blocker_id")
+  blocker   User     @relation("BlockingUsers", fields: [blockerId], references: [id], onDelete: Cascade)
+
+  blockedId String   @map("blocked_id")
+  blocked   User     @relation("BlockedUsers", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([blockerId, blockedId], name: "unique_user_block")
+  @@index([blockerId])
+  @@index([blockedId])
+  @@map("user_blocks")
+}
+
+model AbuseReport {
+  id             String       @id @default(uuid())
+  reason         ReportReason
+  details        String?      @db.Text
+  status         ReportStatus @default(PENDING)
+
+  reporterId     String       @map("reporter_id")
+  reporter       User         @relation("ReportedAbuses", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  reportedUserId String?      @map("reported_user_id")
+  reportedUser   User?        @relation("AccusedAbuses", fields: [reportedUserId], references: [id], onDelete: SetNull)
+
+  songId         String?      @map("song_id")
+  commentId      String?      @map("comment_id")
+
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@map("abuse_reports")
 }

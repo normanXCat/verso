@@ -35,6 +35,7 @@ export type SearchSongsQuery = z.infer<typeof searchSongsQuerySchema>;
 /** Élément de texte renvoyé par la recherche de l'espace personnel. */
 export interface SongListItem {
   id: string;
+  userId?: string;
   title: string;
   status: 'DRAFT' | 'COMPLETED';
   isFavorite: boolean;

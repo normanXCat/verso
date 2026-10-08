@@ -86,5 +86,6 @@ export interface AlbumListItem {
 
 /** Album complet avec sa tracklist ordonnée. */
 export interface AlbumDetail extends Omit<AlbumListItem, 'tracksCount'> {
+  userId?: string;
   tracks: AlbumTrack[];
 }

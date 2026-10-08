@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ListMusic, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, ListMusic, Plus, Trash2, Users } from 'lucide-react';
 import type { AlbumDetail } from '@verso/shared';
+import { useAuth } from '../hooks/useAuth.js';
 import { albumsClient, AlbumsApiError } from '../lib/albums-client.js';
 import { songsClient } from '../lib/songs-client.js';
 import { Button } from '../components/ui/Button.js';
@@ -10,6 +11,7 @@ import { Modal } from '../components/ui/Modal.js';
 import { ThemeToggle } from '../components/common/ThemeToggle.js';
 import { useToast } from '../components/ui/Toast.js';
 import { SortableTracklist } from '../components/album/SortableTracklist.js';
+import { CollaboratorsModal } from '../components/collaboration/CollaboratorsModal.js';
 
 /**
  * Vue d'un album : métadonnées éditables, tracklist réordonnable par
@@ -33,10 +35,12 @@ export function AlbumDetailPage(): React.ReactElement {
     retry: false,
   });
 
+  const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [initialised, setInitialised] = useState(false);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isCollabOpen, setIsCollabOpen] = useState(false);
 
   useEffect(() => {
     if (!album || initialised) {
@@ -159,6 +163,15 @@ export function AlbumDetailPage(): React.ReactElement {
             Mon carnet
           </Link>
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsCollabOpen(true)}
+              aria-label="Collaborateurs et accès"
+              title="Collaborateurs et accès"
+              className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+            >
+              <Users className="h-4 w-4" aria-hidden="true" />
+            </button>
             <button
               type="button"
               onClick={handleDelete}
@@ -284,6 +297,18 @@ export function AlbumDetailPage(): React.ReactElement {
           </ul>
         )}
       </Modal>
+
+      {album && (
+        <CollaboratorsModal
+          isOpen={isCollabOpen}
+          onClose={() => setIsCollabOpen(false)}
+          resourceType="album"
+          resourceId={album.id}
+          resourceTitle={title || album.title}
+          isOwner={user?.id === album.userId}
+          onLeft={() => navigate('/app')}
+        />
+      )}
     </div>
   );
 }

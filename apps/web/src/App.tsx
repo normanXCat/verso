@@ -17,6 +17,8 @@ import { DashboardPage } from './pages/DashboardPage.js';
 import { EditorPage } from './pages/EditorPage.js';
 import { AlbumDetailPage } from './pages/AlbumDetailPage.js';
 import { PublicSharePage } from './pages/PublicSharePage.js';
+import { SharedWithMePage } from './pages/SharedWithMePage.js';
+import { InvitationsPage } from './pages/InvitationsPage.js';
 import { useAuth } from './hooks/useAuth.js';
 
 const queryClient = new QueryClient();
@@ -70,10 +72,58 @@ export function App(): React.ReactElement {
                   }
                 />
                 <Route
+                  path="/songs/:id"
+                  element={
+                    <RequireAuth>
+                      <EditorPage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
                   path="/app/albums/:id"
                   element={
                     <RequireAuth>
                       <AlbumDetailPage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/albums/:id"
+                  element={
+                    <RequireAuth>
+                      <AlbumDetailPage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/shared-with-me"
+                  element={
+                    <RequireAuth>
+                      <SharedWithMePage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/shared-with-me"
+                  element={
+                    <RequireAuth>
+                      <SharedWithMePage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/invitations"
+                  element={
+                    <RequireAuth>
+                      <InvitationsPage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/invitations/:token"
+                  element={
+                    <RequireAuth>
+                      <InvitationsPage />
                     </RequireAuth>
                   }
                 />

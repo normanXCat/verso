@@ -75,6 +75,7 @@ export function toSongDetail(song: SongWithRelations): SongDetail {
 export function toSongListItem(song: SongWithRelations): SongListItem {
   return {
     id: song.id,
+    userId: song.userId,
     title: song.title,
     status: song.status,
     isFavorite: song.isFavorite,
@@ -112,11 +113,15 @@ export async function searchSongs(
 }
 
 /**
- * Récupère un texte par son identifiant en imposant l'appartenance à l'utilisateur.
+ * Récupère un texte par son identifiant avec l'ensemble de ses relations.
  */
-export async function findSongById(userId: string, songId: string): Promise<SongDetail | null> {
-  const song = await prisma.song.findFirst({
-    where: { id: songId, userId },
+export async function findSongById(
+  songIdOrUserId: string,
+  maybeSongId?: string,
+): Promise<SongDetail | null> {
+  const songId = maybeSongId ?? songIdOrUserId;
+  const song = await prisma.song.findUnique({
+    where: { id: songId },
     include: SONG_INCLUDE,
   });
   return song ? toSongDetail(song) : null;

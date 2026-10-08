@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import type { CreateSongInput, SongDetail, UpdateSongInput } from '@verso/shared';
 import { prisma } from '../../config/prisma.js';
+import { can } from '../permissions/permissions.service.js';
 import { findSongById } from './songs.repository.js';
 import { maybeArchiveBeforeUpdate } from './versions.service.js';
 
@@ -80,8 +81,12 @@ export async function createSong(userId: string, input: CreateSongInput): Promis
   return created;
 }
 
-export function getSong(userId: string, songId: string): Promise<SongDetail | null> {
-  return findSongById(userId, songId);
+export async function getSong(userId: string, songId: string): Promise<SongDetail | null> {
+  const allowed = await can({ id: userId }, { type: 'song', id: songId }, 'read');
+  if (!allowed) {
+    return null;
+  }
+  return findSongById(songId);
 }
 
 export async function updateSong(
@@ -89,15 +94,20 @@ export async function updateSong(
   songId: string,
   input: UpdateSongInput,
 ): Promise<SongDetail | null> {
-  const existing = await prisma.song.findFirst({
-    where: { id: songId, userId },
-    select: { id: true, title: true, content: true },
+  const allowed = await can({ id: userId }, { type: 'song', id: songId }, 'edit_lyrics');
+  if (!allowed) {
+    return null;
+  }
+
+  const existing = await prisma.song.findUnique({
+    where: { id: songId },
+    select: { id: true, title: true, content: true, userId: true },
   });
   if (!existing) {
     return null;
   }
 
-  await assertAlbum(userId, input.albumId);
+  await assertAlbum(existing.userId, input.albumId);
 
   // Archivage immuable de l'état courant avant toute modification du contenu (FR-029).
   const contentChanged = input.content !== undefined && input.content !== existing.content;
@@ -132,13 +142,17 @@ export async function updateSong(
   }
 
   if (input.tags !== undefined) {
-    await replaceSongTags(userId, songId, input.tags);
+    await replaceSongTags(existing.userId, songId, input.tags);
   }
 
-  return findSongById(userId, songId);
+  return findSongById(songId);
 }
 
 export async function deleteSong(userId: string, songId: string): Promise<boolean> {
-  const result = await prisma.song.deleteMany({ where: { id: songId, userId } });
+  const allowed = await can({ id: userId }, { type: 'song', id: songId }, 'delete');
+  if (!allowed) {
+    return false;
+  }
+  const result = await prisma.song.deleteMany({ where: { id: songId } });
   return result.count > 0;
 }

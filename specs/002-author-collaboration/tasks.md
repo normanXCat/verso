@@ -10,14 +10,14 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 **Purpose**: Initialisation des dépendances et définition des schémas / types partagés pour la collaboration.
 
-- [ ] T001 Installer les dépendances backend et frontend de collaboration (`@fastify/websocket`, `yjs`) dans `apps/api/package.json` et (`yjs`, `@y-rb/y-codemirror`) dans `apps/web/package.json`
-- [ ] T002 [P] Définir les énumérations et interfaces TypeScript de collaboration dans `packages/shared/src/types/collaboration.ts` (`CollaboratorRole` ['CO_AUTHOR', 'COMMENTER', 'READER'], `CollaboratorStatus` ['ACTIVE', 'REVOKED', 'LEFT'], `InvitationStatus` ['PENDING', 'ACCEPTED', 'DECLINED', 'REVOKED', 'EXPIRED'], `NotificationType`, `CreditRole`, `ReportReason`, `ReportStatus`)
-- [ ] T003 [P] Créer les schémas Zod pour la collaboration et les invitations dans `packages/shared/src/schemas/collaboration.ts` (avec les contraintes textuelles `role CollaboratorRole`, `expiresInDays Int default 7`, quota strict de 10 collaborateurs actifs simultanés par texte)
-- [ ] T004 [P] Créer les schémas Zod pour les commentaires dans `packages/shared/src/schemas/comment.ts` (avec les contraintes textuelles `content String` max 2000 caractères, `startLine Int` 1-indexed, `endLine Int` 1-indexed)
-- [ ] T005 [P] Créer les schémas Zod pour les crédits artistiques dans `packages/shared/src/schemas/credit.ts` (avec les contraintes textuelles `name String`, `role CreditRole`, `percentage Float?` quote-part optionnelle de 0 à 100)
-- [ ] T006 [P] Créer les schémas Zod pour la modération et la recherche dans `packages/shared/src/schemas/moderation.ts` (avec les contraintes textuelles `bio String? @db.VarChar(280)`, `reason ReportReason`, `details String? @db.Text`, paramètre de recherche exacte `q`)
-- [ ] T007 [P] Créer les schémas Zod pour les notifications et préférences dans `packages/shared/src/schemas/notification.ts` (énumération `NotificationType`, booléens de préférences email et in-app)
-- [ ] T008 Exposer l'ensemble des schémas et types de collaboration dans le point d'entrée partagé `packages/shared/src/index.ts`
+- [X] T001 Installer les dépendances backend et frontend de collaboration (`@fastify/websocket`, `yjs`) dans `apps/api/package.json` et (`yjs`, `@y-rb/y-codemirror`) dans `apps/web/package.json`
+- [X] T002 [P] Définir les énumérations et interfaces TypeScript de collaboration dans `packages/shared/src/types/collaboration.ts` (`CollaboratorRole` ['CO_AUTHOR', 'COMMENTER', 'READER'], `CollaboratorStatus` ['ACTIVE', 'REVOKED', 'LEFT'], `InvitationStatus` ['PENDING', 'ACCEPTED', 'DECLINED', 'REVOKED', 'EXPIRED'], `NotificationType`, `CreditRole`, `ReportReason`, `ReportStatus`)
+- [X] T003 [P] Créer les schémas Zod pour la collaboration et les invitations dans `packages/shared/src/schemas/collaboration.ts` (avec les contraintes textuelles `role CollaboratorRole`, `expiresInDays Int default 7`, quota strict de 10 collaborateurs actifs simultanés par texte)
+- [X] T004 [P] Créer les schémas Zod pour les commentaires dans `packages/shared/src/schemas/comment.ts` (avec les contraintes textuelles `content String` max 2000 caractères, `startLine Int` 1-indexed, `endLine Int` 1-indexed)
+- [X] T005 [P] Créer les schémas Zod pour les crédits artistiques dans `packages/shared/src/schemas/credit.ts` (avec les contraintes textuelles `name String`, `role CreditRole`, `percentage Float?` quote-part optionnelle de 0 à 100)
+- [X] T006 [P] Créer les schémas Zod pour la modération et la recherche dans `packages/shared/src/schemas/moderation.ts` (avec les contraintes textuelles `bio String? @db.VarChar(280)`, `reason ReportReason`, `details String? @db.Text`, paramètre de recherche exacte `q`)
+- [X] T007 [P] Créer les schémas Zod pour les notifications et préférences dans `packages/shared/src/schemas/notification.ts` (énumération `NotificationType`, booléens de préférences email et in-app)
+- [X] T008 Exposer l'ensemble des schémas et types de collaboration dans le point d'entrée partagé `packages/shared/src/index.ts`
 
 ---
 
@@ -27,12 +27,12 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 **⚠️ CRITICAL**: Aucun récit utilisateur ne peut débuter tant que cette phase n'est pas validée.
 
-- [ ] T009 Étendre le schéma Prisma dans `apps/api/prisma/schema.prisma` avec les modèles `Collaborator`, `Invitation`, `Comment`, `Notification`, `SongCredit`, `UserBlock`, `AbuseReport` et les évolutions de `Song` (`revision Int @default(1)`), `SongVersion` (`authorId String?`, `isConflict Boolean @default(false)`), et `User` (`bio String? @db.VarChar(280)`)
-- [ ] T010 Générer le client Prisma et exécuter la migration de base de données dans `apps/api/prisma/migrations/`
-- [ ] T011 [P] Définir les types d'actions, de cibles et de ressources d'autorisation dans `apps/api/src/modules/permissions/permissions.types.ts`
-- [ ] T012 Implémenter le moteur d'autorisation central unique `can(user, resource, action)` dans `apps/api/src/modules/permissions/permissions.service.ts` évaluant la propriété, les rôles de collaborateurs et l'héritage d'album
-- [ ] T013 [P] Écrire la suite de tests unitaires exhaustifs pour `can()` couvrant 100% de la matrice Rôle × Ressource × Action dans `apps/api/tests/unit/permissions.test.ts`
-- [ ] T014 Implémenter le garde Fastify `requirePermission(action)` et l'intercepteur de sécurité garantissant une réponse HTTP 404 neutre en cas de refus d'accès dans `apps/api/src/modules/permissions/permissions.guard.ts`
+- [X] T009 Étendre le schéma Prisma dans `apps/api/prisma/schema.prisma` avec les modèles `Collaborator`, `Invitation`, `Comment`, `Notification`, `SongCredit`, `UserBlock`, `AbuseReport` et les évolutions de `Song` (`revision Int @default(1)`), `SongVersion` (`authorId String?`, `isConflict Boolean @default(false)`), et `User` (`bio String? @db.VarChar(280)`)
+- [X] T010 Générer le client Prisma et exécuter la migration de base de données dans `apps/api/prisma/migrations/`
+- [X] T011 [P] Définir les types d'actions, de cibles et de ressources d'autorisation dans `apps/api/src/modules/permissions/permissions.types.ts`
+- [X] T012 Implémenter le moteur d'autorisation central unique `can(user, resource, action)` dans `apps/api/src/modules/permissions/permissions.service.ts` évaluant la propriété, les rôles de collaborateurs et l'héritage d'album
+- [X] T013 [P] Écrire la suite de tests unitaires exhaustifs pour `can()` couvrant 100% de la matrice Rôle × Ressource × Action dans `apps/api/tests/unit/permissions.test.ts`
+- [X] T014 Implémenter le garde Fastify `requirePermission(action)` et l'intercepteur de sécurité garantissant une réponse HTTP 404 neutre en cas de refus d'accès dans `apps/api/src/modules/permissions/permissions.guard.ts`
 
 **Checkpoint**: Socle d'autorisation et persistance relationnelle prêts — le développement des récits utilisateurs peut commencer.
 
@@ -46,18 +46,18 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T015 [P] [US1] Écrire la suite de tests d'intégration pour le cycle d'invitation, le hachage SHA-256 de token, la mutation de rôle et la révocation dans `apps/api/tests/integration/collaboration.test.ts`
+- [X] T015 [P] [US1] Écrire la suite de tests d'intégration pour le cycle d'invitation, le hachage SHA-256 de token, la mutation de rôle et la révocation dans `apps/api/tests/integration/collaboration.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Implémenter le repository de collaboration pour les entités `Collaborator` et `Invitation` dans `apps/api/src/modules/collaboration/collaboration.repository.ts`
-- [ ] T017 [US1] Implémenter le service de collaboration dans `apps/api/src/modules/collaboration/collaboration.service.ts` (hachage SHA-256 du token aléatoire sec_, contrainte textuelle `expiresAt DateTime` à now() + 7 jours, quota strict de 10 collaborateurs actifs par texte, transfert automatique au co-auteur le plus ancien à la suppression du compte `FR-002a`, cascade de permissions sur album `FR-010`)
-- [ ] T018 [US1] Implémenter les routes d'API Fastify de collaboration dans `apps/api/src/modules/collaboration/collaboration.routes.ts` (`POST/GET /api/songs/:id/invitations`, `GET/PATCH/DELETE /api/songs/:id/collaborators/:userId`, équivalents pour albums, acceptation/refus par token, et départ volontaire)
-- [ ] T019 [US1] Enregistrer les routes de collaboration dans `apps/api/src/server.ts` avec rate limiting strict de 10 req/min sur l'envoi d'invitations
-- [ ] T020 [P] [US1] Implémenter le client API de collaboration dans `apps/web/src/lib/collaboration-client.ts`
-- [ ] T021 [P] [US1] Implémenter le formulaire d'invitation `InviteCollaboratorForm.tsx` avec sélecteur de rôle et saisie d'identifiant/email dans `apps/web/src/components/collaboration/InviteCollaboratorForm.tsx`
-- [ ] T022 [US1] Implémenter la modale de gestion des accès `CollaboratorsModal.tsx` listant les membres actifs et en attente, le changement de rôle et la révocation dans `apps/web/src/components/collaboration/CollaboratorsModal.tsx`
-- [ ] T023 [US1] Intégrer le déclencheur d'invitation et la modale d'accès dans l'en-tête de l'éditeur `apps/web/src/pages/EditorPage.tsx` et de la page album `apps/web/src/pages/AlbumDetailPage.tsx`
+- [X] T016 [P] [US1] Implémenter le repository de collaboration pour les entités `Collaborator` et `Invitation` dans `apps/api/src/modules/collaboration/collaboration.repository.ts`
+- [X] T017 [US1] Implémenter le service de collaboration dans `apps/api/src/modules/collaboration/collaboration.service.ts` (hachage SHA-256 du token aléatoire sec_, contrainte textuelle `expiresAt DateTime` à now() + 7 jours, quota strict de 10 collaborateurs actifs par texte, transfert automatique au co-auteur le plus ancien à la suppression du compte `FR-002a`, cascade de permissions sur album `FR-010`)
+- [X] T018 [US1] Implémenter les routes d'API Fastify de collaboration dans `apps/api/src/modules/collaboration/collaboration.routes.ts` (`POST/GET /api/songs/:id/invitations`, `GET/PATCH/DELETE /api/songs/:id/collaborators/:userId`, équivalents pour albums, acceptation/refus par token, et départ volontaire)
+- [X] T019 [US1] Enregistrer les routes de collaboration dans `apps/api/src/server.ts` avec rate limiting strict de 10 req/min sur l'envoi d'invitations
+- [X] T020 [P] [US1] Implémenter le client API de collaboration dans `apps/web/src/lib/collaboration-client.ts`
+- [X] T021 [P] [US1] Implémenter le formulaire d'invitation `InviteCollaboratorForm.tsx` avec sélecteur de rôle et saisie d'identifiant/email dans `apps/web/src/components/collaboration/InviteCollaboratorForm.tsx`
+- [X] T022 [US1] Implémenter la modale de gestion des accès `CollaboratorsModal.tsx` listant les membres actifs et en attente, le changement de rôle et la révocation dans `apps/web/src/components/collaboration/CollaboratorsModal.tsx`
+- [X] T023 [US1] Intégrer le déclencheur d'invitation et la modale d'accès dans l'en-tête de l'éditeur `apps/web/src/pages/EditorPage.tsx` et de la page album `apps/web/src/pages/AlbumDetailPage.tsx`
 
 **Checkpoint**: User Story 1 fonctionnelle et testable isolément — MVP de collaboration opérationnel.
 
@@ -71,16 +71,16 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T024 [P] [US2] Écrire la suite de tests d'intégration pour la requête des œuvres partagées et les filtres rôle/propriétaire dans `apps/api/tests/integration/shared-with-me.test.ts`
+- [X] T024 [P] [US2] Écrire la suite de tests d'intégration pour la requête des œuvres partagées et les filtres rôle/propriétaire dans `apps/api/tests/integration/shared-with-me.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T025 [US2] Implémenter les méthodes de recherche des textes et albums partagés avec filtres par rôle et propriétaire dans `apps/api/src/modules/collaboration/collaboration.repository.ts`
-- [ ] T026 [US2] Implémenter la route d'API `GET /api/collaborations/shared-with-me` dans `apps/api/src/modules/collaboration/collaboration.routes.ts`
-- [ ] T027 [P] [US2] Implémenter le badge visuel de statut collaboratif `SharedBadge.tsx` dans `apps/web/src/components/collaboration/SharedBadge.tsx`
-- [ ] T028 [US2] Développer la page de consultation `SharedWithMePage.tsx` avec filtres par rôle et par propriétaire dans `apps/web/src/pages/SharedWithMePage.tsx`
-- [ ] T029 [US2] Développer la page de gestion des invitations reçues `InvitationsPage.tsx` avec boutons Accepter / Refuser dans `apps/web/src/pages/InvitationsPage.tsx`
-- [ ] T030 [US2] Ajouter les onglets "Partagés avec moi" et "Invitations" dans la navigation `apps/web/src/components/landing/Navbar.tsx` et le tableau de bord `apps/web/src/pages/DashboardPage.tsx`
+- [X] T025 [US2] Implémenter les méthodes de recherche des textes et albums partagés avec filtres par rôle et propriétaire dans `apps/api/src/modules/collaboration/collaboration.repository.ts`
+- [X] T026 [US2] Implémenter la route d'API `GET /api/collaborations/shared-with-me` dans `apps/api/src/modules/collaboration/collaboration.routes.ts`
+- [X] T027 [P] [US2] Implémenter le badge visuel de statut collaboratif `SharedBadge.tsx` dans `apps/web/src/components/collaboration/SharedBadge.tsx`
+- [X] T028 [US2] Développer la page de consultation `SharedWithMePage.tsx` avec filtres par rôle et par propriétaire dans `apps/web/src/pages/SharedWithMePage.tsx`
+- [X] T029 [US2] Développer la page de gestion des invitations reçues `InvitationsPage.tsx` avec boutons Accepter / Refuser dans `apps/web/src/pages/InvitationsPage.tsx`
+- [X] T030 [US2] Ajouter les onglets "Partagés avec moi" et "Invitations" dans la navigation `apps/web/src/components/landing/Navbar.tsx` et le tableau de bord `apps/web/src/pages/DashboardPage.tsx`
 
 **Checkpoint**: User Stories 1 et 2 fonctionnent indépendamment et de concert.
 

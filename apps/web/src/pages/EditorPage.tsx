@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, BookOpen, History, Share2, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, History, Share2, Trash2, Users } from 'lucide-react';
 import type { SongDetail, SongListItem, UpdateSongInput } from '@verso/shared';
+import { useAuth } from '../hooks/useAuth.js';
 import { songsClient, SongsApiError } from '../lib/songs-client.js';
 import { readDraft } from '../lib/draft-storage.js';
 import { cacheSong, getDraft } from '../lib/offline-storage.js';
@@ -19,6 +20,7 @@ import { ShareModal } from '../components/editor/ShareModal.js';
 import { RhymeSuggestionsDrawer } from '../components/editor/RhymeSuggestionsDrawer.js';
 import { AudioPlayerBar } from '../components/audio/AudioPlayerBar.js';
 import { VoiceRecorder } from '../components/audio/VoiceRecorder.js';
+import { CollaboratorsModal } from '../components/collaboration/CollaboratorsModal.js';
 
 /**
  * Espace d'écriture d'un texte : éditeur épuré avec sauvegarde automatique,
@@ -45,6 +47,8 @@ export function EditorPage(): React.ReactElement {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [initialised, setInitialised] = useState(false);
+  const { user } = useAuth();
+  const [isCollabOpen, setIsCollabOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isRhymesOpen, setIsRhymesOpen] = useState(false);
@@ -218,6 +222,15 @@ export function EditorPage(): React.ReactElement {
               </button>
               <button
                 type="button"
+                onClick={() => setIsCollabOpen(true)}
+                aria-label="Collaborateurs et accès"
+                title="Collaborateurs et accès"
+                className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+              >
+                <Users className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
                 onClick={() => setIsShareOpen(true)}
                 aria-label="Partager ce texte"
                 title="Partager (PDF et lien privé)"
@@ -356,6 +369,18 @@ export function EditorPage(): React.ReactElement {
             setContent(restored.content);
             queryClient.setQueryData<SongDetail>(['songs', 'detail', id], restored);
           }}
+        />
+      )}
+
+      {song && (
+        <CollaboratorsModal
+          isOpen={isCollabOpen}
+          onClose={() => setIsCollabOpen(false)}
+          resourceType="song"
+          resourceId={song.id}
+          resourceTitle={title || song.title}
+          isOwner={user?.id === song.userId}
+          onLeft={() => navigate('/app')}
         />
       )}
     </div>

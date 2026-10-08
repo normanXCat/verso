@@ -81,6 +81,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { voiceNotesRoutes } = await import('./modules/audio/voice-notes.routes.js');
   await app.register(voiceNotesRoutes, { prefix: '/api' });
 
+  // Routes de collaboration, invitations et partages
+  const { collaborationRoutes } = await import('./modules/collaboration/collaboration.routes.js');
+  await app.register(collaborationRoutes, { prefix: '/api' });
+
   // Contrôle de santé : vérifie explicitement la connexion à la base de données.
   app.get('/health', async (request, reply) => {
     const { checkDatabaseConnection } = await import('./config/prisma.js');
