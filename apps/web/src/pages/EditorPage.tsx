@@ -24,6 +24,7 @@ import { AudioPlayerBar } from '../components/audio/AudioPlayerBar.js';
 import { VoiceRecorder } from '../components/audio/VoiceRecorder.js';
 import { CollaboratorsModal } from '../components/collaboration/CollaboratorsModal.js';
 import { CommentThreadDrawer } from '../components/comments/CommentThreadDrawer.js';
+import { ConflictDiffModal } from '../components/editor/ConflictDiffModal.js';
 
 /**
  * Espace d'écriture d'un texte : éditeur épuré avec sauvegarde automatique,
@@ -65,6 +66,12 @@ export function EditorPage(): React.ReactElement {
     null,
   );
   const [isZen, setIsZen] = useState(false);
+  const [conflictData, setConflictData] = useState<{
+    serverContent: string;
+    serverTitle: string;
+    localContent: string;
+    localTitle: string;
+  } | null>(null);
 
   const { data: comments = [] } = useQuery({
     queryKey: ['songs', id, 'comments'],
@@ -122,6 +129,7 @@ export function EditorPage(): React.ReactElement {
     title,
     content,
     enabled: initialised,
+    revision: song?.revision,
     baselineContent: song?.content,
     onConflict: (created, serverContent) => {
       toast(
@@ -130,6 +138,9 @@ export function EditorPage(): React.ReactElement {
       );
       setContent(serverContent);
       void queryClient.invalidateQueries({ queryKey: ['songs', 'search'] });
+    },
+    onOptimisticConflict: (details) => {
+      setConflictData(details);
     },
   });
 
@@ -453,6 +464,40 @@ export function EditorPage(): React.ReactElement {
           selectedLines={selectedLineRange}
           currentUserId={user?.id}
           isOwner={user?.id === song.userId}
+        />
+      )}
+
+      {conflictData && (
+        <ConflictDiffModal
+          isOpen={Boolean(conflictData)}
+          onClose={() => setConflictData(null)}
+          serverContent={conflictData.serverContent}
+          serverTitle={conflictData.serverTitle}
+          localContent={conflictData.localContent}
+          localTitle={conflictData.localTitle}
+          onKeepServer={() => {
+            setContent(conflictData.serverContent);
+            setTitle(conflictData.serverTitle);
+            setConflictData(null);
+            void queryClient.invalidateQueries({ queryKey: ['songs', 'detail', id] });
+            toast('Version distante conservée', 'info');
+          }}
+          onKeepLocal={async () => {
+            try {
+              const fresh = await songsClient.get(id);
+              await songsClient.update(id, {
+                content: conflictData.localContent,
+                title: conflictData.localTitle,
+                expectedRevision: fresh.revision,
+              });
+              setConflictData(null);
+              void queryClient.invalidateQueries({ queryKey: ['songs', 'detail', id] });
+              void queryClient.invalidateQueries({ queryKey: ['songs', 'versions', id] });
+              toast('Vos modifications ont été enregistrées avec succès', 'success');
+            } catch {
+              toast('Impossible d’appliquer vos modifications', 'error');
+            }
+          }}
         />
       )}
     </div>

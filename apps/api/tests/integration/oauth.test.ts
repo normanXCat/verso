@@ -84,10 +84,8 @@ describe("Tests d'intégration : Flux OAuth Google et ORCID (/api/auth/oauth)", 
   });
 
   beforeEach(async () => {
-    await db.account.deleteMany();
-    await db.emailToken.deleteMany();
-    await db.session.deleteMany();
-    await db.user.deleteMany();
+    const { clearDatabase } = await import('../helpers/db.js');
+    await clearDatabase();
     installFetchMock({ google: GOOGLE_USER, orcid: ORCID_USER });
   });
 

@@ -119,15 +119,15 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T040 [P] [US4] Écrire la suite de tests d'intégration pour le verrouillage optimiste sur révision, la détection de conflit 409 et l'attribution nominative des versions dans `apps/api/tests/integration/conflict.test.ts`
+- [x] T040 [P] [US4] Écrire la suite de tests d'intégration pour le verrouillage optimiste sur révision, la détection de conflit 409 et l'attribution nominative des versions dans `apps/api/tests/integration/conflict.test.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T041 [US4] Mettre à jour `apps/api/src/modules/songs/songs.service.ts` pour implémenter le verrouillage optimiste avec la contrainte textuelle `Song.revision Int @default(1)` : rejet en HTTP 409 en cas d'écart et archivage automatique dans `SongVersion` avec `isConflict: true` et `authorId`
-- [ ] T042 [US4] Mettre à jour `apps/api/src/modules/songs/versions.service.ts` pour renseigner `authorId` sur chaque instantané et consigner l'auteur de toute opération de restauration
-- [ ] T043 [P] [US4] Implémenter la modale de comparaison de conflit `ConflictDiffModal.tsx` affichant une vue comparative côte à côte sans écrasement dans `apps/web/src/components/editor/ConflictDiffModal.tsx`
-- [ ] T044 [US4] Mettre à jour le tiroir d'historique `VersionHistoryDrawer.tsx` pour afficher le nom de l'auteur, l'avatar, le badge de conflit et l'auteur de la restauration dans `apps/web/src/components/editor/VersionHistoryDrawer.tsx`
-- [ ] T045 [US4] Intégrer la gestion des réponses 409 et l'ouverture de `ConflictDiffModal` dans le hook de synchronisation `apps/web/src/lib/useOfflineSync.ts` et la page `apps/web/src/pages/EditorPage.tsx`
+- [x] T041 [US4] Mettre à jour `apps/api/src/modules/songs/songs.service.ts` pour implémenter le verrouillage optimiste avec la contrainte textuelle `Song.revision Int @default(1)` : rejet en HTTP 409 en cas d'écart et archivage automatique dans `SongVersion` avec `isConflict: true` et `authorId`
+- [x] T042 [US4] Mettre à jour `apps/api/src/modules/songs/versions.service.ts` pour renseigner `authorId` sur chaque instantané et consigner l'auteur de toute opération de restauration
+- [x] T043 [P] [US4] Implémenter la modale de comparaison de conflit `ConflictDiffModal.tsx` affichant une vue comparative côte à côte sans écrasement dans `apps/web/src/components/editor/ConflictDiffModal.tsx`
+- [x] T044 [US4] Mettre à jour le tiroir d'historique `VersionHistoryDrawer.tsx` pour afficher le nom de l'auteur, l'avatar, le badge de conflit et l'auteur de la restauration dans `apps/web/src/components/editor/VersionHistoryDrawer.tsx`
+- [x] T045 [US4] Intégrer la gestion des réponses 409 et l'ouverture de `ConflictDiffModal` dans le hook de synchronisation `apps/web/src/lib/useOfflineSync.ts` et la page `apps/web/src/pages/EditorPage.tsx`
 
 **Checkpoint**: Zéro perte de texte garantie en mode asynchrone, traçabilité intégrale des contributions.
 

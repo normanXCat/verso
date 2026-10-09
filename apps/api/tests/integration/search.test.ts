@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../../src/app.js';
 import { prisma } from '../../src/config/prisma.js';
+import { clearDatabase } from '../helpers/db.js';
 
 interface SeededSongOptions {
   userId: string;
@@ -27,18 +28,7 @@ describe("Tests d'intégration : Recherche et filtres de l'espace personnel (/ap
   });
 
   beforeEach(async () => {
-    await prisma.songTag.deleteMany();
-    await prisma.songVersion.deleteMany();
-    await prisma.shareLink.deleteMany();
-    await prisma.voiceNote.deleteMany();
-    await prisma.instrumental.deleteMany();
-    await prisma.song.deleteMany();
-    await prisma.tag.deleteMany();
-    await prisma.album.deleteMany();
-    await prisma.session.deleteMany();
-    await prisma.emailToken.deleteMany();
-    await prisma.account.deleteMany();
-    await prisma.user.deleteMany();
+    await clearDatabase();
   });
 
   async function registerUser(email: string): Promise<{ userId: string; sessionId: string }> {

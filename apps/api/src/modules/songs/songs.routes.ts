@@ -8,7 +8,14 @@ import {
 import { requireAuth } from '../auth/auth.guard.js';
 import { buildPdfFilename, generateSongPdf } from './pdf.service.js';
 import { searchSongs } from './songs.repository.js';
-import { SongServiceError, createSong, deleteSong, getSong, updateSong } from './songs.service.js';
+import {
+  ConflictError,
+  SongServiceError,
+  createSong,
+  deleteSong,
+  getSong,
+  updateSong,
+} from './songs.service.js';
 
 export const songsRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   // Recherche plein texte et filtres combinables de l'espace personnel
@@ -120,6 +127,12 @@ export const songsRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
       }
       return reply.status(200).send(item);
     } catch (error) {
+      if (error instanceof ConflictError) {
+        return reply.status(409).send({
+          message: error.message,
+          conflictVersionId: error.conflictVersionId,
+        });
+      }
       if (error instanceof SongServiceError) {
         return reply.status(400).send({ message: 'Album introuvable' });
       }

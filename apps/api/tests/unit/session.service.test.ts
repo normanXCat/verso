@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { prisma } from '../../src/config/prisma.js';
+import { clearDatabase } from '../helpers/db.js';
 import {
   createSession,
   validateSession,
@@ -12,8 +13,7 @@ describe('Service de gestion des sessions (session.service)', () => {
   let userId: string;
 
   beforeEach(async () => {
-    await prisma.session.deleteMany();
-    await prisma.user.deleteMany();
+    await clearDatabase();
 
     const user = await prisma.user.create({
       data: {

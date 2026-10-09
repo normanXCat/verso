@@ -69,7 +69,7 @@ function buildExcerpt(content: string): string {
 }
 
 export function toSongDetail(song: SongWithRelations): SongDetail {
-  return { ...toSongListItem(song), content: song.content };
+  return { ...toSongListItem(song), content: song.content, revision: song.revision ?? 1 };
 }
 
 export function toSongListItem(song: SongWithRelations): SongListItem {
@@ -83,6 +83,7 @@ export function toSongListItem(song: SongWithRelations): SongListItem {
     albumTitle: song.album?.title ?? null,
     tags: song.tags.map((songTag) => songTag.tag.name),
     excerpt: buildExcerpt(song.content),
+    revision: song.revision,
     updatedAt: song.updatedAt,
     createdAt: song.createdAt,
   };
