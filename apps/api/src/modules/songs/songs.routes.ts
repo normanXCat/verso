@@ -6,6 +6,7 @@ import {
   updateSongSchema,
 } from '@verso/shared';
 import { requireAuth } from '../auth/auth.guard.js';
+import { prisma } from '../../config/prisma.js';
 import { buildPdfFilename, generateSongPdf } from './pdf.service.js';
 import { searchSongs } from './songs.repository.js';
 import {
@@ -77,10 +78,23 @@ export const songsRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
     }
 
     const authorName = request.user!.displayName?.trim() || 'Artiste Verso';
-    const pdf = await generateSongPdf(
-      { title: item.title, content: item.content, updatedAt: item.updatedAt },
-      authorName,
-    );
+    const credits = await prisma.songCredit.findMany({
+      where: { songId: item.id },
+      orderBy: { order: 'asc' },
+      select: { name: true, role: true, percentage: true },
+    });
+
+    let pdf: Buffer;
+    try {
+      pdf = await generateSongPdf(
+        { title: item.title, content: item.content, updatedAt: item.updatedAt },
+        authorName,
+        credits,
+      );
+    } catch (err) {
+      console.error('PDF GENERATION ERROR:', err);
+      throw err;
+    }
 
     return reply
       .header('Content-Type', 'application/pdf')

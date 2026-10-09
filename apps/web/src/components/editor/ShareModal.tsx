@@ -139,7 +139,8 @@ export function ShareModal({
             <div>
               <h4 className="font-serif text-base text-paper-text">Certificat d'antériorité</h4>
               <p className="mt-0.5 text-xs text-paper-muted">
-                PDF sobre avec titre, paroles, auteur et horodatage exact de la dernière révision.
+                PDF certifié avec titre, paroles, cartouche d'antériorité horodaté et tableau
+                complet des crédits artistiques déclarés.
               </p>
             </div>
             <Button

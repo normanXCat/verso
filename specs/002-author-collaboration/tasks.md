@@ -165,15 +165,15 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 6 ⚠️
 
-- [ ] T054 [P] [US6] Écrire la suite de tests d'intégration pour la validation des crédits, le cumul de pourcentages et la restitution dans le PDF dans `apps/api/tests/integration/credits.test.ts`
+- [x] T054 [P] [US6] Écrire la suite de tests d'intégration pour la validation des crédits, le cumul de pourcentages et la restitution dans le PDF dans `apps/api/tests/integration/credits.test.ts`
 
 ### Implementation for User Story 6
 
-- [ ] T055 [P] [US6] Implémenter le repository et service des crédits artistiques dans `apps/api/src/modules/credits/credits.service.ts` (avec les contraintes textuelles `percentage Float?` de 0 à 100, énumération `CreditRole`, calcul du total sans blocage)
-- [ ] T056 [US6] Implémenter les routes d'API `GET /api/songs/:id/credits` et `PUT /api/songs/:id/credits` dans `apps/api/src/modules/credits/credits.routes.ts`
-- [ ] T057 [US6] Mettre à jour le générateur de PDF d'antériorité `apps/api/src/modules/songs/pdf.service.ts` pour imprimer le cartouche des crédits (noms, rôles, quotes-parts)
-- [ ] T058 [P] [US6] Implémenter la modale d'édition des crédits `CreditsEditorModal.tsx` avec sélection des qualités artistiques et jauge de cumul dans `apps/web/src/components/credits/CreditsEditorModal.tsx`
-- [ ] T059 [US6] Ajouter le bouton "Crédits" dans la barre d'outils de `apps/web/src/pages/EditorPage.tsx` et connecter à `ShareModal.tsx` pour l'export PDF enrichi
+- [x] T055 [P] [US6] Implémenter le repository et service des crédits artistiques dans `apps/api/src/modules/credits/credits.service.ts` (avec les contraintes textuelles `percentage Float?` de 0 à 100, énumération `CreditRole`, calcul du total sans blocage)
+- [x] T056 [US6] Implémenter les routes d'API `GET /api/songs/:id/credits` et `PUT /api/songs/:id/credits` dans `apps/api/src/modules/credits/credits.routes.ts`
+- [x] T057 [US6] Mettre à jour le générateur de PDF d'antériorité `apps/api/src/modules/songs/pdf.service.ts` pour imprimer le cartouche des crédits (noms, rôles, quotes-parts)
+- [x] T058 [P] [US6] Implémenter la modale d'édition des crédits `CreditsEditorModal.tsx` avec sélection des qualités artistiques et jauge de cumul dans `apps/web/src/components/credits/CreditsEditorModal.tsx`
+- [x] T059 [US6] Ajouter le bouton "Crédits" dans la barre d'outils de `apps/web/src/pages/EditorPage.tsx` et connecter à `ShareModal.tsx` pour l'export PDF enrichi
 
 **Checkpoint**: Crédits artistiques et export d'antériorité certifié pleinement fonctionnels.
 

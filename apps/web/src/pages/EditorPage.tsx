@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, BookOpen, History, MessageSquare, Share2, Trash2, Users } from 'lucide-react';
+import {
+  ArrowLeft,
+  Award,
+  BookOpen,
+  History,
+  MessageSquare,
+  Share2,
+  Trash2,
+  Users,
+} from 'lucide-react';
 import type { SongDetail, SongListItem, UpdateSongInput } from '@verso/shared';
 import { useAuth } from '../hooks/useAuth.js';
 import { songsClient, SongsApiError } from '../lib/songs-client.js';
@@ -25,6 +34,7 @@ import { VoiceRecorder } from '../components/audio/VoiceRecorder.js';
 import { CollaboratorsModal } from '../components/collaboration/CollaboratorsModal.js';
 import { CommentThreadDrawer } from '../components/comments/CommentThreadDrawer.js';
 import { ConflictDiffModal } from '../components/editor/ConflictDiffModal.js';
+import { CreditsEditorModal } from '../components/credits/CreditsEditorModal.js';
 
 /**
  * Espace d'écriture d'un texte : éditeur épuré avec sauvegarde automatique,
@@ -53,6 +63,7 @@ export function EditorPage(): React.ReactElement {
   const [initialised, setInitialised] = useState(false);
   const { user } = useAuth();
   const [isCollabOpen, setIsCollabOpen] = useState(false);
+  const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isRhymesOpen, setIsRhymesOpen] = useState(false);
@@ -280,6 +291,15 @@ export function EditorPage(): React.ReactElement {
               </button>
               <button
                 type="button"
+                onClick={() => setIsCreditsOpen(true)}
+                aria-label="Crédits artistiques"
+                title="Crédits artistiques & antériorité"
+                className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+              >
+                <Award className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
                 onClick={() => setIsCommentsOpen(true)}
                 aria-label="Discussions et commentaires"
                 title="Discussions et commentaires"
@@ -450,6 +470,23 @@ export function EditorPage(): React.ReactElement {
           resourceTitle={title || song.title}
           isOwner={user?.id === song.userId}
           onLeft={() => navigate('/app')}
+        />
+      )}
+
+      {song && (
+        <CreditsEditorModal
+          isOpen={isCreditsOpen}
+          onClose={() => setIsCreditsOpen(false)}
+          songId={song.id}
+          songTitle={title || song.title}
+          isEditable={
+            user?.id === song.userId ||
+            Boolean(
+              collabData?.collaborators.some(
+                (c) => c.userId === user?.id && c.role === 'CO_AUTHOR',
+              ),
+            )
+          }
         />
       )}
 
