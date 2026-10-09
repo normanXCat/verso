@@ -68,13 +68,21 @@ export interface CommentItem {
   updatedAt: string | Date;
 }
 
+export interface NotificationTarget {
+  resourceType: 'song' | 'album' | 'comment' | 'invitation';
+  resourceId: string;
+  title?: string;
+  songId?: string;
+}
+
 export interface NotificationItem {
   id: string;
   type: NotificationType;
   isRead: boolean;
-  recipientId: string;
+  recipientId?: string;
   actorId?: string | null;
   actor?: PublicUserSummary | null;
+  target?: NotificationTarget | null;
   songId?: string | null;
   songTitle?: string | null;
   albumId?: string | null;

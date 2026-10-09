@@ -4,6 +4,7 @@ import { prisma } from '../../config/prisma.js';
 import { can } from '../permissions/permissions.service.js';
 import { findSongById } from './songs.repository.js';
 import { maybeArchiveBeforeUpdate } from './versions.service.js';
+import { notificationsService } from '../notifications/notifications.service.js';
 
 export type SongServiceErrorCode = 'album_not_found';
 
@@ -133,13 +134,11 @@ export async function updateSong(
     });
 
     if (existing.userId !== userId) {
-      await prisma.notification.create({
-        data: {
-          type: 'CONFLICT_DETECTED',
-          recipientId: existing.userId,
-          actorId: userId,
-          songId,
-        },
+      await notificationsService.sendNotification({
+        type: 'CONFLICT_DETECTED',
+        recipientId: existing.userId,
+        actorId: userId,
+        songId,
       });
     }
 

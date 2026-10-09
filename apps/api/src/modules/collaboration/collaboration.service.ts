@@ -3,6 +3,7 @@ import { prisma } from '../../config/prisma.js';
 import { assertCan, NotFoundAccessError } from '../permissions/permissions.service.js';
 import type { ResourceTarget } from '../permissions/permissions.types.js';
 import { collaborationRepository, userSummarySelect } from './collaboration.repository.js';
+import { notificationsService } from '../notifications/notifications.service.js';
 import {
   MAX_ACTIVE_COLLABORATORS_PER_SONG,
   type CollaboratorRole,
@@ -98,16 +99,14 @@ export const collaborationService = {
       expiresAt,
     });
 
-    // Envoi d'une notification in-app si utilisateur existant
+    // Envoi d'une notification si utilisateur existant
     if (targetUser) {
-      await prisma.notification.create({
-        data: {
-          type: 'INVITATION_RECEIVED',
-          recipientId: targetUser.id,
-          actorId: inviter.id,
-          songId,
-          invitationId: invitation.id,
-        },
+      await notificationsService.sendNotification({
+        type: 'INVITATION_RECEIVED',
+        recipientId: targetUser.id,
+        actorId: inviter.id,
+        songId,
+        invitationId: invitation.id,
       });
     }
 
@@ -169,14 +168,12 @@ export const collaborationService = {
     });
 
     if (targetUser) {
-      await prisma.notification.create({
-        data: {
-          type: 'INVITATION_RECEIVED',
-          recipientId: targetUser.id,
-          actorId: inviter.id,
-          albumId,
-          invitationId: invitation.id,
-        },
+      await notificationsService.sendNotification({
+        type: 'INVITATION_RECEIVED',
+        recipientId: targetUser.id,
+        actorId: inviter.id,
+        albumId,
+        invitationId: invitation.id,
       });
     }
 
@@ -330,15 +327,13 @@ export const collaborationService = {
     });
 
     // Notification à l'inviteur
-    await prisma.notification.create({
-      data: {
-        type: 'INVITATION_ACCEPTED',
-        recipientId: invitation.inviterId,
-        actorId: user.id,
-        songId: invitation.songId,
-        albumId: invitation.albumId,
-        invitationId: invitation.id,
-      },
+    await notificationsService.sendNotification({
+      type: 'INVITATION_ACCEPTED',
+      recipientId: invitation.inviterId,
+      actorId: user.id,
+      songId: invitation.songId,
+      albumId: invitation.albumId,
+      invitationId: invitation.id,
     });
 
     return {
@@ -374,15 +369,13 @@ export const collaborationService = {
     await collaborationRepository.updateInvitationStatus(invitation.id, 'DECLINED');
 
     // Notification à l'inviteur
-    await prisma.notification.create({
-      data: {
-        type: 'INVITATION_DECLINED',
-        recipientId: invitation.inviterId,
-        actorId: user.id,
-        songId: invitation.songId,
-        albumId: invitation.albumId,
-        invitationId: invitation.id,
-      },
+    await notificationsService.sendNotification({
+      type: 'INVITATION_DECLINED',
+      recipientId: invitation.inviterId,
+      actorId: user.id,
+      songId: invitation.songId,
+      albumId: invitation.albumId,
+      invitationId: invitation.id,
     });
 
     return { message: 'Invitation refusée' };

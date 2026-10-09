@@ -1,6 +1,7 @@
 import { prisma } from '../../config/prisma.js';
 import { assertCan, NotFoundAccessError } from '../permissions/permissions.service.js';
 import { commentsRepository } from './comments.repository.js';
+import { notificationsService } from '../notifications/notifications.service.js';
 import type { CreateCommentInput, ReplyCommentInput } from '@verso/shared';
 
 /**
@@ -219,28 +220,24 @@ export const commentsService = {
       );
       if (match && !notifiedUserIds.has(match.id)) {
         notifiedUserIds.add(match.id);
-        await prisma.notification.create({
-          data: {
-            type: 'MENTION',
-            recipientId: match.id,
-            actorId: authorId,
-            songId,
-            commentId,
-          },
+        await notificationsService.sendNotification({
+          type: 'MENTION',
+          recipientId: match.id,
+          actorId: authorId,
+          songId,
+          commentId,
         });
       }
     }
 
     // Notifier le propriétaire s'il n'est pas l'auteur et n'a pas déjà reçu une mention
     if (song.userId !== authorId && !notifiedUserIds.has(song.userId)) {
-      await prisma.notification.create({
-        data: {
-          type: 'COMMENT_ADDED',
-          recipientId: song.userId,
-          actorId: authorId,
-          songId,
-          commentId,
-        },
+      await notificationsService.sendNotification({
+        type: 'COMMENT_ADDED',
+        recipientId: song.userId,
+        actorId: authorId,
+        songId,
+        commentId,
       });
     }
   },
@@ -284,28 +281,24 @@ export const commentsService = {
       );
       if (match && !notifiedUserIds.has(match.id)) {
         notifiedUserIds.add(match.id);
-        await prisma.notification.create({
-          data: {
-            type: 'MENTION',
-            recipientId: match.id,
-            actorId: authorId,
-            songId,
-            commentId: replyId,
-          },
+        await notificationsService.sendNotification({
+          type: 'MENTION',
+          recipientId: match.id,
+          actorId: authorId,
+          songId,
+          commentId: replyId,
         });
       }
     }
 
     // Notifier l'auteur du commentaire parent
     if (parentAuthorId !== authorId && !notifiedUserIds.has(parentAuthorId)) {
-      await prisma.notification.create({
-        data: {
-          type: 'COMMENT_REPLY',
-          recipientId: parentAuthorId,
-          actorId: authorId,
-          songId,
-          commentId: replyId,
-        },
+      await notificationsService.sendNotification({
+        type: 'COMMENT_REPLY',
+        recipientId: parentAuthorId,
+        actorId: authorId,
+        songId,
+        commentId: replyId,
       });
     }
   },

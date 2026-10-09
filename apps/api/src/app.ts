@@ -89,6 +89,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { commentsRoutes } = await import('./modules/comments/comments.routes.js');
   await app.register(commentsRoutes, { prefix: '/api' });
 
+  // Routes des notifications, alertes in-app, flux SSE et préférences
+  const { notificationsRoutes } = await import('./modules/notifications/notifications.routes.js');
+  await app.register(notificationsRoutes, { prefix: '/api' });
+
   // Contrôle de santé : vérifie explicitement la connexion à la base de données.
   app.get('/health', async (request, reply) => {
     const { checkDatabaseConnection } = await import('./config/prisma.js');

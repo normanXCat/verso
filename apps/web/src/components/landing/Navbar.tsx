@@ -6,6 +6,8 @@ import { Logo } from '../common/Logo.js';
 import { Button } from '../ui/Button.js';
 import { NavLink } from '../ui/NavLink.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useNotifications } from '../../context/NotificationsContext.js';
+import { NotificationBell } from '../notifications/NotificationBell.js';
 
 const NAV_LINKS = [
   { label: 'Écrire', href: '#ecrire' },
@@ -26,6 +28,7 @@ export function Navbar(): React.ReactElement {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const { isAuthenticated, user } = useAuth();
+  const { unreadCount, openDrawer, isOpen } = useNotifications();
 
   // Barre compacte + décalage sous le bandeau de vérification email.
   useEffect(() => {
@@ -112,6 +115,7 @@ export function Navbar(): React.ReactElement {
 
           {isAuthenticated && user ? (
             <>
+              <NotificationBell unreadCount={unreadCount} onClick={openDrawer} isOpen={isOpen} />
               <Button asChild variant="ghost" size="sm" iconLeft={<User className="h-4 w-4" />}>
                 <Link to="/app" title={displayName}>
                   <span className="inline-block max-w-[10rem] truncate align-bottom">
@@ -140,6 +144,9 @@ export function Navbar(): React.ReactElement {
 
         {/* Bouton Menu Mobile */}
         <div className="flex items-center gap-3 lg:hidden">
+          {isAuthenticated && user && (
+            <NotificationBell unreadCount={unreadCount} onClick={openDrawer} isOpen={isOpen} />
+          )}
           <ThemeToggle />
           <Button
             type="button"

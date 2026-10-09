@@ -141,17 +141,17 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T046 [P] [US5] Écrire la suite de tests d'intégration pour la file de notifications, le flux temps réel SSE et le regroupement d'emails dans `apps/api/tests/integration/notifications.test.ts`
+- [x] T046 [P] [US5] Écrire la suite de tests d'intégration pour la file de notifications, le flux temps réel SSE et le regroupement d'emails dans `apps/api/tests/integration/notifications.test.ts`
 
 ### Implementation for User Story 5
 
-- [ ] T047 [P] [US5] Implémenter le repository des notifications dans `apps/api/src/modules/notifications/notifications.repository.ts`
-- [ ] T048 [US5] Implémenter le service de notifications et le regroupeur d'emails transactionnels Resend avec debounce de 3 minutes dans `apps/api/src/modules/notifications/notifications.service.ts`
-- [ ] T049 [US5] Implémenter le gestionnaire de flux SSE `notifications.sse.ts` et les routes d'API dans `apps/api/src/modules/notifications/notifications.routes.ts` (`GET /api/notifications/stream`, `GET /`, `PATCH /:id/read`, `POST /read-all`, préférences)
-- [ ] T050 [P] [US5] Implémenter le client EventSource et hook de flux SSE dans `apps/web/src/lib/notifications-stream.ts`
-- [ ] T051 [P] [US5] Implémenter le bouton d'alertes `NotificationBell.tsx` avec compteur de messages non lus dans `apps/web/src/components/notifications/NotificationBell.tsx`
-- [ ] T052 [US5] Implémenter le tiroir de notifications et la modale de réglages de préférences dans `apps/web/src/components/notifications/NotificationDrawer.tsx`
-- [ ] T053 [US5] Intégrer `NotificationBell` dans la barre de navigation `apps/web/src/components/landing/Navbar.tsx` et initialiser l'écouteur SSE dans `apps/web/src/App.tsx`
+- [x] T047 [P] [US5] Implémenter le repository des notifications dans `apps/api/src/modules/notifications/notifications.repository.ts`
+- [x] T048 [US5] Implémenter le service de notifications et le regroupeur d'emails transactionnels Resend avec debounce de 3 minutes dans `apps/api/src/modules/notifications/notifications.service.ts`
+- [x] T049 [US5] Implémenter le gestionnaire de flux SSE `notifications.sse.ts` et les routes d'API dans `apps/api/src/modules/notifications/notifications.routes.ts` (`GET /api/notifications/stream`, `GET /`, `PATCH /:id/read`, `POST /read-all`, préférences)
+- [x] T050 [P] [US5] Implémenter le client EventSource et hook de flux SSE dans `apps/web/src/lib/notifications-stream.ts`
+- [x] T051 [P] [US5] Implémenter le bouton d'alertes `NotificationBell.tsx` avec compteur de messages non lus dans `apps/web/src/components/notifications/NotificationBell.tsx`
+- [x] T052 [US5] Implémenter le tiroir de notifications et la modale de réglages de préférences dans `apps/web/src/components/notifications/NotificationDrawer.tsx`
+- [x] T053 [US5] Intégrer `NotificationBell` dans la barre de navigation `apps/web/src/components/landing/Navbar.tsx` et initialiser l'écouteur SSE dans `apps/web/src/App.tsx`
 
 **Checkpoint**: Toutes les exigences du palier P1 (partage, rôles, commentaires, traçabilité et notifications) sont achevées.
 
