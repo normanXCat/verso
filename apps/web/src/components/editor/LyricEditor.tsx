@@ -9,6 +9,11 @@ import {
   setCommentAnchorsEffect,
   type CommentAnchor,
 } from './extensions/commentMarkers.js';
+import {
+  remoteCursors,
+  setRemoteCursorsEffect,
+  type RemoteCursorData,
+} from './extensions/remoteCursors.js';
 
 interface LyricEditorProps {
   value: string;
@@ -22,12 +27,16 @@ interface LyricEditorProps {
   showRhymes?: boolean;
   /** Signale la sélection courante (mot sélectionné et ses positions). */
   onSelectionChange?: (selection: { text: string; from: number; to: number }) => void;
+  /** Signale la position du curseur pour les co-auteurs en direct. */
+  onCursorChange?: (cursor: { from: number; to: number }) => void;
   /** Ancres de commentaires à afficher dans la gouttière */
   commentAnchors?: CommentAnchor[];
   /** Clic sur un marqueur de commentaire */
   onSelectComment?: (commentId: string) => void;
   /** Signale la plage de vers sélectionnés */
   onLineSelectionChange?: (range: { startLine: number; endLine: number } | null) => void;
+  /** Curseurs et sélections distantes des co-auteurs en direct */
+  remoteCursors?: RemoteCursorData[];
   className?: string;
 }
 
@@ -81,12 +90,15 @@ export function LyricEditor({
   commentAnchors,
   onSelectComment,
   onLineSelectionChange,
+  remoteCursors: remoteCursorsProp,
+  onCursorChange,
   className = '',
 }: LyricEditorProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
   const onSelectionChangeRef = useRef(onSelectionChange);
+  const onCursorChangeRef = useRef(onCursorChange);
   const onSelectCommentRef = useRef(onSelectComment);
   const onLineSelectionChangeRef = useRef(onLineSelectionChange);
   const initialValueRef = useRef(value);
@@ -98,6 +110,10 @@ export function LyricEditor({
   useEffect(() => {
     onSelectionChangeRef.current = onSelectionChange;
   }, [onSelectionChange]);
+
+  useEffect(() => {
+    onCursorChangeRef.current = onCursorChange;
+  }, [onCursorChange]);
 
   useEffect(() => {
     onSelectCommentRef.current = onSelectComment;
@@ -123,6 +139,10 @@ export function LyricEditor({
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           onChangeRef.current(update.state.doc.toString());
+        }
+        if (update.selectionSet && onCursorChangeRef.current) {
+          const main = update.state.selection.main;
+          onCursorChangeRef.current({ from: main.from, to: main.to });
         }
         if ((update.docChanged || update.selectionSet) && onSelectionChangeRef.current) {
           const range = update.state.selection.main;
@@ -160,6 +180,8 @@ export function LyricEditor({
       }),
     );
 
+    extensions.push(remoteCursors());
+
     const state = EditorState.create({ doc: initialValueRef.current, extensions });
     const view = new EditorView({ state, parent: containerRef.current });
     viewRef.current = view;
@@ -180,6 +202,17 @@ export function LyricEditor({
       effects: setCommentAnchorsEffect.of(commentAnchors),
     });
   }, [commentAnchors]);
+
+  // Synchronise les curseurs distants des co-auteurs
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view || !remoteCursorsProp) {
+      return;
+    }
+    view.dispatch({
+      effects: setRemoteCursorsEffect.of(remoteCursorsProp),
+    });
+  }, [remoteCursorsProp]);
 
   // Synchronise une valeur externe (restauration de brouillon) sans casser la frappe.
   useEffect(() => {

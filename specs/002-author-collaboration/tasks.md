@@ -210,17 +210,17 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 8 ⚠️
 
-- [ ] T067 [P] [US8] Écrire la suite de tests d'intégration pour l'authentification de session WebSocket, la présence collaborative et la synchronisation audio dans `apps/api/tests/integration/realtime.test.ts`
+- [x] T067 [P] [US8] Écrire la suite de tests d'intégration pour l'authentification de session WebSocket, la présence collaborative et la synchronisation audio dans `apps/api/tests/integration/realtime.test.ts`
 
 ### Implementation for User Story 8
 
-- [ ] T068 [US8] Enregistrer le plugin Fastify WebSocket et implémenter le gestionnaire de salon Yjs dans `apps/api/src/modules/realtime/realtime.ws.ts` avec contrôle d'accès `can()` par session de cookie et gestion de l'awareness
-- [ ] T069 [US8] Implémenter la persistance debouncée des deltas Yjs vers la colonne `Song.lyrics` et le blob d'état dans `apps/api/src/modules/realtime/realtime.persistence.ts`
-- [ ] T070 [P] [US8] Implémenter le hook `useRealtimeEditor.ts` liant CodeMirror 6 au fournisseur WebSocket Yjs dans `apps/web/src/lib/useRealtimeEditor.ts`
-- [ ] T071 [P] [US8] Implémenter le hook `useStudioSession.ts` synchronisant le transport Web Audio et le BPM du métronome dans `apps/web/src/lib/useStudioSession.ts`
-- [ ] T072 [US8] Implémenter les badges de présence colorés et le rendu des sélections distantes dans `apps/web/src/components/realtime/CollaboratorPresenceBadge.tsx`
-- [ ] T073 [US8] Implémenter la barre de contrôle de session studio `SessionBar.tsx` dans `apps/web/src/components/realtime/SessionBar.tsx`
-- [ ] T074 [US8] Intégrer le mode temps réel et la barre de session studio dans `apps/web/src/pages/EditorPage.tsx` et `apps/web/src/components/editor/AudioPlayerBar.tsx`
+- [x] T068 [US8] Enregistrer le plugin Fastify WebSocket et implémenter le gestionnaire de salon Yjs dans `apps/api/src/modules/realtime/realtime.ws.ts` avec contrôle d'accès `can()` par session de cookie et gestion de l'awareness
+- [x] T069 [US8] Implémenter la persistance debouncée des deltas Yjs vers la colonne `Song.lyrics` et le blob d'état dans `apps/api/src/modules/realtime/realtime.persistence.ts`
+- [x] T070 [P] [US8] Implémenter le hook `useRealtimeEditor.ts` liant CodeMirror 6 au fournisseur WebSocket Yjs dans `apps/web/src/lib/useRealtimeEditor.ts`
+- [x] T071 [P] [US8] Implémenter le hook `useStudioSession.ts` synchronisant le transport Web Audio et le BPM du métronome dans `apps/web/src/lib/useStudioSession.ts`
+- [x] T072 [US8] Implémenter les badges de présence colorés et le rendu des sélections distantes dans `apps/web/src/components/realtime/CollaboratorPresenceBadge.tsx`
+- [x] T073 [US8] Implémenter la barre de contrôle de session studio `SessionBar.tsx` dans `apps/web/src/components/realtime/SessionBar.tsx`
+- [x] T074 [US8] Intégrer le mode temps réel et la barre de session studio dans `apps/web/src/pages/EditorPage.tsx` et `apps/web/src/components/editor/AudioPlayerBar.tsx`
 
 **Checkpoint**: Palier P3 temps réel et session studio audio synchrone achevé.
 

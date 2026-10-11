@@ -40,6 +40,8 @@ import { RecentActivityDrawer } from '../components/collaboration/RecentActivity
 import { AuthorProfileModal } from '../components/moderation/AuthorProfileModal.js';
 import { BlockUserModal } from '../components/moderation/BlockUserModal.js';
 import { AbuseReportModal } from '../components/moderation/AbuseReportModal.js';
+import { useRealtimeEditor } from '../lib/useRealtimeEditor.js';
+import { CollaboratorPresenceBadge } from '../components/realtime/CollaboratorPresenceBadge.js';
 
 /**
  * Espace d'écriture d'un texte : éditeur épuré avec sauvegarde automatique,
@@ -127,6 +129,22 @@ export function EditorPage(): React.ReactElement {
     endLine: c.endLine,
     isResolved: c.isResolved,
   }));
+
+  const realtime = useRealtimeEditor({
+    songId: id,
+    enabled: id.length > 0 && initialised,
+    initialContent: song?.content ?? '',
+    onContentChange: (newContent) => {
+      setContent(newContent);
+    },
+  });
+
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent);
+    if (realtime.isConnected) {
+      realtime.updateContent(newContent);
+    }
+  };
 
   // Initialise depuis le serveur, en priorisant un brouillon local non synchronisé
   // (IndexedDB, puis `localStorage` en repli) et met le texte en cache hors ligne.
@@ -281,6 +299,11 @@ export function EditorPage(): React.ReactElement {
               Mon carnet
             </Link>
             <div className="flex items-center gap-3">
+              <CollaboratorPresenceBadge
+                participants={realtime.participants}
+                isConnected={realtime.isConnected}
+                onSelectUser={(uid) => setProfileUserId(uid)}
+              />
               <SaveStatusIndicator
                 status={offlineSync.status}
                 pendingCount={offlineSync.pendingCount}
@@ -415,8 +438,14 @@ export function EditorPage(): React.ReactElement {
               <div className="notebook-ruled mt-6 rounded-card border border-paper-border bg-paper-surface p-6 shadow-paper-sm">
                 <LyricEditor
                   value={content}
-                  onChange={setContent}
+                  onChange={handleContentChange}
                   onSelectionChange={handleSelectionChange}
+                  onCursorChange={(cursor) => {
+                    if (realtime.isConnected) {
+                      realtime.sendCursor(cursor.from, cursor.to);
+                    }
+                  }}
+                  remoteCursors={realtime.remoteCursors}
                   commentAnchors={commentAnchors}
                   onSelectComment={(commentId) => {
                     setActiveCommentId(commentId);
@@ -438,7 +467,7 @@ export function EditorPage(): React.ReactElement {
                     </span>
                   </div>
 
-                  <AudioPlayerBar songId={song.id} className="mt-6" />
+                  <AudioPlayerBar songId={song.id} realtime={realtime} className="mt-6" />
                   <VoiceRecorder songId={song.id} className="mt-4" />
                 </>
               )}
