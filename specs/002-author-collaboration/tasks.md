@@ -187,16 +187,16 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 7 ⚠️
 
-- [ ] T060 [P] [US7] Écrire la suite de tests d'intégration pour la recherche exacte anti-énumération, l'isolation bilatérale par blocage et les signalements d'abus dans `apps/api/tests/integration/moderation.test.ts`
+- [x] T060 [P] [US7] Écrire la suite de tests d'intégration pour la recherche exacte anti-énumération, l'isolation bilatérale par blocage et les signalements d'abus dans `apps/api/tests/integration/moderation.test.ts`
 
 ### Implementation for User Story 7
 
-- [ ] T061 [P] [US7] Implémenter le repository et service de modération dans `apps/api/src/modules/moderation/moderation.service.ts` (recherche exacte stricte sans énumération, contrainte textuelle `bio String? @db.VarChar(280)`, rupture bilatérale immédiate lors du blocage `FR-032`, enregistrement des signalements)
-- [ ] T062 [US7] Implémenter les routes d'API de modération dans `apps/api/src/modules/moderation/moderation.routes.ts` (`GET /api/users/search` avec rate limiting strict de 10 req/min, `GET /api/users/:id/profile`, `POST/DELETE /api/users/:id/block`, `POST /api/reports`, `GET /api/songs/:id/activity`)
-- [ ] T063 [P] [US7] Implémenter la modale de profil minimal `AuthorProfileModal.tsx` affichant nom d'affichage, avatar et bio (zéro email visible) dans `apps/web/src/components/moderation/AuthorProfileModal.tsx`
-- [ ] T064 [P] [US7] Implémenter la modale de blocage `BlockUserModal.tsx` et le formulaire de signalement `AbuseReportModal.tsx` dans `apps/web/src/components/moderation/`
-- [ ] T065 [US7] Implémenter le volet d'historique des actions `RecentActivityDrawer.tsx` dans `apps/web/src/components/collaboration/RecentActivityDrawer.tsx`
-- [ ] T066 [US7] Intégrer l'affichage du profil auteur et les actions bloquer/signaler dans les listes de collaborateurs et les commentaires dans `apps/web/src/`
+- [x] T061 [P] [US7] Implémenter le repository et service de modération dans `apps/api/src/modules/moderation/moderation.service.ts` (recherche exacte stricte sans énumération, contrainte textuelle `bio String? @db.VarChar(280)`, rupture bilatérale immédiate lors du blocage `FR-032`, enregistrement des signalements)
+- [x] T062 [US7] Implémenter les routes d'API de modération dans `apps/api/src/modules/moderation/moderation.routes.ts` (`GET /api/users/search` avec rate limiting strict de 10 req/min, `GET /api/users/:id/profile`, `POST/DELETE /api/users/:id/block`, `POST /api/reports`, `GET /api/songs/:id/activity`)
+- [x] T063 [P] [US7] Implémenter la modale de profil minimal `AuthorProfileModal.tsx` affichant nom d'affichage, avatar et bio (zéro email visible) dans `apps/web/src/components/moderation/AuthorProfileModal.tsx`
+- [x] T064 [P] [US7] Implémenter la modale de blocage `BlockUserModal.tsx` et le formulaire de signalement `AbuseReportModal.tsx` dans `apps/web/src/components/moderation/`
+- [x] T065 [US7] Implémenter le volet d'historique des actions `RecentActivityDrawer.tsx` dans `apps/web/src/components/collaboration/RecentActivityDrawer.tsx`
+- [x] T066 [US7] Intégrer l'affichage du profil auteur et les actions bloquer/signaler dans les listes de collaborateurs et les commentaires dans `apps/web/src/`
 
 **Checkpoint**: Toutes les exigences du palier P2 (crédits, profils minimaux, modération, blocage et activité) sont validées.
 

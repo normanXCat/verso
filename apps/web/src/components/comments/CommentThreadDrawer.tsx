@@ -17,6 +17,7 @@ interface CommentThreadDrawerProps {
   onCommentCreated?: () => void;
   currentUserId?: string;
   isOwner?: boolean;
+  onSelectAuthor?: (userId: string) => void;
 }
 
 const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
@@ -41,6 +42,7 @@ export const CommentThreadDrawer: React.FC<CommentThreadDrawerProps> = ({
   onCommentCreated,
   currentUserId,
   isOwner = false,
+  onSelectAuthor,
 }) => {
   const [filter, setFilter] = useState<'open' | 'resolved'>('open');
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
@@ -212,8 +214,12 @@ export const CommentThreadDrawer: React.FC<CommentThreadDrawerProps> = ({
                   >
                     {/* En-tête du fil */}
                     <div className="p-3 pb-2 flex items-start justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 rounded-full bg-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-200 overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => onSelectAuthor && onSelectAuthor(comment.author.id)}
+                        className="flex items-center space-x-2 text-left hover:opacity-80 transition-opacity"
+                      >
+                        <div className="w-6 h-6 rounded-full bg-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-200 overflow-hidden shrink-0">
                           {comment.author.avatarUrl ? (
                             <img
                               src={comment.author.avatarUrl}
@@ -225,14 +231,14 @@ export const CommentThreadDrawer: React.FC<CommentThreadDrawerProps> = ({
                           )}
                         </div>
                         <div>
-                          <div className="text-xs font-medium text-neutral-200">
+                          <div className="text-xs font-medium text-neutral-200 hover:text-primary-400">
                             {comment.author.displayName || 'Artiste'}
                           </div>
                           <div className="text-[10px] text-neutral-500">
                             {formatDate(comment.createdAt)}
                           </div>
                         </div>
-                      </div>
+                      </button>
 
                       <div className="flex items-center space-x-1">
                         <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-400">

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  Activity,
   ArrowLeft,
   Award,
   BookOpen,
@@ -35,6 +36,10 @@ import { CollaboratorsModal } from '../components/collaboration/CollaboratorsMod
 import { CommentThreadDrawer } from '../components/comments/CommentThreadDrawer.js';
 import { ConflictDiffModal } from '../components/editor/ConflictDiffModal.js';
 import { CreditsEditorModal } from '../components/credits/CreditsEditorModal.js';
+import { RecentActivityDrawer } from '../components/collaboration/RecentActivityDrawer.js';
+import { AuthorProfileModal } from '../components/moderation/AuthorProfileModal.js';
+import { BlockUserModal } from '../components/moderation/BlockUserModal.js';
+import { AbuseReportModal } from '../components/moderation/AbuseReportModal.js';
 
 /**
  * Espace d'écriture d'un texte : éditeur épuré avec sauvegarde automatique,
@@ -65,6 +70,16 @@ export function EditorPage(): React.ReactElement {
   const [isCollabOpen, setIsCollabOpen] = useState(false);
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isActivityOpen, setIsActivityOpen] = useState(false);
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [blockTargetUser, setBlockTargetUser] = useState<{
+    id: string;
+    displayName: string | null;
+  } | null>(null);
+  const [reportTargetUser, setReportTargetUser] = useState<{
+    id: string;
+    displayName: string | null;
+  } | null>(null);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isRhymesOpen, setIsRhymesOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
@@ -332,6 +347,15 @@ export function EditorPage(): React.ReactElement {
               </button>
               <button
                 type="button"
+                onClick={() => setIsActivityOpen(true)}
+                aria-label="Activité récente du texte"
+                title="Activité récente (journal des modifications et notes)"
+                className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+              >
+                <Activity className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
                 onClick={handleDelete}
                 disabled={deleteMutation.isPending}
                 aria-label="Supprimer le texte"
@@ -470,6 +494,7 @@ export function EditorPage(): React.ReactElement {
           resourceTitle={title || song.title}
           isOwner={user?.id === song.userId}
           onLeft={() => navigate('/app')}
+          onSelectProfile={(userId) => setProfileUserId(userId)}
         />
       )}
 
@@ -501,8 +526,49 @@ export function EditorPage(): React.ReactElement {
           selectedLines={selectedLineRange}
           currentUserId={user?.id}
           isOwner={user?.id === song.userId}
+          onSelectAuthor={(userId) => setProfileUserId(userId)}
         />
       )}
+
+      {song && (
+        <RecentActivityDrawer
+          songId={song.id}
+          isOpen={isActivityOpen}
+          onClose={() => setIsActivityOpen(false)}
+          onSelectUser={(userId) => setProfileUserId(userId)}
+        />
+      )}
+
+      <AuthorProfileModal
+        isOpen={Boolean(profileUserId)}
+        onClose={() => setProfileUserId(null)}
+        userId={profileUserId}
+        onBlock={(bId, bName) => {
+          setProfileUserId(null);
+          setBlockTargetUser({ id: bId, displayName: bName });
+        }}
+        onReport={(rId, rName) => {
+          setProfileUserId(null);
+          setReportTargetUser({ id: rId, displayName: rName });
+        }}
+      />
+
+      <BlockUserModal
+        isOpen={Boolean(blockTargetUser)}
+        onClose={() => setBlockTargetUser(null)}
+        targetUser={blockTargetUser}
+        onBlocked={() => {
+          void queryClient.invalidateQueries({ queryKey: ['collaborations'] });
+          void queryClient.invalidateQueries({ queryKey: ['songs', id] });
+        }}
+      />
+
+      <AbuseReportModal
+        isOpen={Boolean(reportTargetUser)}
+        onClose={() => setReportTargetUser(null)}
+        targetUser={reportTargetUser}
+        songId={song?.id}
+      />
 
       {conflictData && (
         <ConflictDiffModal

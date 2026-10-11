@@ -17,6 +17,7 @@ export interface CollaboratorsModalProps {
   resourceTitle: string;
   isOwner: boolean;
   onLeft?: () => void;
+  onSelectProfile?: (userId: string) => void;
 }
 
 export function CollaboratorsModal({
@@ -27,6 +28,7 @@ export function CollaboratorsModal({
   resourceTitle,
   isOwner,
   onLeft,
+  onSelectProfile,
 }: CollaboratorsModalProps): React.ReactElement {
   const [collaborators, setCollaborators] = useState<CollaboratorItem[]>([]);
   const [pendingInvitations, setPendingInvitations] = useState<InvitationItem[]>([]);
@@ -205,12 +207,24 @@ export function CollaboratorsModal({
               <ul className="divide-y divide-border">
                 {collaborators.map((c) => (
                   <li key={c.id} className="py-3 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-9 w-9 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm shrink-0">
-                        {c.user?.displayName?.[0]?.toUpperCase() || 'A'}
+                    <button
+                      type="button"
+                      onClick={() => onSelectProfile && onSelectProfile(c.userId)}
+                      className="flex items-center gap-3 min-w-0 text-left hover:opacity-80 transition-opacity"
+                    >
+                      <div className="h-9 w-9 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm shrink-0 overflow-hidden">
+                        {c.user?.avatarUrl ? (
+                          <img
+                            src={c.user.avatarUrl}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          c.user?.displayName?.[0]?.toUpperCase() || 'A'
+                        )}
                       </div>
                       <div className="truncate">
-                        <p className="text-sm font-medium text-text-primary truncate">
+                        <p className="text-sm font-medium text-text-primary truncate hover:underline">
                           {c.user?.displayName || 'Artiste Verso'}
                         </p>
                         <p className="text-xs text-text-muted capitalize">
@@ -221,7 +235,7 @@ export function CollaboratorsModal({
                               : 'Lecteur'}
                         </p>
                       </div>
-                    </div>
+                    </button>
 
                     <div className="flex items-center gap-2">
                       {isOwner ? (
