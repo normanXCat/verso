@@ -313,14 +313,17 @@ export const collaborationRoutes: FastifyPluginAsync = async (app: FastifyInstan
   // Invitations reçues par l'utilisateur
   // ==========================================
 
-  app.get('/collaborations/invitations', { preHandler: requireAuth }, async (request, reply) => {
+  const getUserInvitationsHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const result = await collaborationService.getUserInvitations(request.user!);
       return reply.status(200).send(result);
     } catch (error) {
       return handleCollaborationError(reply, error);
     }
-  });
+  };
+
+  app.get('/collaborations/invitations', { preHandler: requireAuth }, getUserInvitationsHandler);
+  app.get('/invitations', { preHandler: requireAuth }, getUserInvitationsHandler);
 
   // ==========================================
   // Départ volontaire (FR-005 & FR-005a)
@@ -359,7 +362,7 @@ export const collaborationRoutes: FastifyPluginAsync = async (app: FastifyInstan
   // Consulter les œuvres partagées ("Partagés avec moi" - US2)
   // ==========================================
 
-  app.get('/collaborations/shared-with-me', { preHandler: requireAuth }, async (request, reply) => {
+  const getSharedWithMeHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     const parseResult = sharedWithMeQuerySchema.safeParse(request.query);
     if (!parseResult.success) {
       return reply.status(400).send({
@@ -370,6 +373,16 @@ export const collaborationRoutes: FastifyPluginAsync = async (app: FastifyInstan
 
     try {
       const result = await collaborationService.getSharedWithMe(request.user!, parseResult.data);
+      return reply.status(200).send(result);
+    } catch (error) {
+      return handleCollaborationError(reply, error);
+    }
+  };
+
+  app.get('/collaborations/shared-with-me', { preHandler: requireAuth }, getSharedWithMeHandler);
+  app.get('/shared/songs', { preHandler: requireAuth }, async (request, reply) => {
+    try {
+      const result = await collaborationService.getSharedWithMe(request.user!, { type: 'song' });
       return reply.status(200).send(result);
     } catch (error) {
       return handleCollaborationError(reply, error);

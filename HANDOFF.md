@@ -2,8 +2,10 @@
 
 ## État actuel
 
-- **Phase en cours** : Refonte Design "Encre & Papier" — Étape 2 (Landing page `/`) terminée et Étape 3 (Pages d'authentification) commitée.
-- **Phase d'implémentation Spec Kit** : **Phase 13 (Finitions design, validation end-to-end et audit de sécurité — T060 à T062) terminée**. **Les 13 phases / 62 tâches du plan sont désormais toutes implémentées et testées.**
+- **Spécification en cours** : **`002-author-collaboration` — 100% TERMINÉE ET VALIDÉE.**
+- **Couverture des tâches** : **11 phases / 79 tâches implémentées et testées (T001 à T079)**.
+- **Suite de tests automatisés** : **34 fichiers de test, 278 tests au vert (100% de réussite)**.
+- **Qualité du code** : 0 erreur ESLint, 0 erreur Prettier, 0 erreur TypeScript strict (`tsc --noEmit`), build de production validé.
 - **Ce qui est terminé** :
   - Ratification et amendement de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `2.0.0`) avec ses 7 principes non négociables intégrant la collaboration sécurisée.
   - Spécification fonctionnelle complète de la collaboration entre auteurs ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) avec ses priorités (P1, P2, P3), clarification interactive (`/speckit-clarify`) sur les 5 arbitrages critiques, et checklist validée à 100% (16/16).
@@ -378,8 +380,8 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 ## Prochaine étape
 
 - **Collaboration entre auteurs (`002-author-collaboration`)** :
-  - **Analyse de cohérence (`/speckit-analyze`) ou Implémentation (`/speckit-implement`)** : exécuter la Phase 1 (Setup - T001 à T008 : dépendances et schémas partagés) puis la Phase 2 (Foundational - T009 à T014 : migration Prisma, fonction `can` et tests unitaires exhaustifs).
-- **Autres chantiers en parallèle** :
-  - **Refonte Design Étape 4** : espace personnel (barre latérale, cartes de textes et d'albums, squelettes).
-  - **Recette manuelle** : valider les téléversements S3 (CORS bucket), l'OAuth réel, les scénarios `quickstart.md` en navigateur (micro, hors ligne) et ajouter les icônes PWA PNG 192/512.
-  - **Tests de composants** : étendre la couverture React Testing Library aux composants clés.
+  - **100% Terminée** : Toutes les 79 tâches (Phases 1 à 11) sont achevées, auditées et testées avec succès (278 tests au vert).
+- **Chantiers suivants suggérés** :
+  - **Recette manuelle globale** : déploiement en staging/recette, tests avec plusieurs artistes simultanés en direct sur les WebSockets et les flux SSE.
+  - **Refonte Design Étape 4** : poursuite des raffinements visuels « Encre & Papier » sur l'espace personnel.
+  - **Tests de composants** : étendre la couverture React Testing Library aux composants collaboratifs clés (`CollaboratorsModal`, `CommentThreadDrawer`, etc.).

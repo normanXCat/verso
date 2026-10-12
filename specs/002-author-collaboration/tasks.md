@@ -230,11 +230,11 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 **Purpose**: Validation end-to-end globale, audit d'étanchéité multi-tenant, performance et synchronisation documentaire.
 
-- [ ] T075 [P] Exécuter l'audit de sécurité multi-tenant et IDOR sur 100% des endpoints de collaboration dans `apps/api/tests/integration/security-collaboration.test.ts`
-- [ ] T076 [P] Valider l'exécution des 5 scénarios de bout en bout décrits dans `specs/002-author-collaboration/quickstart.md`
-- [ ] T077 Vérifier l'étanchéité des réponses HTTP 404 neutres (aucune fuite d'existence) et les limites de débit sur invitations (10/min), recherche (10/min) et commentaires (20/min)
-- [ ] T078 Exécuter la suite complète de contrôle qualité (`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`) sur l'ensemble du monorepo
-- [ ] T079 [P] Mettre à jour `HANDOFF.md` et `README.md` pour refléter la couverture intégrale des tâches et l'état de l'implémentation
+- [x] T075 [P] Exécuter l'audit de sécurité multi-tenant et IDOR sur 100% des endpoints de collaboration dans `apps/api/tests/integration/security-collaboration.test.ts`
+- [x] T076 [P] Valider l'exécution des 5 scénarios de bout en bout décrits dans `specs/002-author-collaboration/quickstart.md`
+- [x] T077 Vérifier l'étanchéité des réponses HTTP 404 neutres (aucune fuite d'existence) et les limites de débit sur invitations (10/min), recherche (10/min) et commentaires (20/min)
+- [x] T078 Exécuter la suite complète de contrôle qualité (`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`) sur l'ensemble du monorepo
+- [x] T079 [P] Mettre à jour `HANDOFF.md` et `README.md` pour refléter la couverture intégrale des tâches et l'état de l'implémentation
 
 ---
 
