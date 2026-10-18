@@ -69,6 +69,26 @@ export function ProtectSection(): React.ReactElement {
               appartiennent à 100%.
             </p>
           </div>
+
+          {/* Photographie argentique 4:3 : gaufrage d'antériorité */}
+          <div className="pt-2">
+            <div className="relative group overflow-hidden rounded-lg border border-paper-border bg-paper-surface shadow-paper-sm">
+              <picture>
+                <source srcSet="/images/protect/protect-seal.avif" type="image/avif" />
+                <source srcSet="/images/protect/protect-seal.webp" type="image/webp" />
+                <img
+                  src="/images/protect/protect-seal.jpg"
+                  alt="Sceau d'antériorité géométrique gaufré en relief sur papier d'archivage épais"
+                  width={1024}
+                  height={768}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-auto aspect-[4/3] object-cover grayscale contrast-110 dark:brightness-85 transition-transform duration-700 ease-out group-hover:scale-105"
+                />
+              </picture>
+              <div className="absolute inset-0 bg-paper-accent/5 pointer-events-none" />
+            </div>
+          </div>
         </div>
 
         {/* Colonne droite : Frise chronologique verticale d'horodatage */}

@@ -4,6 +4,7 @@ import { HeroSection } from '../components/landing/HeroSection.js';
 import { EditorSection } from '../components/landing/EditorSection.js';
 import { OrganizeSection } from '../components/landing/OrganizeSection.js';
 import { InstrumentalsSection } from '../components/landing/InstrumentalsSection.js';
+import { InterludeBanner } from '../components/landing/InterludeBanner.js';
 import { ProtectSection } from '../components/landing/ProtectSection.js';
 import { HowItWorksSection } from '../components/landing/HowItWorksSection.js';
 import { FinalCtaSection } from '../components/landing/FinalCtaSection.js';
@@ -28,6 +29,9 @@ export function LandingPage(): React.ReactElement {
 
         {/* 04. Section Instrus : Lecteur audio et BPM */}
         <InstrumentalsSection />
+
+        {/* Intermède visuel : console de mixage panoramique 21:9 */}
+        <InterludeBanner />
 
         {/* 05. Section Protéger : Frise d'horodatage */}
         <ProtectSection />

@@ -55,6 +55,26 @@ export function InstrumentalsSection(): React.ReactElement {
               <span>Détection de tonalité pour orienter les mélodies et refrains</span>
             </div>
           </div>
+
+          {/* Photographie argentique 4:3 : platine vinyle et microsillons */}
+          <div className="pt-2">
+            <div className="relative group overflow-hidden rounded-lg border border-paper-border bg-paper-surface shadow-paper-sm">
+              <picture>
+                <source srcSet="/images/instrumentals/instrumentals-vinyl.avif" type="image/avif" />
+                <source srcSet="/images/instrumentals/instrumentals-vinyl.webp" type="image/webp" />
+                <img
+                  src="/images/instrumentals/instrumentals-vinyl.jpg"
+                  alt="Bras de lecture d'une platine vinyle posé sur les microsillons d'un disque noir"
+                  width={1024}
+                  height={768}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-auto aspect-[4/3] object-cover grayscale contrast-110 dark:brightness-85 transition-transform duration-700 ease-out group-hover:scale-105"
+                />
+              </picture>
+              <div className="absolute inset-0 bg-paper-accent/5 pointer-events-none" />
+            </div>
+          </div>
         </div>
 
         {/* Colonne droite : Lecteur audio stylisé Encre & Papier */}

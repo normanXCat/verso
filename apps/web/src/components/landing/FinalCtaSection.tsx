@@ -6,8 +6,27 @@ import { Button } from '../ui/Button.js';
 export function FinalCtaSection(): React.ReactElement {
   return (
     <section className="w-full bg-[#14110F] text-[#EDE6D8] py-24 sm:py-32 px-6 md:px-12 relative overflow-hidden paper-grain">
-      {/* Texture subtile en filigrane */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none notebook-ruled" />
+      {/* Fond photographique discret : texture mur de béton brut */}
+      <div
+        className="absolute inset-0 pointer-events-none select-none overflow-hidden z-0"
+        aria-hidden="true"
+      >
+        <picture>
+          <source srcSet="/images/cta/cta-concrete.avif" type="image/avif" />
+          <source srcSet="/images/cta/cta-concrete.webp" type="image/webp" />
+          <img
+            src="/images/cta/cta-concrete.jpg"
+            alt=""
+            width={1000}
+            height={562}
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover opacity-15 grayscale contrast-125 brightness-75 transition-opacity duration-300"
+          />
+        </picture>
+        {/* Voile uni semi-opaque garantissant le respect strict des contrastes WCAG AA */}
+        <div className="absolute inset-0 bg-[#14110F]/85" />
+      </div>
 
       <div className="max-w-4xl mx-auto text-center relative z-10 space-y-8">
         <span className="text-xs font-mono uppercase tracking-widest text-[#9A9183] block">
