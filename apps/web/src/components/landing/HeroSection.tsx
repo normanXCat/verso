@@ -7,7 +7,29 @@ import { RapSheetSignature } from './RapSheetSignature.js';
 export function HeroSection(): React.ReactElement {
   return (
     <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 px-6 md:px-12 max-w-7xl mx-auto overflow-hidden">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+      {/* Fond photographique discret : cahier argentique aux pages vierges */}
+      <div
+        className="absolute inset-0 pointer-events-none select-none overflow-hidden z-0"
+        aria-hidden="true"
+      >
+        <picture>
+          <source srcSet="/images/hero/hero-notebook.avif" type="image/avif" />
+          <source srcSet="/images/hero/hero-notebook.webp" type="image/webp" />
+          <img
+            src="/images/hero/hero-notebook.jpg"
+            alt=""
+            width={1376}
+            height={768}
+            fetchPriority="high"
+            decoding="async"
+            className="w-full h-full object-cover object-center opacity-25 dark:opacity-15 grayscale contrast-125 dark:brightness-75 transition-opacity duration-300"
+          />
+        </picture>
+        {/* Surface unie semi-opaque assurant le respect strict des contrastes WCAG AA */}
+        <div className="absolute inset-0 bg-paper-bg/75 dark:bg-paper-bg/85" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center relative z-10">
         {/* Colonne Gauche : Titres & CTA éditoriaux */}
         <div className="lg:col-span-6 space-y-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded border border-paper-border bg-paper-surface/60 text-xs font-mono text-paper-muted">
