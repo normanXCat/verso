@@ -59,6 +59,7 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **Collab** | **Profil minimal & Modération (US7)** | ✅ Fait | Profils publics sans fuite d'email, recherche anti-énumération, blocage mutuel avec rupture bilatérale immédiate, signalement d'abus et fil d'activité récente |
 | **Collab** | **Écriture temps réel & Studio session (US8)** | ✅ Fait | Synchronisation collaborative synchrone Yjs sur CodeMirror 6, curseurs distants colorés, présence en direct et sessions studio synchronisant le transport Web Audio et le métronome |
 | **Collab** | **Audit sécurité IDOR & Quickstart (Phase 11)** | ✅ Fait | Étanchéité multi-tenant validée sur 100% des endpoints (404 neutre), couverture des 5 scénarios de bout en bout de `quickstart.md`, 278 tests au vert |
+| **Socle** | **Série photographique & Visuels « Encre & Papier »** | ✅ Fait | Direction artistique argentique noir et blanc, formats légers AVIF/WebP/JPEG (< 120 Ko), respect WCAG AA, contrôle strict au build (`scripts/check-images.mjs`), registre complet ([docs/IMAGES.md](docs/IMAGES.md)) et charte ([docs/IMAGE-STYLE.md](docs/IMAGE-STYLE.md)) |
 
 *(Règle : une fonctionnalité n'est marquée ✅ que si elle est effectivement implémentée et testée dans le code).*
 

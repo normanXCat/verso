@@ -7,6 +7,22 @@
 - **Suite de tests automatisés** : **34 fichiers de test, 278 tests au vert (100% de réussite)**.
 - **Qualité du code** : 0 erreur ESLint, 0 erreur Prettier, 0 erreur TypeScript strict (`tsc --noEmit`), build de production validé.
 - **Ce qui est terminé** :
+  - **Refonte photographique argentique "Encre & Papier" de la Landing Page et des flux connexes (100% terminée et validée)** :
+    - Charte de style photographique argentique et éditoriale formalisée dans [`docs/IMAGE-STYLE.md`](file:///home/normanxcat/Lab/verso/docs/IMAGE-STYLE.md) avec bloc de prompt obligatoire et contraintes de prompt négatif (zéro visage, main, logo, texte parasite).
+    - Registre de suivi et d'optimisation d'images dans [`docs/IMAGES.md`](file:///home/normanxcat/Lab/verso/docs/IMAGES.md) consignant le statut, le prompt, les ratios, les dimensions, les poids réels dans chaque format et l'avertissement légal IA.
+    - Intégration d'une série photographique en noir et blanc grain argentique et pochettes sérigraphiées au format multi-source (`<picture>` AVIF / WebP / JPEG de repli) :
+      1. **Hero** : cahier ouvert et stylo plume en vue zénithale (`hero-notebook`, 16:9, AVIF 133 Ko, WebP 139 Ko, JPG 151 Ko < quota 200 Ko), avec voile de contraste AA et isolation de contexte d'empilement.
+      2. **02 Écrire** : papier froissé et feuille immaculée (`editor-draft`, 4:5, AVIF 75 Ko, WebP 69 Ko, JPG 97 Ko < quota 120 Ko).
+      3. **03 Organiser** : tranche de carnets reliés cousus (`organize-notebooks`, 4:3, AVIF 97 Ko, WebP 95 Ko, JPG 108 Ko < quota 120 Ko).
+      4. **04 Instrus** : diamant et microsillons de vinyle en macro (`instrumentals-vinyl`, 4:3, AVIF 45 Ko, WebP 40 Ko, JPG 69 Ko < quota 120 Ko).
+      5. **05 Bandeau inter-sections** : potentiomètre de table de mixage en panoramique (`interlude-mixer`, 21:9, AVIF 38 Ko, WebP 40 Ko, JPG 68 Ko < quota 120 Ko), intégré dans le nouveau composant `InterludeBanner`.
+      6. **06 Protéger** : sceau artisanal en cire sur papier d'archivage (`protect-seal`, 4:3, AVIF 106 Ko, WebP 98 Ko, JPG 117 Ko < quota 120 Ko).
+      7. **07 CTA final** : texture minérale de béton brut (`cta-concrete`, 16:9, AVIF 102 Ko, WebP 100 Ko, JPG 104 Ko < quota 120 Ko).
+      8. **08 Auth** : casque audio studio circum-aural sur dalle minérale (`auth-headphones`, 4:5, AVIF 111 Ko, WebP 106 Ko, JPG 109 Ko < quota 120 Ko) intégré dans `AuthLayout`.
+      9. **09 Pochettes d'album sérigraphiées (1:1)** : 4 visuels d'art minimaliste géométrique (`cover-miroir-fume`, `cover-noctambule`, `cover-archives`, `cover-ep-brut`, AVIF 1–7 Ko, WebP 2–10 Ko, JPG 5–27 Ko < quota 80 Ko).
+      10. **10 Image Open Graph** : prévisualisation sociale 1200×630 (`og-preview.png`, 116 Ko < quota 250 Ko) générée avec le logotype officiel `logo-wordmark.svg`.
+    - Script de garde CI/CD [`scripts/check-images.mjs`](file:///home/normanxcat/Lab/verso/scripts/check-images.mjs) branché sur le cycle de build (`pnpm --filter @verso/web build`) vérifiant strictement l'existence et le respect des plafonds de poids (Hero < 200 Ko, sections < 120 Ko, pochettes < 80 Ko, OG < 250 Ko).
+    - Validation responsive multi-écrans (375 px mobile, 768 px tablette, 1440 px desktop en thèmes clair et sombre) archivée dans [`docs/screenshots/landing/`](file:///home/normanxcat/Lab/verso/docs/screenshots/landing/).
   - Ratification et amendement de la constitution du projet ([.specify/memory/constitution.md](file:///home/normanxcat/Lab/verso/.specify/memory/constitution.md) en version `2.0.0`) avec ses 7 principes non négociables intégrant la collaboration sécurisée.
   - Spécification fonctionnelle complète de la collaboration entre auteurs ([specs/002-author-collaboration/spec.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/spec.md)) avec ses priorités (P1, P2, P3), clarification interactive (`/speckit-clarify`) sur les 5 arbitrages critiques, et checklist validée à 100% (16/16).
   - Planification technique complète de la collaboration entre auteurs ([specs/002-author-collaboration/plan.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/plan.md)) via `/speckit-plan` : décisions d'architecture (Phase 0, `research.md`), modèle relationnel Prisma étendu (`data-model.md`), 6 contrats d'API Zod / SSE / WebSocket (`contracts/*.md`) et scénarios de validation exécutables (`quickstart.md`).
@@ -117,6 +133,25 @@
   - **Recette manuelle** : téléversements S3 réels (CORS bucket), OAuth contre les vrais fournisseurs, scénarios `quickstart.md` en navigateur (Service Worker/hors ligne, micro), icônes PWA PNG 192/512.
 
 ## Dernière action
+
+- **Action exécutée** : Refonte photographique argentique en noir et blanc "Encre & Papier" de la Landing Page et des flux connexes (10 images générées, optimisées en AVIF/WebP/JPG, intégrées sous contraintes WCAG AA et outillées par un script de contrôle CI/CD).
+- **Détails de l'implémentation** :
+  - **Charte et registre** : Création de [`docs/IMAGE-STYLE.md`](file:///home/normanxcat/Lab/verso/docs/IMAGE-STYLE.md) (bloc textuel de prompt obligatoire, contraintes négatives : zéro visage, main, typographie parasite, marque) et [`docs/IMAGES.md`](file:///home/normanxcat/Lab/verso/docs/IMAGES.md) (inventaire exhaustif, formats, dimensions, ratios, poids réels et avertissement légal IA).
+  - **Série photographique et pochettes sérigraphiées** :
+    1. Hero (`hero-notebook`, 16:9, AVIF 133 Ko / WebP 139 Ko / JPG 151 Ko < 200 Ko) avec voile de contraste AA (`bg-paper-bg/85 dark:bg-paper-bg/90 backdrop-blur-[2px]`) et isolation du contexte d'empilement (`z-0` image, `relative z-10` contenu).
+    2. Section Écrire (`editor-draft`, 4:5, AVIF 75 Ko / WebP 69 Ko / JPG 97 Ko < 120 Ko).
+    3. Section Organiser (`organize-notebooks`, 4:3, AVIF 97 Ko / WebP 95 Ko / JPG 108 Ko < 120 Ko).
+    4. Section Instrus (`instrumentals-vinyl`, 4:3, AVIF 45 Ko / WebP 40 Ko / JPG 69 Ko < 120 Ko).
+    5. Bandeau inter-sections (`interlude-mixer`, 21:9, AVIF 38 Ko / WebP 40 Ko / JPG 68 Ko < 120 Ko) dans le composant dédié `InterludeBanner`.
+    6. Section Protéger (`protect-seal`, 4:3, AVIF 106 Ko / WebP 98 Ko / JPG 117 Ko < 120 Ko).
+    7. CTA final (`cta-concrete`, 16:9, AVIF 102 Ko / WebP 100 Ko / JPG 104 Ko < 120 Ko).
+    8. Flux Authentification (`auth-headphones`, 4:5, AVIF 111 Ko / WebP 106 Ko / JPG 109 Ko < 120 Ko) dans `AuthLayout`.
+    9. 4 pochettes d'albums sérigraphiées (1:1, `cover-miroir-fume`, `cover-noctambule`, `cover-archives`, `cover-ep-brut`, AVIF 1–7 Ko / WebP 2–10 Ko / JPG 5–27 Ko < 80 Ko).
+    10. Aperçu Open Graph (`og-preview.png`, 1200×630, 116 Ko < 250 Ko) composé avec le logotype officiel vectoriel.
+  - **CI/CD & Garde-fou** : Script [`scripts/check-images.mjs`](file:///home/normanxcat/Lab/verso/scripts/check-images.mjs) branché sur `pnpm --filter @verso/web build`, bloquant le build en exit code 1 si une image manque ou dépasse son quota en Ko.
+  - **Qualité & Tests** : 278/278 tests unitaires et d'intégration au vert (34 fichiers), 0 erreur TypeScript strict (`tsc --noEmit`), 0 erreur ESLint, 0 erreur Prettier, builds web et api validés avec succès. Captures responsives consignées dans `docs/screenshots/landing/`.
+
+### Action précédente
 
 - **Action exécutée** : Découpage ordonnancé des tâches d'implémentation de la collaboration ([specs/002-author-collaboration/tasks.md](file:///home/normanxcat/Lab/verso/specs/002-author-collaboration/tasks.md)) via `/speckit-tasks`.
 - **Détails du découpage (79 tâches, 11 phases)** :
@@ -287,11 +322,16 @@
 - **Collaboration temps réel P3 basée sur Yjs et Fastify WebSockets** : intégration CodeMirror 6 préservée (`@y-rb/y-codemirror`), WebSocket sous Fastify authentifié par session, diffusion de la présence/curseurs colorés, et session audio synchrone (état de lecture et métronome partagés).
 - **Notifications in-app par flux SSE et emails groupés par fenêtre debounce** : flux persistant HTTP `/api/notifications/stream` sans complexité WebSocket pour les alertes in-app ; emails transactionnels Resend temporisés par un debounce de 3 minutes pour éviter le spam lors des sessions d'écriture intensives.
 - **Recherche d'utilisateurs stricte anti-énumération** : recherche exacte par nom d'utilisateur ou email (`q`), sans énumération ni auto-complétion, masquage total de l'adresse email dans la réponse, et limitation stricte à 10 requêtes/minute par utilisateur.
+- **Formats d'image multi-sources (`<picture>`)** : AVIF en priorité pour une compression maximale, WebP pour la couverture moderne et JPEG compressé pour le repli universel sans régression.
+- **Stacking context et contraste Hero** : utilisation de `z-0` sur l'image d'arrière-plan et `relative z-10` sur la grille de texte, combinés à un voile semi-transparent adaptatif (`bg-paper-bg/85 dark:bg-paper-bg/90 backdrop-blur-[2px]`) garantissant le respect strict des contrastes WCAG AA sur thèmes clair et sombre.
+- **Pochettes d'albums sérigraphiées vectorielles** : suite à la saturation du quota d'API IA (erreur 429), génération de visuels d'art minimaliste géométrique vectoriels conformes à la palette Encre & Papier (#14110F, #F4EFE6, #D9421C, #6B6358), garantissant des fichiers ultra-légers (< 10 Ko) et une netteté absolue.
+- **Script de garde d'intégrité et de poids d'images au build** : intégration de `scripts/check-images.mjs` dans le script `build` de `@verso/web`, échouant le build en exit code 1 si une seule image est absente ou dépasse son quota en Ko (Hero < 200 Ko, sections < 120 Ko, pochettes < 80 Ko, OG < 250 Ko).
+
 
 ## Branche et dernier commit
 
 - **Branche active** : `dev`
-- **Dernier commit** : `96adc9c` — `docs(tasks): découper les 79 tâches d'implémentation de la collaboration (002-author-collaboration)`
+- **Dernier commit** : `b2c3ec4` — `ci(web): script de contrôle d'intégrité et de poids des images au build` (série photographique argentique Encre & Papier)
 
 ## Comment lancer le projet
 
