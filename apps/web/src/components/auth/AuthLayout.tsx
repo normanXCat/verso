@@ -106,8 +106,29 @@ export function AuthLayout({
           className="hidden lg:flex lg:col-span-6 flex-col justify-center items-center p-8"
         >
           <div className="w-full max-w-lg rounded-xl border border-paper-border bg-paper-surface p-8 sm:p-12 shadow-paper-lg paper-grain relative overflow-hidden notebook-margin pl-10">
+            {/* Fond photographique discret : casque audio studio posé sur béton brut */}
+            <div
+              className="absolute inset-0 pointer-events-none select-none overflow-hidden z-0"
+              aria-hidden="true"
+            >
+              <picture>
+                <source srcSet="/images/auth/auth-headphones.avif" type="image/avif" />
+                <source srcSet="/images/auth/auth-headphones.webp" type="image/webp" />
+                <img
+                  src="/images/auth/auth-headphones.jpg"
+                  alt=""
+                  width={800}
+                  height={1000}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover opacity-15 grayscale contrast-125 dark:brightness-75 transition-opacity duration-300"
+                />
+              </picture>
+              <div className="absolute inset-0 bg-paper-surface/85 dark:bg-paper-surface/90" />
+            </div>
+
             {/* Numérotation de cahier en haut */}
-            <div className="flex items-center justify-between pb-6 mb-8 border-b border-paper-border/70 text-xs font-mono text-paper-muted">
+            <div className="relative z-10 flex items-center justify-between pb-6 mb-8 border-b border-paper-border/70 text-xs font-mono text-paper-muted">
               <span>Feuillet de session N° 84</span>
               <span className="text-paper-accent font-medium">Verso Écritures</span>
             </div>

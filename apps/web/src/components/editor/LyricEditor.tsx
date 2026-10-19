@@ -4,6 +4,16 @@ import { EditorView, keymap, placeholder as placeholderExtension } from '@codemi
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { syllablesGutter } from './extensions/syllablesGutter.js';
 import { rhymeHighlighter } from './extensions/rhymeHighlighter.js';
+import {
+  commentMarkers,
+  setCommentAnchorsEffect,
+  type CommentAnchor,
+} from './extensions/commentMarkers.js';
+import {
+  remoteCursors,
+  setRemoteCursorsEffect,
+  type RemoteCursorData,
+} from './extensions/remoteCursors.js';
 
 interface LyricEditorProps {
   value: string;
@@ -17,6 +27,16 @@ interface LyricEditorProps {
   showRhymes?: boolean;
   /** Signale la sélection courante (mot sélectionné et ses positions). */
   onSelectionChange?: (selection: { text: string; from: number; to: number }) => void;
+  /** Signale la position du curseur pour les co-auteurs en direct. */
+  onCursorChange?: (cursor: { from: number; to: number }) => void;
+  /** Ancres de commentaires à afficher dans la gouttière */
+  commentAnchors?: CommentAnchor[];
+  /** Clic sur un marqueur de commentaire */
+  onSelectComment?: (commentId: string) => void;
+  /** Signale la plage de vers sélectionnés */
+  onLineSelectionChange?: (range: { startLine: number; endLine: number } | null) => void;
+  /** Curseurs et sélections distantes des co-auteurs en direct */
+  remoteCursors?: RemoteCursorData[];
   className?: string;
 }
 
@@ -67,12 +87,20 @@ export function LyricEditor({
   showSyllables = true,
   showRhymes = true,
   onSelectionChange,
+  commentAnchors,
+  onSelectComment,
+  onLineSelectionChange,
+  remoteCursors: remoteCursorsProp,
+  onCursorChange,
   className = '',
 }: LyricEditorProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
   const onSelectionChangeRef = useRef(onSelectionChange);
+  const onCursorChangeRef = useRef(onCursorChange);
+  const onSelectCommentRef = useRef(onSelectComment);
+  const onLineSelectionChangeRef = useRef(onLineSelectionChange);
   const initialValueRef = useRef(value);
 
   useEffect(() => {
@@ -82,6 +110,18 @@ export function LyricEditor({
   useEffect(() => {
     onSelectionChangeRef.current = onSelectionChange;
   }, [onSelectionChange]);
+
+  useEffect(() => {
+    onCursorChangeRef.current = onCursorChange;
+  }, [onCursorChange]);
+
+  useEffect(() => {
+    onSelectCommentRef.current = onSelectComment;
+  }, [onSelectComment]);
+
+  useEffect(() => {
+    onLineSelectionChangeRef.current = onLineSelectionChange;
+  }, [onLineSelectionChange]);
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -100,10 +140,24 @@ export function LyricEditor({
         if (update.docChanged) {
           onChangeRef.current(update.state.doc.toString());
         }
+        if (update.selectionSet && onCursorChangeRef.current) {
+          const main = update.state.selection.main;
+          onCursorChangeRef.current({ from: main.from, to: main.to });
+        }
         if ((update.docChanged || update.selectionSet) && onSelectionChangeRef.current) {
           const range = update.state.selection.main;
           const text = update.state.sliceDoc(range.from, range.to);
           onSelectionChangeRef.current({ text, from: range.from, to: range.to });
+
+          if (onLineSelectionChangeRef.current) {
+            if (range.from !== range.to) {
+              const startLine = update.state.doc.lineAt(range.from).number;
+              const endLine = update.state.doc.lineAt(range.to).number;
+              onLineSelectionChangeRef.current({ startLine, endLine });
+            } else {
+              onLineSelectionChangeRef.current(null);
+            }
+          }
         }
       }),
     ];
@@ -120,6 +174,14 @@ export function LyricEditor({
       extensions.push(rhymeHighlighter());
     }
 
+    extensions.push(
+      commentMarkers({
+        onSelectComment: (id) => onSelectCommentRef.current?.(id),
+      }),
+    );
+
+    extensions.push(remoteCursors());
+
     const state = EditorState.create({ doc: initialValueRef.current, extensions });
     const view = new EditorView({ state, parent: containerRef.current });
     viewRef.current = view;
@@ -129,6 +191,28 @@ export function LyricEditor({
       viewRef.current = null;
     };
   }, [readOnly, ariaLabel, placeholder, showSyllables, showRhymes]);
+
+  // Synchronise les marqueurs d'ancres de commentaires
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view || !commentAnchors) {
+      return;
+    }
+    view.dispatch({
+      effects: setCommentAnchorsEffect.of(commentAnchors),
+    });
+  }, [commentAnchors]);
+
+  // Synchronise les curseurs distants des co-auteurs
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view || !remoteCursorsProp) {
+      return;
+    }
+    view.dispatch({
+      effects: setRemoteCursorsEffect.of(remoteCursorsProp),
+    });
+  }, [remoteCursorsProp]);
 
   // Synchronise une valeur externe (restauration de brouillon) sans casser la frappe.
   useEffect(() => {

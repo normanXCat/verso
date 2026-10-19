@@ -3,6 +3,7 @@ import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import websocket from '@fastify/websocket';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -25,6 +26,9 @@ export async function buildApp(): Promise<FastifyInstance> {
     origin: process.env.CLIENT_URL || 'http://localhost:5173',
     credentials: true,
   });
+
+  // Support des WebSockets
+  await app.register(websocket);
 
   // Limitation de débit par défaut
   await app.register(rateLimit, {
@@ -80,6 +84,30 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Routes des mémos vocaux freestyle (upload présigné, lecture, suppression)
   const { voiceNotesRoutes } = await import('./modules/audio/voice-notes.routes.js');
   await app.register(voiceNotesRoutes, { prefix: '/api' });
+
+  // Routes de collaboration, invitations et partages
+  const { collaborationRoutes } = await import('./modules/collaboration/collaboration.routes.js');
+  await app.register(collaborationRoutes, { prefix: '/api' });
+
+  // Routes des commentaires, discussions et fils ancrés
+  const { commentsRoutes } = await import('./modules/comments/comments.routes.js');
+  await app.register(commentsRoutes, { prefix: '/api' });
+
+  // Routes des notifications, alertes in-app, flux SSE et préférences
+  const { notificationsRoutes } = await import('./modules/notifications/notifications.routes.js');
+  await app.register(notificationsRoutes, { prefix: '/api' });
+
+  // Routes des crédits artistiques et quote-parts
+  const { creditsRoutes } = await import('./modules/credits/credits.routes.js');
+  await app.register(creditsRoutes, { prefix: '/api' });
+
+  // Routes de modération, profils minimaux, blocages et signalements
+  const { moderationRoutes } = await import('./modules/moderation/moderation.routes.js');
+  await app.register(moderationRoutes, { prefix: '/api' });
+
+  // Routes de synchronisation temps réel Yjs, présence et sessions studio
+  const { realtimeRoutes } = await import('./modules/realtime/realtime.ws.js');
+  await app.register(realtimeRoutes, { prefix: '/api/realtime' });
 
   // Contrôle de santé : vérifie explicitement la connexion à la base de données.
   app.get('/health', async (request, reply) => {

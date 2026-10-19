@@ -69,12 +69,13 @@ function buildExcerpt(content: string): string {
 }
 
 export function toSongDetail(song: SongWithRelations): SongDetail {
-  return { ...toSongListItem(song), content: song.content };
+  return { ...toSongListItem(song), content: song.content, revision: song.revision ?? 1 };
 }
 
 export function toSongListItem(song: SongWithRelations): SongListItem {
   return {
     id: song.id,
+    userId: song.userId,
     title: song.title,
     status: song.status,
     isFavorite: song.isFavorite,
@@ -82,6 +83,7 @@ export function toSongListItem(song: SongWithRelations): SongListItem {
     albumTitle: song.album?.title ?? null,
     tags: song.tags.map((songTag) => songTag.tag.name),
     excerpt: buildExcerpt(song.content),
+    revision: song.revision,
     updatedAt: song.updatedAt,
     createdAt: song.createdAt,
   };
@@ -112,11 +114,15 @@ export async function searchSongs(
 }
 
 /**
- * Récupère un texte par son identifiant en imposant l'appartenance à l'utilisateur.
+ * Récupère un texte par son identifiant avec l'ensemble de ses relations.
  */
-export async function findSongById(userId: string, songId: string): Promise<SongDetail | null> {
-  const song = await prisma.song.findFirst({
-    where: { id: songId, userId },
+export async function findSongById(
+  songIdOrUserId: string,
+  maybeSongId?: string,
+): Promise<SongDetail | null> {
+  const songId = maybeSongId ?? songIdOrUserId;
+  const song = await prisma.song.findUnique({
+    where: { id: songId },
     include: SONG_INCLUDE,
   });
   return song ? toSongDetail(song) : null;

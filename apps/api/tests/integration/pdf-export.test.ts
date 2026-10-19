@@ -17,18 +17,8 @@ describe("Tests d'intégration : export PDF horodaté (/api/songs/:id/export/pdf
   });
 
   beforeEach(async () => {
-    await prisma.songTag.deleteMany();
-    await prisma.songVersion.deleteMany();
-    await prisma.shareLink.deleteMany();
-    await prisma.voiceNote.deleteMany();
-    await prisma.instrumental.deleteMany();
-    await prisma.song.deleteMany();
-    await prisma.tag.deleteMany();
-    await prisma.album.deleteMany();
-    await prisma.session.deleteMany();
-    await prisma.emailToken.deleteMany();
-    await prisma.account.deleteMany();
-    await prisma.user.deleteMany();
+    const { clearDatabase } = await import('../helpers/db.js');
+    await clearDatabase();
   });
 
   async function registerUser(email: string, displayName?: string): Promise<{ sessionId: string }> {

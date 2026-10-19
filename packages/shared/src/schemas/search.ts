@@ -35,6 +35,7 @@ export type SearchSongsQuery = z.infer<typeof searchSongsQuerySchema>;
 /** Élément de texte renvoyé par la recherche de l'espace personnel. */
 export interface SongListItem {
   id: string;
+  userId?: string;
   title: string;
   status: 'DRAFT' | 'COMPLETED';
   isFavorite: boolean;
@@ -42,6 +43,7 @@ export interface SongListItem {
   albumTitle: string | null;
   tags: string[];
   excerpt: string;
+  revision?: number;
   updatedAt: Date | string;
   createdAt: Date | string;
 }
@@ -49,6 +51,7 @@ export interface SongListItem {
 /** Texte complet (édition) : la liste n'expose qu'un extrait, le détail expose le contenu intégral. */
 export interface SongDetail extends SongListItem {
   content: string;
+  revision: number;
 }
 
 /** Réponse de l'API de recherche des textes. */

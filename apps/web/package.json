@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "node ../../scripts/check-images.mjs && tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
@@ -30,7 +30,9 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.27.0",
     "tailwind-merge": "^2.5.4",
-    "workbox-window": "^7.4.1"
+    "workbox-window": "^7.4.1",
+    "y-codemirror": "^3.0.1",
+    "yjs": "^13.6.33"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.2",

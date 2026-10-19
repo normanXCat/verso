@@ -104,6 +104,35 @@ export async function sendPasswordResetEmail(to: string, rawToken: string): Prom
 }
 
 /**
+ * Envoie un email de notification ou résumé d'activité collaborative.
+ */
+export async function sendNotificationEmail({
+  to,
+  subject,
+  text,
+  html,
+}: {
+  to: string;
+  subject: string;
+  text: string;
+  html?: string;
+}): Promise<boolean> {
+  return sendEmail({
+    to,
+    subject,
+    text,
+    html:
+      html ??
+      `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2>Activité sur Verso</h2>
+      <p style="white-space: pre-line;">${text}</p>
+    </div>
+  `,
+  });
+}
+
+/**
  * Envoie un email via l'API Resend ou le journalise en développement/test.
  */
 async function sendEmail({

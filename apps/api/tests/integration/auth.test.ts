@@ -17,10 +17,8 @@ describe("Tests d'intégration : Authentification et Sessions (/api/auth)", () =
   });
 
   beforeEach(async () => {
-    // Nettoyer les données de test entre chaque scénario
-    await prisma.emailToken.deleteMany();
-    await prisma.session.deleteMany();
-    await prisma.user.deleteMany();
+    const { clearDatabase } = await import('../helpers/db.js');
+    await clearDatabase();
   });
 
   describe('POST /api/auth/register', () => {

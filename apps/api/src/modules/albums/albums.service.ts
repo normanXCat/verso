@@ -1,5 +1,6 @@
 import type { AlbumDetail, AlbumListItem, CreateAlbumInput, UpdateAlbumInput } from '@verso/shared';
 import { prisma } from '../../config/prisma.js';
+import { can } from '../permissions/permissions.service.js';
 import { findAlbumById, listAlbumTrackIds, listAlbums } from './albums.repository.js';
 
 export type AlbumServiceErrorCode = 'album_not_found' | 'song_not_found' | 'invalid_tracklist';
@@ -43,8 +44,12 @@ export function listUserAlbums(userId: string): Promise<AlbumListItem[]> {
   return listAlbums(userId);
 }
 
-export function getAlbum(userId: string, albumId: string): Promise<AlbumDetail | null> {
-  return findAlbumById(userId, albumId);
+export async function getAlbum(userId: string, albumId: string): Promise<AlbumDetail | null> {
+  const allowed = await can({ id: userId }, { type: 'album', id: albumId }, 'read');
+  if (!allowed) {
+    return null;
+  }
+  return findAlbumById(albumId);
 }
 
 export async function createAlbum(userId: string, input: CreateAlbumInput): Promise<AlbumDetail> {

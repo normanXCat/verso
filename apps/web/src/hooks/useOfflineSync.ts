@@ -23,12 +23,21 @@ interface UseOfflineSyncOptions {
   title: string;
   content: string;
   enabled?: boolean;
+  /** Numéro de révision connu du texte pour le verrouillage optimiste (FR-023). */
+  revision?: number;
   /** Contenu serveur connu au chargement, référence de détection de conflit. */
   baselineContent?: string;
   /** Délai de debounce ; doit rester sous 500 ms (sauvegarde continue). */
   delayMs?: number;
   /** Appelé après création d'une copie de conflit : reçoit la copie et la version distante intacte. */
   onConflict?: (created: SongDetail, serverContent: string) => void;
+  /** Appelé lors d'un conflit asynchrone HTTP 409 : reçoit les contenus distant et local. */
+  onOptimisticConflict?: (details: {
+    serverContent: string;
+    serverTitle: string;
+    localContent: string;
+    localTitle: string;
+  }) => void;
 }
 
 interface UseOfflineSyncResult {
@@ -58,9 +67,11 @@ export function useOfflineSync({
   title,
   content,
   enabled = true,
+  revision,
   baselineContent,
   delayMs = 400,
   onConflict,
+  onOptimisticConflict,
 }: UseOfflineSyncOptions): UseOfflineSyncResult {
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [isOnline, setIsOnline] = useState<boolean>(navigatorOnline);
@@ -70,6 +81,7 @@ export function useOfflineSync({
   const songIdRef = useRef<string | null>(songId);
   const titleRef = useRef(title);
   const contentRef = useRef(content);
+  const revisionRef = useRef<number | undefined>(revision);
   const baselineRef = useRef<string>(baselineContent ?? '');
   const lastSyncedRef = useRef<string | null>(null);
   // Une vérification serveur est nécessaire au chargement et après une déconnexion
@@ -77,10 +89,19 @@ export function useOfflineSync({
   const needsCheckRef = useRef(true);
   const busyRef = useRef(false);
   const onConflictRef = useRef(onConflict);
+  const onOptimisticConflictRef = useRef(onOptimisticConflict);
 
   useEffect(() => {
     onConflictRef.current = onConflict;
   }, [onConflict]);
+
+  useEffect(() => {
+    onOptimisticConflictRef.current = onOptimisticConflict;
+  }, [onOptimisticConflict]);
+
+  useEffect(() => {
+    revisionRef.current = revision;
+  }, [revision]);
 
   useEffect(() => {
     titleRef.current = title;
@@ -245,7 +266,13 @@ export function useOfflineSync({
           const outcome = await resolveAgainstServer(item);
           setStatus(outcome);
         } else {
-          await songsClient.update(id, { content: value });
+          const updated = await songsClient.update(id, {
+            content: value,
+            expectedRevision: revisionRef.current,
+          });
+          if (updated.revision !== undefined) {
+            revisionRef.current = updated.revision;
+          }
           lastSyncedRef.current = value;
           baselineRef.current = value;
           await deleteDraft(id);
@@ -254,8 +281,17 @@ export function useOfflineSync({
           setStatus('saved');
         }
         needsCheckRef.current = false;
-      } catch {
-        if (!navigatorOnline()) {
+      } catch (err) {
+        if (err instanceof SongsApiError && err.statusCode === 409) {
+          setStatus('conflict');
+          const fresh = await songsClient.get(id).catch(() => null);
+          onOptimisticConflictRef.current?.({
+            serverContent: fresh?.content || '',
+            serverTitle: fresh?.title || titleRef.current,
+            localContent: value,
+            localTitle: titleRef.current,
+          });
+        } else if (!navigatorOnline()) {
           persistLocally(item);
           await replaceSyncItem(item);
           setStatus('offline');

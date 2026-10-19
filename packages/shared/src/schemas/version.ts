@@ -12,6 +12,13 @@ export interface SongVersionItem {
   id: string;
   title: string;
   content: string;
+  authorId?: string | null;
+  author?: {
+    id: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  } | null;
+  isConflict?: boolean;
   createdAt: Date | string;
 }
 

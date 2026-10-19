@@ -13,6 +13,8 @@ import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
 import { useToast } from '../components/ui/Toast.js';
 import { ThemeToggle } from '../components/common/ThemeToggle.js';
 import { Logo } from '../components/common/Logo.js';
+import { useNotifications } from '../context/NotificationsContext.js';
+import { NotificationBell } from '../components/notifications/NotificationBell.js';
 import { FilterBar } from '../components/dashboard/FilterBar.js';
 import { SongCard } from '../components/dashboard/SongCard.js';
 import { AlbumCard } from '../components/album/AlbumCard.js';
@@ -55,6 +57,7 @@ export function DashboardPage(): React.ReactElement {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { unreadCount, openDrawer, isOpen } = useNotifications();
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<SongFilter>('all');
   const [isAlbumModalOpen, setIsAlbumModalOpen] = useState(false);
@@ -117,11 +120,24 @@ export function DashboardPage(): React.ReactElement {
               {user?.displayName || user?.email}
             </span>
             <Link
+              to="/shared-with-me"
+              className="text-xs font-mono text-paper-muted hover:text-paper-text transition-colors"
+            >
+              Partagés avec moi
+            </Link>
+            <Link
+              to="/invitations"
+              className="text-xs font-mono text-paper-muted hover:text-paper-text transition-colors"
+            >
+              Invitations
+            </Link>
+            <Link
               to="/sessions"
               className="text-xs font-mono text-paper-muted hover:text-paper-text transition-colors"
             >
               Sessions
             </Link>
+            <NotificationBell unreadCount={unreadCount} onClick={openDrawer} isOpen={isOpen} />
             <ThemeToggle />
           </div>
         </div>

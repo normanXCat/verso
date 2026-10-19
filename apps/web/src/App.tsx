@@ -5,6 +5,7 @@ import { AuthProvider } from './hooks/useAuth.js';
 import { ThemeProvider } from './context/ThemeContext.js';
 import { ToastProvider } from './components/ui/Toast.js';
 import { EmailVerificationBanner } from './components/common/EmailVerificationBanner.js';
+import { NotificationsProvider } from './context/NotificationsContext.js';
 import { LoginPage } from './pages/auth/LoginPage.js';
 import { RegisterPage } from './pages/auth/RegisterPage.js';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage.js';
@@ -17,6 +18,8 @@ import { DashboardPage } from './pages/DashboardPage.js';
 import { EditorPage } from './pages/EditorPage.js';
 import { AlbumDetailPage } from './pages/AlbumDetailPage.js';
 import { PublicSharePage } from './pages/PublicSharePage.js';
+import { SharedWithMePage } from './pages/SharedWithMePage.js';
+import { InvitationsPage } from './pages/InvitationsPage.js';
 import { useAuth } from './hooks/useAuth.js';
 
 const queryClient = new QueryClient();
@@ -42,42 +45,92 @@ export function App(): React.ReactElement {
         <ToastProvider>
           <AuthProvider>
             <BrowserRouter>
-              <EmailVerificationBanner />
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/verify-email" element={<VerifyEmailPage />} />
-                <Route path="/share/:token" element={<PublicSharePage />} />
-                <Route path="/sessions" element={<SessionsPage />} />
-                <Route path="/design" element={<DesignSystemPage />} />
-                <Route
-                  path="/app"
-                  element={
-                    <RequireAuth>
-                      <DashboardPage />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/app/songs/:id"
-                  element={
-                    <RequireAuth>
-                      <EditorPage />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/app/albums/:id"
-                  element={
-                    <RequireAuth>
-                      <AlbumDetailPage />
-                    </RequireAuth>
-                  }
-                />
-              </Routes>
+              <NotificationsProvider>
+                <EmailVerificationBanner />
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
+                  <Route path="/verify-email" element={<VerifyEmailPage />} />
+                  <Route path="/share/:token" element={<PublicSharePage />} />
+                  <Route path="/sessions" element={<SessionsPage />} />
+                  <Route path="/design" element={<DesignSystemPage />} />
+                  <Route
+                    path="/app"
+                    element={
+                      <RequireAuth>
+                        <DashboardPage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/app/songs/:id"
+                    element={
+                      <RequireAuth>
+                        <EditorPage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/songs/:id"
+                    element={
+                      <RequireAuth>
+                        <EditorPage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/app/albums/:id"
+                    element={
+                      <RequireAuth>
+                        <AlbumDetailPage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/albums/:id"
+                    element={
+                      <RequireAuth>
+                        <AlbumDetailPage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/shared-with-me"
+                    element={
+                      <RequireAuth>
+                        <SharedWithMePage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/app/shared-with-me"
+                    element={
+                      <RequireAuth>
+                        <SharedWithMePage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/invitations"
+                    element={
+                      <RequireAuth>
+                        <InvitationsPage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/invitations/:token"
+                    element={
+                      <RequireAuth>
+                        <InvitationsPage />
+                      </RequireAuth>
+                    }
+                  />
+                </Routes>
+              </NotificationsProvider>
             </BrowserRouter>
           </AuthProvider>
         </ToastProvider>

@@ -6,9 +6,17 @@ import {
   updateSongSchema,
 } from '@verso/shared';
 import { requireAuth } from '../auth/auth.guard.js';
+import { prisma } from '../../config/prisma.js';
 import { buildPdfFilename, generateSongPdf } from './pdf.service.js';
 import { searchSongs } from './songs.repository.js';
-import { SongServiceError, createSong, deleteSong, getSong, updateSong } from './songs.service.js';
+import {
+  ConflictError,
+  SongServiceError,
+  createSong,
+  deleteSong,
+  getSong,
+  updateSong,
+} from './songs.service.js';
 
 export const songsRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   // Recherche plein texte et filtres combinables de l'espace personnel
@@ -70,10 +78,23 @@ export const songsRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
     }
 
     const authorName = request.user!.displayName?.trim() || 'Artiste Verso';
-    const pdf = await generateSongPdf(
-      { title: item.title, content: item.content, updatedAt: item.updatedAt },
-      authorName,
-    );
+    const credits = await prisma.songCredit.findMany({
+      where: { songId: item.id },
+      orderBy: { order: 'asc' },
+      select: { name: true, role: true, percentage: true },
+    });
+
+    let pdf: Buffer;
+    try {
+      pdf = await generateSongPdf(
+        { title: item.title, content: item.content, updatedAt: item.updatedAt },
+        authorName,
+        credits,
+      );
+    } catch (err) {
+      console.error('PDF GENERATION ERROR:', err);
+      throw err;
+    }
 
     return reply
       .header('Content-Type', 'application/pdf')
@@ -120,6 +141,12 @@ export const songsRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
       }
       return reply.status(200).send(item);
     } catch (error) {
+      if (error instanceof ConflictError) {
+        return reply.status(409).send({
+          message: error.message,
+          conflictVersionId: error.conflictVersionId,
+        });
+      }
       if (error instanceof SongServiceError) {
         return reply.status(400).send({ message: 'Album introuvable' });
       }

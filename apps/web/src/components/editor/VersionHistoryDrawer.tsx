@@ -147,16 +147,44 @@ export function VersionHistoryDrawer({
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="truncate font-serif text-base text-paper-text">
-                              {version.title}
-                            </span>
+                            <div className="flex items-center space-x-2 truncate">
+                              <span className="truncate font-serif text-base text-paper-text">
+                                {version.title}
+                              </span>
+                              {version.isConflict && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                                  Conflit
+                                </span>
+                              )}
+                            </div>
                             <span className="shrink-0 text-[11px] font-mono text-paper-muted">
                               {formatDate(version.createdAt)}
                             </span>
                           </div>
-                          <p className="mt-1 line-clamp-2 text-xs text-paper-muted">
-                            {buildExcerpt(version.content) || 'Version vide'}
-                          </p>
+
+                          <div className="mt-1 flex items-center justify-between gap-2 text-xs text-paper-muted">
+                            <p className="line-clamp-1 truncate">
+                              {buildExcerpt(version.content) || 'Version vide'}
+                            </p>
+                            {version.author && (
+                              <div className="shrink-0 flex items-center space-x-1 text-[11px] text-paper-muted">
+                                <div className="w-4 h-4 rounded-full bg-paper-border flex items-center justify-center text-[9px] font-bold overflow-hidden">
+                                  {version.author.avatarUrl ? (
+                                    <img
+                                      src={version.author.avatarUrl}
+                                      alt=""
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    (version.author.displayName?.[0] || 'U').toUpperCase()
+                                  )}
+                                </div>
+                                <span className="truncate max-w-[80px]">
+                                  {version.author.displayName}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </button>
 
                         {isSelected && (

@@ -10,14 +10,14 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 **Purpose**: Initialisation des dépendances et définition des schémas / types partagés pour la collaboration.
 
-- [ ] T001 Installer les dépendances backend et frontend de collaboration (`@fastify/websocket`, `yjs`) dans `apps/api/package.json` et (`yjs`, `@y-rb/y-codemirror`) dans `apps/web/package.json`
-- [ ] T002 [P] Définir les énumérations et interfaces TypeScript de collaboration dans `packages/shared/src/types/collaboration.ts` (`CollaboratorRole` ['CO_AUTHOR', 'COMMENTER', 'READER'], `CollaboratorStatus` ['ACTIVE', 'REVOKED', 'LEFT'], `InvitationStatus` ['PENDING', 'ACCEPTED', 'DECLINED', 'REVOKED', 'EXPIRED'], `NotificationType`, `CreditRole`, `ReportReason`, `ReportStatus`)
-- [ ] T003 [P] Créer les schémas Zod pour la collaboration et les invitations dans `packages/shared/src/schemas/collaboration.ts` (avec les contraintes textuelles `role CollaboratorRole`, `expiresInDays Int default 7`, quota strict de 10 collaborateurs actifs simultanés par texte)
-- [ ] T004 [P] Créer les schémas Zod pour les commentaires dans `packages/shared/src/schemas/comment.ts` (avec les contraintes textuelles `content String` max 2000 caractères, `startLine Int` 1-indexed, `endLine Int` 1-indexed)
-- [ ] T005 [P] Créer les schémas Zod pour les crédits artistiques dans `packages/shared/src/schemas/credit.ts` (avec les contraintes textuelles `name String`, `role CreditRole`, `percentage Float?` quote-part optionnelle de 0 à 100)
-- [ ] T006 [P] Créer les schémas Zod pour la modération et la recherche dans `packages/shared/src/schemas/moderation.ts` (avec les contraintes textuelles `bio String? @db.VarChar(280)`, `reason ReportReason`, `details String? @db.Text`, paramètre de recherche exacte `q`)
-- [ ] T007 [P] Créer les schémas Zod pour les notifications et préférences dans `packages/shared/src/schemas/notification.ts` (énumération `NotificationType`, booléens de préférences email et in-app)
-- [ ] T008 Exposer l'ensemble des schémas et types de collaboration dans le point d'entrée partagé `packages/shared/src/index.ts`
+- [X] T001 Installer les dépendances backend et frontend de collaboration (`@fastify/websocket`, `yjs`) dans `apps/api/package.json` et (`yjs`, `@y-rb/y-codemirror`) dans `apps/web/package.json`
+- [X] T002 [P] Définir les énumérations et interfaces TypeScript de collaboration dans `packages/shared/src/types/collaboration.ts` (`CollaboratorRole` ['CO_AUTHOR', 'COMMENTER', 'READER'], `CollaboratorStatus` ['ACTIVE', 'REVOKED', 'LEFT'], `InvitationStatus` ['PENDING', 'ACCEPTED', 'DECLINED', 'REVOKED', 'EXPIRED'], `NotificationType`, `CreditRole`, `ReportReason`, `ReportStatus`)
+- [X] T003 [P] Créer les schémas Zod pour la collaboration et les invitations dans `packages/shared/src/schemas/collaboration.ts` (avec les contraintes textuelles `role CollaboratorRole`, `expiresInDays Int default 7`, quota strict de 10 collaborateurs actifs simultanés par texte)
+- [X] T004 [P] Créer les schémas Zod pour les commentaires dans `packages/shared/src/schemas/comment.ts` (avec les contraintes textuelles `content String` max 2000 caractères, `startLine Int` 1-indexed, `endLine Int` 1-indexed)
+- [X] T005 [P] Créer les schémas Zod pour les crédits artistiques dans `packages/shared/src/schemas/credit.ts` (avec les contraintes textuelles `name String`, `role CreditRole`, `percentage Float?` quote-part optionnelle de 0 à 100)
+- [X] T006 [P] Créer les schémas Zod pour la modération et la recherche dans `packages/shared/src/schemas/moderation.ts` (avec les contraintes textuelles `bio String? @db.VarChar(280)`, `reason ReportReason`, `details String? @db.Text`, paramètre de recherche exacte `q`)
+- [X] T007 [P] Créer les schémas Zod pour les notifications et préférences dans `packages/shared/src/schemas/notification.ts` (énumération `NotificationType`, booléens de préférences email et in-app)
+- [X] T008 Exposer l'ensemble des schémas et types de collaboration dans le point d'entrée partagé `packages/shared/src/index.ts`
 
 ---
 
@@ -27,12 +27,12 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 **⚠️ CRITICAL**: Aucun récit utilisateur ne peut débuter tant que cette phase n'est pas validée.
 
-- [ ] T009 Étendre le schéma Prisma dans `apps/api/prisma/schema.prisma` avec les modèles `Collaborator`, `Invitation`, `Comment`, `Notification`, `SongCredit`, `UserBlock`, `AbuseReport` et les évolutions de `Song` (`revision Int @default(1)`), `SongVersion` (`authorId String?`, `isConflict Boolean @default(false)`), et `User` (`bio String? @db.VarChar(280)`)
-- [ ] T010 Générer le client Prisma et exécuter la migration de base de données dans `apps/api/prisma/migrations/`
-- [ ] T011 [P] Définir les types d'actions, de cibles et de ressources d'autorisation dans `apps/api/src/modules/permissions/permissions.types.ts`
-- [ ] T012 Implémenter le moteur d'autorisation central unique `can(user, resource, action)` dans `apps/api/src/modules/permissions/permissions.service.ts` évaluant la propriété, les rôles de collaborateurs et l'héritage d'album
-- [ ] T013 [P] Écrire la suite de tests unitaires exhaustifs pour `can()` couvrant 100% de la matrice Rôle × Ressource × Action dans `apps/api/tests/unit/permissions.test.ts`
-- [ ] T014 Implémenter le garde Fastify `requirePermission(action)` et l'intercepteur de sécurité garantissant une réponse HTTP 404 neutre en cas de refus d'accès dans `apps/api/src/modules/permissions/permissions.guard.ts`
+- [X] T009 Étendre le schéma Prisma dans `apps/api/prisma/schema.prisma` avec les modèles `Collaborator`, `Invitation`, `Comment`, `Notification`, `SongCredit`, `UserBlock`, `AbuseReport` et les évolutions de `Song` (`revision Int @default(1)`), `SongVersion` (`authorId String?`, `isConflict Boolean @default(false)`), et `User` (`bio String? @db.VarChar(280)`)
+- [X] T010 Générer le client Prisma et exécuter la migration de base de données dans `apps/api/prisma/migrations/`
+- [X] T011 [P] Définir les types d'actions, de cibles et de ressources d'autorisation dans `apps/api/src/modules/permissions/permissions.types.ts`
+- [X] T012 Implémenter le moteur d'autorisation central unique `can(user, resource, action)` dans `apps/api/src/modules/permissions/permissions.service.ts` évaluant la propriété, les rôles de collaborateurs et l'héritage d'album
+- [X] T013 [P] Écrire la suite de tests unitaires exhaustifs pour `can()` couvrant 100% de la matrice Rôle × Ressource × Action dans `apps/api/tests/unit/permissions.test.ts`
+- [X] T014 Implémenter le garde Fastify `requirePermission(action)` et l'intercepteur de sécurité garantissant une réponse HTTP 404 neutre en cas de refus d'accès dans `apps/api/src/modules/permissions/permissions.guard.ts`
 
 **Checkpoint**: Socle d'autorisation et persistance relationnelle prêts — le développement des récits utilisateurs peut commencer.
 
@@ -46,18 +46,18 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T015 [P] [US1] Écrire la suite de tests d'intégration pour le cycle d'invitation, le hachage SHA-256 de token, la mutation de rôle et la révocation dans `apps/api/tests/integration/collaboration.test.ts`
+- [X] T015 [P] [US1] Écrire la suite de tests d'intégration pour le cycle d'invitation, le hachage SHA-256 de token, la mutation de rôle et la révocation dans `apps/api/tests/integration/collaboration.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Implémenter le repository de collaboration pour les entités `Collaborator` et `Invitation` dans `apps/api/src/modules/collaboration/collaboration.repository.ts`
-- [ ] T017 [US1] Implémenter le service de collaboration dans `apps/api/src/modules/collaboration/collaboration.service.ts` (hachage SHA-256 du token aléatoire sec_, contrainte textuelle `expiresAt DateTime` à now() + 7 jours, quota strict de 10 collaborateurs actifs par texte, transfert automatique au co-auteur le plus ancien à la suppression du compte `FR-002a`, cascade de permissions sur album `FR-010`)
-- [ ] T018 [US1] Implémenter les routes d'API Fastify de collaboration dans `apps/api/src/modules/collaboration/collaboration.routes.ts` (`POST/GET /api/songs/:id/invitations`, `GET/PATCH/DELETE /api/songs/:id/collaborators/:userId`, équivalents pour albums, acceptation/refus par token, et départ volontaire)
-- [ ] T019 [US1] Enregistrer les routes de collaboration dans `apps/api/src/server.ts` avec rate limiting strict de 10 req/min sur l'envoi d'invitations
-- [ ] T020 [P] [US1] Implémenter le client API de collaboration dans `apps/web/src/lib/collaboration-client.ts`
-- [ ] T021 [P] [US1] Implémenter le formulaire d'invitation `InviteCollaboratorForm.tsx` avec sélecteur de rôle et saisie d'identifiant/email dans `apps/web/src/components/collaboration/InviteCollaboratorForm.tsx`
-- [ ] T022 [US1] Implémenter la modale de gestion des accès `CollaboratorsModal.tsx` listant les membres actifs et en attente, le changement de rôle et la révocation dans `apps/web/src/components/collaboration/CollaboratorsModal.tsx`
-- [ ] T023 [US1] Intégrer le déclencheur d'invitation et la modale d'accès dans l'en-tête de l'éditeur `apps/web/src/pages/EditorPage.tsx` et de la page album `apps/web/src/pages/AlbumDetailPage.tsx`
+- [X] T016 [P] [US1] Implémenter le repository de collaboration pour les entités `Collaborator` et `Invitation` dans `apps/api/src/modules/collaboration/collaboration.repository.ts`
+- [X] T017 [US1] Implémenter le service de collaboration dans `apps/api/src/modules/collaboration/collaboration.service.ts` (hachage SHA-256 du token aléatoire sec_, contrainte textuelle `expiresAt DateTime` à now() + 7 jours, quota strict de 10 collaborateurs actifs par texte, transfert automatique au co-auteur le plus ancien à la suppression du compte `FR-002a`, cascade de permissions sur album `FR-010`)
+- [X] T018 [US1] Implémenter les routes d'API Fastify de collaboration dans `apps/api/src/modules/collaboration/collaboration.routes.ts` (`POST/GET /api/songs/:id/invitations`, `GET/PATCH/DELETE /api/songs/:id/collaborators/:userId`, équivalents pour albums, acceptation/refus par token, et départ volontaire)
+- [X] T019 [US1] Enregistrer les routes de collaboration dans `apps/api/src/server.ts` avec rate limiting strict de 10 req/min sur l'envoi d'invitations
+- [X] T020 [P] [US1] Implémenter le client API de collaboration dans `apps/web/src/lib/collaboration-client.ts`
+- [X] T021 [P] [US1] Implémenter le formulaire d'invitation `InviteCollaboratorForm.tsx` avec sélecteur de rôle et saisie d'identifiant/email dans `apps/web/src/components/collaboration/InviteCollaboratorForm.tsx`
+- [X] T022 [US1] Implémenter la modale de gestion des accès `CollaboratorsModal.tsx` listant les membres actifs et en attente, le changement de rôle et la révocation dans `apps/web/src/components/collaboration/CollaboratorsModal.tsx`
+- [X] T023 [US1] Intégrer le déclencheur d'invitation et la modale d'accès dans l'en-tête de l'éditeur `apps/web/src/pages/EditorPage.tsx` et de la page album `apps/web/src/pages/AlbumDetailPage.tsx`
 
 **Checkpoint**: User Story 1 fonctionnelle et testable isolément — MVP de collaboration opérationnel.
 
@@ -71,16 +71,16 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T024 [P] [US2] Écrire la suite de tests d'intégration pour la requête des œuvres partagées et les filtres rôle/propriétaire dans `apps/api/tests/integration/shared-with-me.test.ts`
+- [X] T024 [P] [US2] Écrire la suite de tests d'intégration pour la requête des œuvres partagées et les filtres rôle/propriétaire dans `apps/api/tests/integration/shared-with-me.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T025 [US2] Implémenter les méthodes de recherche des textes et albums partagés avec filtres par rôle et propriétaire dans `apps/api/src/modules/collaboration/collaboration.repository.ts`
-- [ ] T026 [US2] Implémenter la route d'API `GET /api/collaborations/shared-with-me` dans `apps/api/src/modules/collaboration/collaboration.routes.ts`
-- [ ] T027 [P] [US2] Implémenter le badge visuel de statut collaboratif `SharedBadge.tsx` dans `apps/web/src/components/collaboration/SharedBadge.tsx`
-- [ ] T028 [US2] Développer la page de consultation `SharedWithMePage.tsx` avec filtres par rôle et par propriétaire dans `apps/web/src/pages/SharedWithMePage.tsx`
-- [ ] T029 [US2] Développer la page de gestion des invitations reçues `InvitationsPage.tsx` avec boutons Accepter / Refuser dans `apps/web/src/pages/InvitationsPage.tsx`
-- [ ] T030 [US2] Ajouter les onglets "Partagés avec moi" et "Invitations" dans la navigation `apps/web/src/components/landing/Navbar.tsx` et le tableau de bord `apps/web/src/pages/DashboardPage.tsx`
+- [X] T025 [US2] Implémenter les méthodes de recherche des textes et albums partagés avec filtres par rôle et propriétaire dans `apps/api/src/modules/collaboration/collaboration.repository.ts`
+- [X] T026 [US2] Implémenter la route d'API `GET /api/collaborations/shared-with-me` dans `apps/api/src/modules/collaboration/collaboration.routes.ts`
+- [X] T027 [P] [US2] Implémenter le badge visuel de statut collaboratif `SharedBadge.tsx` dans `apps/web/src/components/collaboration/SharedBadge.tsx`
+- [X] T028 [US2] Développer la page de consultation `SharedWithMePage.tsx` avec filtres par rôle et par propriétaire dans `apps/web/src/pages/SharedWithMePage.tsx`
+- [X] T029 [US2] Développer la page de gestion des invitations reçues `InvitationsPage.tsx` avec boutons Accepter / Refuser dans `apps/web/src/pages/InvitationsPage.tsx`
+- [X] T030 [US2] Ajouter les onglets "Partagés avec moi" et "Invitations" dans la navigation `apps/web/src/components/landing/Navbar.tsx` et le tableau de bord `apps/web/src/pages/DashboardPage.tsx`
 
 **Checkpoint**: User Stories 1 et 2 fonctionnent indépendamment et de concert.
 
@@ -94,18 +94,18 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T031 [P] [US3] Écrire la suite de tests d'intégration pour les commentaires ancrés, les fils de réponses, les mentions et la résolution dans `apps/api/tests/integration/comments.test.ts`
+- [X] T031 [P] [US3] Écrire la suite de tests d'intégration pour les commentaires ancrés, les fils de réponses, les mentions et la résolution dans `apps/api/tests/integration/comments.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T032 [P] [US3] Implémenter le repository des commentaires dans `apps/api/src/modules/comments/comments.repository.ts`
-- [ ] T033 [US3] Implémenter le service de commentaires dans `apps/api/src/modules/comments/comments.service.ts` (avec les contraintes textuelles `content String` max 2000 caractères, assainissement anti-XSS strict, détection des mentions `@pseudonyme`, anonymisation `isAnonymized: true` lors du départ d'un collaborateur `FR-005a`)
-- [ ] T034 [US3] Implémenter les routes d'API Fastify pour les commentaires dans `apps/api/src/modules/comments/comments.routes.ts` (`POST/GET /api/songs/:id/comments`, `POST /api/comments/:id/replies`, `PATCH /api/comments/:id/resolve`, `PATCH /api/comments/:id/reopen`) avec rate limiting de 20 req/min
-- [ ] T035 [P] [US3] Implémenter le client API des commentaires dans `apps/web/src/lib/comments-client.ts`
-- [ ] T036 [P] [US3] Implémenter le composant de saisie de commentaire `CommentComposer.tsx` avec auto-complétion des mentions `@` dans `apps/web/src/components/comments/CommentComposer.tsx`
-- [ ] T037 [P] [US3] Implémenter l'extension CodeMirror 6 pour les marqueurs et gouttière de commentaires dans `apps/web/src/components/editor/extensions/commentMarkers.ts`
-- [ ] T038 [US3] Implémenter le tiroir latéral des discussions `CommentThreadDrawer.tsx` avec affichage des fils, réponses et action de résolution dans `apps/web/src/components/comments/CommentThreadDrawer.tsx`
-- [ ] T039 [US3] Intégrer l'extension de commentaires et le tiroir latéral dans `apps/web/src/components/editor/LyricEditor.tsx` et `apps/web/src/pages/EditorPage.tsx`
+- [X] T032 [P] [US3] Implémenter le repository des commentaires dans `apps/api/src/modules/comments/comments.repository.ts`
+- [X] T033 [US3] Implémenter le service de commentaires dans `apps/api/src/modules/comments/comments.service.ts` (avec les contraintes textuelles `content String` max 2000 caractères, assainissement anti-XSS strict, détection des mentions `@pseudonyme`, anonymisation `isAnonymized: true` lors du départ d'un collaborateur `FR-005a`)
+- [X] T034 [US3] Implémenter les routes d'API Fastify pour les commentaires dans `apps/api/src/modules/comments/comments.routes.ts` (`POST/GET /api/songs/:id/comments`, `POST /api/comments/:id/replies`, `PATCH /api/comments/:id/resolve`, `PATCH /api/comments/:id/reopen`) avec rate limiting de 20 req/min
+- [X] T035 [P] [US3] Implémenter le client API des commentaires dans `apps/web/src/lib/comments-client.ts`
+- [X] T036 [P] [US3] Implémenter le composant de saisie de commentaire `CommentComposer.tsx` avec auto-complétion des mentions `@` dans `apps/web/src/components/comments/CommentComposer.tsx`
+- [X] T037 [P] [US3] Implémenter l'extension CodeMirror 6 pour les marqueurs et gouttière de commentaires dans `apps/web/src/components/editor/extensions/commentMarkers.ts`
+- [X] T038 [US3] Implémenter le tiroir latéral des discussions `CommentThreadDrawer.tsx` avec affichage des fils, réponses et action de résolution dans `apps/web/src/components/comments/CommentThreadDrawer.tsx`
+- [X] T039 [US3] Intégrer l'extension de commentaires et le tiroir latéral dans `apps/web/src/components/editor/LyricEditor.tsx` et `apps/web/src/pages/EditorPage.tsx`
 
 **Checkpoint**: Les commentaires ancrés et le système de relecture collaborative sont pleinement opérationnels.
 
@@ -119,15 +119,15 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T040 [P] [US4] Écrire la suite de tests d'intégration pour le verrouillage optimiste sur révision, la détection de conflit 409 et l'attribution nominative des versions dans `apps/api/tests/integration/conflict.test.ts`
+- [x] T040 [P] [US4] Écrire la suite de tests d'intégration pour le verrouillage optimiste sur révision, la détection de conflit 409 et l'attribution nominative des versions dans `apps/api/tests/integration/conflict.test.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T041 [US4] Mettre à jour `apps/api/src/modules/songs/songs.service.ts` pour implémenter le verrouillage optimiste avec la contrainte textuelle `Song.revision Int @default(1)` : rejet en HTTP 409 en cas d'écart et archivage automatique dans `SongVersion` avec `isConflict: true` et `authorId`
-- [ ] T042 [US4] Mettre à jour `apps/api/src/modules/songs/versions.service.ts` pour renseigner `authorId` sur chaque instantané et consigner l'auteur de toute opération de restauration
-- [ ] T043 [P] [US4] Implémenter la modale de comparaison de conflit `ConflictDiffModal.tsx` affichant une vue comparative côte à côte sans écrasement dans `apps/web/src/components/editor/ConflictDiffModal.tsx`
-- [ ] T044 [US4] Mettre à jour le tiroir d'historique `VersionHistoryDrawer.tsx` pour afficher le nom de l'auteur, l'avatar, le badge de conflit et l'auteur de la restauration dans `apps/web/src/components/editor/VersionHistoryDrawer.tsx`
-- [ ] T045 [US4] Intégrer la gestion des réponses 409 et l'ouverture de `ConflictDiffModal` dans le hook de synchronisation `apps/web/src/lib/useOfflineSync.ts` et la page `apps/web/src/pages/EditorPage.tsx`
+- [x] T041 [US4] Mettre à jour `apps/api/src/modules/songs/songs.service.ts` pour implémenter le verrouillage optimiste avec la contrainte textuelle `Song.revision Int @default(1)` : rejet en HTTP 409 en cas d'écart et archivage automatique dans `SongVersion` avec `isConflict: true` et `authorId`
+- [x] T042 [US4] Mettre à jour `apps/api/src/modules/songs/versions.service.ts` pour renseigner `authorId` sur chaque instantané et consigner l'auteur de toute opération de restauration
+- [x] T043 [P] [US4] Implémenter la modale de comparaison de conflit `ConflictDiffModal.tsx` affichant une vue comparative côte à côte sans écrasement dans `apps/web/src/components/editor/ConflictDiffModal.tsx`
+- [x] T044 [US4] Mettre à jour le tiroir d'historique `VersionHistoryDrawer.tsx` pour afficher le nom de l'auteur, l'avatar, le badge de conflit et l'auteur de la restauration dans `apps/web/src/components/editor/VersionHistoryDrawer.tsx`
+- [x] T045 [US4] Intégrer la gestion des réponses 409 et l'ouverture de `ConflictDiffModal` dans le hook de synchronisation `apps/web/src/lib/useOfflineSync.ts` et la page `apps/web/src/pages/EditorPage.tsx`
 
 **Checkpoint**: Zéro perte de texte garantie en mode asynchrone, traçabilité intégrale des contributions.
 
@@ -141,17 +141,17 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T046 [P] [US5] Écrire la suite de tests d'intégration pour la file de notifications, le flux temps réel SSE et le regroupement d'emails dans `apps/api/tests/integration/notifications.test.ts`
+- [x] T046 [P] [US5] Écrire la suite de tests d'intégration pour la file de notifications, le flux temps réel SSE et le regroupement d'emails dans `apps/api/tests/integration/notifications.test.ts`
 
 ### Implementation for User Story 5
 
-- [ ] T047 [P] [US5] Implémenter le repository des notifications dans `apps/api/src/modules/notifications/notifications.repository.ts`
-- [ ] T048 [US5] Implémenter le service de notifications et le regroupeur d'emails transactionnels Resend avec debounce de 3 minutes dans `apps/api/src/modules/notifications/notifications.service.ts`
-- [ ] T049 [US5] Implémenter le gestionnaire de flux SSE `notifications.sse.ts` et les routes d'API dans `apps/api/src/modules/notifications/notifications.routes.ts` (`GET /api/notifications/stream`, `GET /`, `PATCH /:id/read`, `POST /read-all`, préférences)
-- [ ] T050 [P] [US5] Implémenter le client EventSource et hook de flux SSE dans `apps/web/src/lib/notifications-stream.ts`
-- [ ] T051 [P] [US5] Implémenter le bouton d'alertes `NotificationBell.tsx` avec compteur de messages non lus dans `apps/web/src/components/notifications/NotificationBell.tsx`
-- [ ] T052 [US5] Implémenter le tiroir de notifications et la modale de réglages de préférences dans `apps/web/src/components/notifications/NotificationDrawer.tsx`
-- [ ] T053 [US5] Intégrer `NotificationBell` dans la barre de navigation `apps/web/src/components/landing/Navbar.tsx` et initialiser l'écouteur SSE dans `apps/web/src/App.tsx`
+- [x] T047 [P] [US5] Implémenter le repository des notifications dans `apps/api/src/modules/notifications/notifications.repository.ts`
+- [x] T048 [US5] Implémenter le service de notifications et le regroupeur d'emails transactionnels Resend avec debounce de 3 minutes dans `apps/api/src/modules/notifications/notifications.service.ts`
+- [x] T049 [US5] Implémenter le gestionnaire de flux SSE `notifications.sse.ts` et les routes d'API dans `apps/api/src/modules/notifications/notifications.routes.ts` (`GET /api/notifications/stream`, `GET /`, `PATCH /:id/read`, `POST /read-all`, préférences)
+- [x] T050 [P] [US5] Implémenter le client EventSource et hook de flux SSE dans `apps/web/src/lib/notifications-stream.ts`
+- [x] T051 [P] [US5] Implémenter le bouton d'alertes `NotificationBell.tsx` avec compteur de messages non lus dans `apps/web/src/components/notifications/NotificationBell.tsx`
+- [x] T052 [US5] Implémenter le tiroir de notifications et la modale de réglages de préférences dans `apps/web/src/components/notifications/NotificationDrawer.tsx`
+- [x] T053 [US5] Intégrer `NotificationBell` dans la barre de navigation `apps/web/src/components/landing/Navbar.tsx` et initialiser l'écouteur SSE dans `apps/web/src/App.tsx`
 
 **Checkpoint**: Toutes les exigences du palier P1 (partage, rôles, commentaires, traçabilité et notifications) sont achevées.
 
@@ -165,15 +165,15 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 6 ⚠️
 
-- [ ] T054 [P] [US6] Écrire la suite de tests d'intégration pour la validation des crédits, le cumul de pourcentages et la restitution dans le PDF dans `apps/api/tests/integration/credits.test.ts`
+- [x] T054 [P] [US6] Écrire la suite de tests d'intégration pour la validation des crédits, le cumul de pourcentages et la restitution dans le PDF dans `apps/api/tests/integration/credits.test.ts`
 
 ### Implementation for User Story 6
 
-- [ ] T055 [P] [US6] Implémenter le repository et service des crédits artistiques dans `apps/api/src/modules/credits/credits.service.ts` (avec les contraintes textuelles `percentage Float?` de 0 à 100, énumération `CreditRole`, calcul du total sans blocage)
-- [ ] T056 [US6] Implémenter les routes d'API `GET /api/songs/:id/credits` et `PUT /api/songs/:id/credits` dans `apps/api/src/modules/credits/credits.routes.ts`
-- [ ] T057 [US6] Mettre à jour le générateur de PDF d'antériorité `apps/api/src/modules/songs/pdf.service.ts` pour imprimer le cartouche des crédits (noms, rôles, quotes-parts)
-- [ ] T058 [P] [US6] Implémenter la modale d'édition des crédits `CreditsEditorModal.tsx` avec sélection des qualités artistiques et jauge de cumul dans `apps/web/src/components/credits/CreditsEditorModal.tsx`
-- [ ] T059 [US6] Ajouter le bouton "Crédits" dans la barre d'outils de `apps/web/src/pages/EditorPage.tsx` et connecter à `ShareModal.tsx` pour l'export PDF enrichi
+- [x] T055 [P] [US6] Implémenter le repository et service des crédits artistiques dans `apps/api/src/modules/credits/credits.service.ts` (avec les contraintes textuelles `percentage Float?` de 0 à 100, énumération `CreditRole`, calcul du total sans blocage)
+- [x] T056 [US6] Implémenter les routes d'API `GET /api/songs/:id/credits` et `PUT /api/songs/:id/credits` dans `apps/api/src/modules/credits/credits.routes.ts`
+- [x] T057 [US6] Mettre à jour le générateur de PDF d'antériorité `apps/api/src/modules/songs/pdf.service.ts` pour imprimer le cartouche des crédits (noms, rôles, quotes-parts)
+- [x] T058 [P] [US6] Implémenter la modale d'édition des crédits `CreditsEditorModal.tsx` avec sélection des qualités artistiques et jauge de cumul dans `apps/web/src/components/credits/CreditsEditorModal.tsx`
+- [x] T059 [US6] Ajouter le bouton "Crédits" dans la barre d'outils de `apps/web/src/pages/EditorPage.tsx` et connecter à `ShareModal.tsx` pour l'export PDF enrichi
 
 **Checkpoint**: Crédits artistiques et export d'antériorité certifié pleinement fonctionnels.
 
@@ -187,16 +187,16 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 7 ⚠️
 
-- [ ] T060 [P] [US7] Écrire la suite de tests d'intégration pour la recherche exacte anti-énumération, l'isolation bilatérale par blocage et les signalements d'abus dans `apps/api/tests/integration/moderation.test.ts`
+- [x] T060 [P] [US7] Écrire la suite de tests d'intégration pour la recherche exacte anti-énumération, l'isolation bilatérale par blocage et les signalements d'abus dans `apps/api/tests/integration/moderation.test.ts`
 
 ### Implementation for User Story 7
 
-- [ ] T061 [P] [US7] Implémenter le repository et service de modération dans `apps/api/src/modules/moderation/moderation.service.ts` (recherche exacte stricte sans énumération, contrainte textuelle `bio String? @db.VarChar(280)`, rupture bilatérale immédiate lors du blocage `FR-032`, enregistrement des signalements)
-- [ ] T062 [US7] Implémenter les routes d'API de modération dans `apps/api/src/modules/moderation/moderation.routes.ts` (`GET /api/users/search` avec rate limiting strict de 10 req/min, `GET /api/users/:id/profile`, `POST/DELETE /api/users/:id/block`, `POST /api/reports`, `GET /api/songs/:id/activity`)
-- [ ] T063 [P] [US7] Implémenter la modale de profil minimal `AuthorProfileModal.tsx` affichant nom d'affichage, avatar et bio (zéro email visible) dans `apps/web/src/components/moderation/AuthorProfileModal.tsx`
-- [ ] T064 [P] [US7] Implémenter la modale de blocage `BlockUserModal.tsx` et le formulaire de signalement `AbuseReportModal.tsx` dans `apps/web/src/components/moderation/`
-- [ ] T065 [US7] Implémenter le volet d'historique des actions `RecentActivityDrawer.tsx` dans `apps/web/src/components/collaboration/RecentActivityDrawer.tsx`
-- [ ] T066 [US7] Intégrer l'affichage du profil auteur et les actions bloquer/signaler dans les listes de collaborateurs et les commentaires dans `apps/web/src/`
+- [x] T061 [P] [US7] Implémenter le repository et service de modération dans `apps/api/src/modules/moderation/moderation.service.ts` (recherche exacte stricte sans énumération, contrainte textuelle `bio String? @db.VarChar(280)`, rupture bilatérale immédiate lors du blocage `FR-032`, enregistrement des signalements)
+- [x] T062 [US7] Implémenter les routes d'API de modération dans `apps/api/src/modules/moderation/moderation.routes.ts` (`GET /api/users/search` avec rate limiting strict de 10 req/min, `GET /api/users/:id/profile`, `POST/DELETE /api/users/:id/block`, `POST /api/reports`, `GET /api/songs/:id/activity`)
+- [x] T063 [P] [US7] Implémenter la modale de profil minimal `AuthorProfileModal.tsx` affichant nom d'affichage, avatar et bio (zéro email visible) dans `apps/web/src/components/moderation/AuthorProfileModal.tsx`
+- [x] T064 [P] [US7] Implémenter la modale de blocage `BlockUserModal.tsx` et le formulaire de signalement `AbuseReportModal.tsx` dans `apps/web/src/components/moderation/`
+- [x] T065 [US7] Implémenter le volet d'historique des actions `RecentActivityDrawer.tsx` dans `apps/web/src/components/collaboration/RecentActivityDrawer.tsx`
+- [x] T066 [US7] Intégrer l'affichage du profil auteur et les actions bloquer/signaler dans les listes de collaborateurs et les commentaires dans `apps/web/src/`
 
 **Checkpoint**: Toutes les exigences du palier P2 (crédits, profils minimaux, modération, blocage et activité) sont validées.
 
@@ -210,17 +210,17 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 ### Tests for User Story 8 ⚠️
 
-- [ ] T067 [P] [US8] Écrire la suite de tests d'intégration pour l'authentification de session WebSocket, la présence collaborative et la synchronisation audio dans `apps/api/tests/integration/realtime.test.ts`
+- [x] T067 [P] [US8] Écrire la suite de tests d'intégration pour l'authentification de session WebSocket, la présence collaborative et la synchronisation audio dans `apps/api/tests/integration/realtime.test.ts`
 
 ### Implementation for User Story 8
 
-- [ ] T068 [US8] Enregistrer le plugin Fastify WebSocket et implémenter le gestionnaire de salon Yjs dans `apps/api/src/modules/realtime/realtime.ws.ts` avec contrôle d'accès `can()` par session de cookie et gestion de l'awareness
-- [ ] T069 [US8] Implémenter la persistance debouncée des deltas Yjs vers la colonne `Song.lyrics` et le blob d'état dans `apps/api/src/modules/realtime/realtime.persistence.ts`
-- [ ] T070 [P] [US8] Implémenter le hook `useRealtimeEditor.ts` liant CodeMirror 6 au fournisseur WebSocket Yjs dans `apps/web/src/lib/useRealtimeEditor.ts`
-- [ ] T071 [P] [US8] Implémenter le hook `useStudioSession.ts` synchronisant le transport Web Audio et le BPM du métronome dans `apps/web/src/lib/useStudioSession.ts`
-- [ ] T072 [US8] Implémenter les badges de présence colorés et le rendu des sélections distantes dans `apps/web/src/components/realtime/CollaboratorPresenceBadge.tsx`
-- [ ] T073 [US8] Implémenter la barre de contrôle de session studio `SessionBar.tsx` dans `apps/web/src/components/realtime/SessionBar.tsx`
-- [ ] T074 [US8] Intégrer le mode temps réel et la barre de session studio dans `apps/web/src/pages/EditorPage.tsx` et `apps/web/src/components/editor/AudioPlayerBar.tsx`
+- [x] T068 [US8] Enregistrer le plugin Fastify WebSocket et implémenter le gestionnaire de salon Yjs dans `apps/api/src/modules/realtime/realtime.ws.ts` avec contrôle d'accès `can()` par session de cookie et gestion de l'awareness
+- [x] T069 [US8] Implémenter la persistance debouncée des deltas Yjs vers la colonne `Song.lyrics` et le blob d'état dans `apps/api/src/modules/realtime/realtime.persistence.ts`
+- [x] T070 [P] [US8] Implémenter le hook `useRealtimeEditor.ts` liant CodeMirror 6 au fournisseur WebSocket Yjs dans `apps/web/src/lib/useRealtimeEditor.ts`
+- [x] T071 [P] [US8] Implémenter le hook `useStudioSession.ts` synchronisant le transport Web Audio et le BPM du métronome dans `apps/web/src/lib/useStudioSession.ts`
+- [x] T072 [US8] Implémenter les badges de présence colorés et le rendu des sélections distantes dans `apps/web/src/components/realtime/CollaboratorPresenceBadge.tsx`
+- [x] T073 [US8] Implémenter la barre de contrôle de session studio `SessionBar.tsx` dans `apps/web/src/components/realtime/SessionBar.tsx`
+- [x] T074 [US8] Intégrer le mode temps réel et la barre de session studio dans `apps/web/src/pages/EditorPage.tsx` et `apps/web/src/components/editor/AudioPlayerBar.tsx`
 
 **Checkpoint**: Palier P3 temps réel et session studio audio synchrone achevé.
 
@@ -230,11 +230,11 @@ Ce document liste l'ensemble des tâches de développement ordonnancées par pha
 
 **Purpose**: Validation end-to-end globale, audit d'étanchéité multi-tenant, performance et synchronisation documentaire.
 
-- [ ] T075 [P] Exécuter l'audit de sécurité multi-tenant et IDOR sur 100% des endpoints de collaboration dans `apps/api/tests/integration/security-collaboration.test.ts`
-- [ ] T076 [P] Valider l'exécution des 5 scénarios de bout en bout décrits dans `specs/002-author-collaboration/quickstart.md`
-- [ ] T077 Vérifier l'étanchéité des réponses HTTP 404 neutres (aucune fuite d'existence) et les limites de débit sur invitations (10/min), recherche (10/min) et commentaires (20/min)
-- [ ] T078 Exécuter la suite complète de contrôle qualité (`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`) sur l'ensemble du monorepo
-- [ ] T079 [P] Mettre à jour `HANDOFF.md` et `README.md` pour refléter la couverture intégrale des tâches et l'état de l'implémentation
+- [x] T075 [P] Exécuter l'audit de sécurité multi-tenant et IDOR sur 100% des endpoints de collaboration dans `apps/api/tests/integration/security-collaboration.test.ts`
+- [x] T076 [P] Valider l'exécution des 5 scénarios de bout en bout décrits dans `specs/002-author-collaboration/quickstart.md`
+- [x] T077 Vérifier l'étanchéité des réponses HTTP 404 neutres (aucune fuite d'existence) et les limites de débit sur invitations (10/min), recherche (10/min) et commentaires (20/min)
+- [x] T078 Exécuter la suite complète de contrôle qualité (`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`) sur l'ensemble du monorepo
+- [x] T079 [P] Mettre à jour `HANDOFF.md` et `README.md` pour refléter la couverture intégrale des tâches et l'état de l'implémentation
 
 ---
 

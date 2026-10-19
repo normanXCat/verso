@@ -50,6 +50,16 @@ Le projet suit un cadre de priorisation séquentiel strict (**P1** socle indispe
 | **P2** | **Liens de partage privés révocables** | ✅ Fait | Partage explicite en lecture seule, jetons hachés révocables avec expiration optionnelle, page publique anonyme et rate limiting strict |
 | **P3** | **OAuth (Google & ORCID)** | ✅ Fait | Flux OAuth avec `state` et PKCE (arctic), création/connexion de compte, et liaison sécurisée par confirmation du mot de passe |
 | **Socle** | **Finitions design, validation & audit de sécurité (Phase 13)** | ✅ Fait | Bascule de thème segmentée `ThemeToggle` accessible (Papier/Encre), en-têtes Helmet, CORS restrictif et protection CSRF par validation d'origine vérifiés et testés |
+| **Collab** | **Invitations & Rôles co-auteurs (US1)** | ✅ Fait | Contrôle d'accès centralisé `can()`, invitations par jeton haché SHA-256 avec expiration à 7 jours, gestion des rôles (co-auteur, commentateur, lecteur) et démission volontaire |
+| **Collab** | **Espace « Partagés avec moi » (US2)** | ✅ Fait | Section dédiée dans le carnet pour consulter et filtrer les œuvres partagées par rôle et par auteur avec badges de rôle discrets |
+| **Collab** | **Commentaires ancrés & Réponses (US3)** | ✅ Fait | Fils de discussion ancrés sur les vers, réponses chronologiques, autocomplétion des mentions `@pseudonyme`, cycle de résolution et notifications SSE |
+| **Collab** | **Historique multi-auteurs & Conflits (US4)** | ✅ Fait | Attribution nominative des révisions, verrouillage optimiste avec gestion de conflits non destructifs (`409 Conflict`), archivage automatique des versions divergentes et modal de comparaison diff côte à côte |
+| **Collab** | **Notifications in-app & Emails (US5)** | ✅ Fait | Flux d'événements SSE temps réel, tiroir de notifications avec comptage non lu, préférences utilisateur granulaires et emails transactionnels asynchrones |
+| **Collab** | **Crédits artistiques & Antériorité (US6)** | ✅ Fait | Déclaration des rôles créatifs (auteur, featuring, beatmaker, producteur) et quotes-parts calculées sans blocage, certifiées dans l'export PDF |
+| **Collab** | **Profil minimal & Modération (US7)** | ✅ Fait | Profils publics sans fuite d'email, recherche anti-énumération, blocage mutuel avec rupture bilatérale immédiate, signalement d'abus et fil d'activité récente |
+| **Collab** | **Écriture temps réel & Studio session (US8)** | ✅ Fait | Synchronisation collaborative synchrone Yjs sur CodeMirror 6, curseurs distants colorés, présence en direct et sessions studio synchronisant le transport Web Audio et le métronome |
+| **Collab** | **Audit sécurité IDOR & Quickstart (Phase 11)** | ✅ Fait | Étanchéité multi-tenant validée sur 100% des endpoints (404 neutre), couverture des 5 scénarios de bout en bout de `quickstart.md`, 278 tests au vert |
+| **Socle** | **Série photographique & Visuels « Encre & Papier »** | ✅ Fait | Direction artistique argentique noir et blanc, formats légers AVIF/WebP/JPEG (< 120 Ko), respect WCAG AA, contrôle strict au build (`scripts/check-images.mjs`), registre complet ([docs/IMAGES.md](docs/IMAGES.md)) et charte ([docs/IMAGE-STYLE.md](docs/IMAGE-STYLE.md)) |
 
 *(Règle : une fonctionnalité n'est marquée ✅ que si elle est effectivement implémentée et testée dans le code).*
 

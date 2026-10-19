@@ -29,6 +29,7 @@ export interface OfflineSongRecord {
   albumTitle: string | null;
   tags: string[];
   excerpt: string;
+  revision?: number;
   updatedAt: string;
   createdAt: string;
   cachedAt: string;
@@ -96,6 +97,7 @@ function toSongRecord(song: SongDetail | SongListItem): OfflineSongRecord {
     albumTitle: song.albumTitle,
     tags: song.tags,
     excerpt: song.excerpt,
+    revision: song.revision,
     updatedAt: toIso(song.updatedAt),
     createdAt: toIso(song.createdAt),
     cachedAt: new Date().toISOString(),
@@ -112,6 +114,7 @@ function toSongDetail(record: OfflineSongRecord): SongDetail {
     albumTitle: record.albumTitle,
     tags: record.tags,
     excerpt: record.excerpt,
+    revision: record.revision ?? 1,
     updatedAt: record.updatedAt,
     createdAt: record.createdAt,
     content: record.content,

@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../../src/app.js';
 import { prisma } from '../../src/config/prisma.js';
+import { clearDatabase } from '../helpers/db.js';
 
 function hashToken(rawToken: string): string {
   return crypto.createHash('sha256').update(rawToken).digest('hex');
@@ -22,18 +23,7 @@ describe("Tests d'intégration : liens de partage privés (/api/songs/:id/share-
   });
 
   beforeEach(async () => {
-    await prisma.songTag.deleteMany();
-    await prisma.songVersion.deleteMany();
-    await prisma.shareLink.deleteMany();
-    await prisma.voiceNote.deleteMany();
-    await prisma.instrumental.deleteMany();
-    await prisma.song.deleteMany();
-    await prisma.tag.deleteMany();
-    await prisma.album.deleteMany();
-    await prisma.session.deleteMany();
-    await prisma.emailToken.deleteMany();
-    await prisma.account.deleteMany();
-    await prisma.user.deleteMany();
+    await clearDatabase();
   });
 
   async function registerUser(email: string, displayName?: string): Promise<{ sessionId: string }> {

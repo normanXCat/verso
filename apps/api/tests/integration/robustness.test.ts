@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { buildApp } from '../../src/app.js';
 import { prisma } from '../../src/config/prisma.js';
 import * as emailService from '../../src/modules/auth/email.service.js';
+import { clearDatabase } from '../helpers/db.js';
 
 vi.mock('../../src/modules/auth/email.service.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../src/modules/auth/email.service.js')>();
@@ -28,18 +29,7 @@ describe("Tests d'intégration : robustesse (santé, erreurs, inscription)", () 
   });
 
   beforeEach(async () => {
-    await prisma.songTag.deleteMany();
-    await prisma.songVersion.deleteMany();
-    await prisma.shareLink.deleteMany();
-    await prisma.voiceNote.deleteMany();
-    await prisma.instrumental.deleteMany();
-    await prisma.song.deleteMany();
-    await prisma.tag.deleteMany();
-    await prisma.album.deleteMany();
-    await prisma.session.deleteMany();
-    await prisma.emailToken.deleteMany();
-    await prisma.account.deleteMany();
-    await prisma.user.deleteMany();
+    await clearDatabase();
     vi.mocked(emailService.sendVerificationEmail).mockClear();
   });
 

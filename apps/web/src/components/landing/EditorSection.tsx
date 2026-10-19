@@ -75,19 +75,41 @@ export function EditorSection(): React.ReactElement {
       id="ecrire"
       className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-paper-border/60"
     >
-      {/* En-tête de section éditoriale */}
-      <div className="max-w-2xl mb-12">
-        <span className="text-xs font-mono text-paper-muted uppercase tracking-wider block mb-3">
-          01 — L'Atelier d'écriture
-        </span>
-        <h2 className="text-4xl md:text-5xl font-serif text-paper-text tracking-tight mb-4">
-          Laisser couler le flow, <br className="hidden sm:inline" />
-          <span className="italic">mesurer chaque silence.</span>
-        </h2>
-        <p className="text-paper-muted text-base leading-relaxed">
-          Un espace de saisie sans distraction. Tapez directement dans le mockup ci-dessous pour
-          observer le calcul syllabique instantané ligne par ligne.
-        </p>
+      {/* En-tête de section éditoriale avec visuel d'ambiance 4:5 */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center mb-12">
+        <div className="md:col-span-8 space-y-4">
+          <span className="text-xs font-mono text-paper-muted uppercase tracking-wider block">
+            01 — L'Atelier d'écriture
+          </span>
+          <h2 className="text-4xl md:text-5xl font-serif text-paper-text tracking-tight">
+            Laisser couler le flow, <br className="hidden sm:inline" />
+            <span className="italic">mesurer chaque silence.</span>
+          </h2>
+          <p className="text-paper-muted text-base leading-relaxed max-w-xl">
+            Un espace de saisie sans distraction. Tapez directement dans le mockup ci-dessous pour
+            observer le calcul syllabique instantané ligne par ligne.
+          </p>
+        </div>
+
+        {/* Visuel vertical 4:5 : papier froissé et page vierge */}
+        <div className="hidden md:flex md:col-span-4 justify-end">
+          <div className="relative group overflow-hidden rounded-lg border border-paper-border bg-paper-surface shadow-paper-sm max-w-[200px]">
+            <picture>
+              <source srcSet="/images/editor/editor-draft.avif" type="image/avif" />
+              <source srcSet="/images/editor/editor-draft.webp" type="image/webp" />
+              <img
+                src="/images/editor/editor-draft.jpg"
+                alt="Feuille de papier texturé vierge et brouillon froissé sur table de travail"
+                width={800}
+                height={1000}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-auto aspect-[4/5] object-cover grayscale contrast-110 dark:brightness-85 transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+            </picture>
+            <div className="absolute inset-0 bg-paper-accent/5 pointer-events-none" />
+          </div>
+        </div>
       </div>
 
       {/* Mockup interactif d'éditeur */}

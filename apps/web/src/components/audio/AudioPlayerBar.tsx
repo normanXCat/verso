@@ -14,9 +14,13 @@ import {
 import { MAX_AUDIO_SIZE_BYTES, type InstrumentalItem } from '@verso/shared';
 import { audioClient, inferAudioMimeType, uploadToPresignedUrl } from '../../lib/audio-client.js';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer.js';
+import type { UseRealtimeEditorResult } from '../../lib/useRealtimeEditor.js';
+import { useStudioSession } from '../../lib/useStudioSession.js';
+import { SessionBar } from '../realtime/SessionBar.js';
 
 interface AudioPlayerBarProps {
   songId: string;
+  realtime?: UseRealtimeEditorResult;
   className?: string;
 }
 
@@ -40,6 +44,7 @@ function stripExtension(filename: string): string {
  */
 export function AudioPlayerBar({
   songId,
+  realtime,
   className = '',
 }: AudioPlayerBarProps): React.ReactElement {
   const queryClient = useQueryClient();
@@ -75,7 +80,8 @@ export function AudioPlayerBar({
     if (activeInstrumental) {
       setBpmInput(String(activeInstrumental.bpm ?? 90));
     }
-  }, [activeInstrumental?.id, activeInstrumental?.bpm]); // Mémoïse la région pour ne pas relancer l'effet de boucle à chaque "timeupdate".
+  }, [activeInstrumental?.id, activeInstrumental?.bpm]);
+
   const loopRegion = useMemo(
     () => (loopEnabled && loopEnd > loopStart ? { start: loopStart, end: loopEnd } : null),
     [loopEnabled, loopStart, loopEnd],
@@ -87,6 +93,26 @@ export function AudioPlayerBar({
     metronomeEnabled,
     loopRegion,
   });
+
+  const session = useStudioSession({
+    realtime: realtime!,
+    player,
+    initialBpm: Number(bpmInput) || 90,
+  });
+
+  // Synchronise le BPM local si la session studio en cours le met à jour
+  useEffect(() => {
+    if (session.isStudioActive) {
+      setBpmInput(String(session.bpm));
+    }
+  }, [session.isStudioActive, session.bpm]);
+
+  // Synchronise le métronome si la session studio l'active/désactive
+  useEffect(() => {
+    if (session.isStudioActive) {
+      setMetronomeEnabled(session.metronomeEnabled);
+    }
+  }, [session.isStudioActive, session.metronomeEnabled]);
 
   const updateMutation = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Parameters<typeof audioClient.update>[1] }) =>
@@ -121,6 +147,9 @@ export function AudioPlayerBar({
       parsed !== activeInstrumental.bpm
     ) {
       updateMutation.mutate({ id: activeInstrumental.id, patch: { bpm: parsed } });
+    }
+    if (session.isStudioActive && Number.isInteger(parsed)) {
+      session.setBpm(parsed);
     }
   };
 
@@ -217,6 +246,15 @@ export function AudioPlayerBar({
         </p>
       )}
 
+      {realtime && (
+        <SessionBar
+          session={session}
+          player={player}
+          hasTrack={instrumentals.length > 0}
+          className="mt-3"
+        />
+      )}
+
       {isLoading ? (
         <p className="mt-3 text-xs text-paper-muted" aria-busy="true">
           Chargement des instrumentales…
@@ -268,7 +306,17 @@ export function AudioPlayerBar({
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={player.toggle}
+              onClick={() => {
+                if (session.isStudioActive) {
+                  if (player.isPlaying) {
+                    session.syncPause();
+                  } else {
+                    session.syncPlay();
+                  }
+                } else {
+                  player.toggle();
+                }
+              }}
               disabled={!player.isReady}
               aria-label={player.isPlaying ? 'Mettre en pause' : 'Lire'}
               className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-paper-border bg-paper-surface text-paper-text transition-colors hover:border-paper-accent hover:text-paper-accent disabled:opacity-40"
@@ -291,7 +339,14 @@ export function AudioPlayerBar({
               max={player.duration || activeInstrumental?.durationSeconds || 0}
               step={0.1}
               value={Math.min(player.currentTime, player.duration || 0)}
-              onChange={(event) => player.seek(Number(event.target.value))}
+              onChange={(event) => {
+                const val = Number(event.target.value);
+                if (session.isStudioActive) {
+                  session.syncSeek(val);
+                } else {
+                  player.seek(val);
+                }
+              }}
               aria-label="Position de lecture"
               className="h-1 flex-1 min-w-[8rem] cursor-pointer accent-[var(--color-accent)]"
             />
@@ -345,7 +400,13 @@ export function AudioPlayerBar({
               <input
                 type="checkbox"
                 checked={metronomeEnabled}
-                onChange={(event) => setMetronomeEnabled(event.target.checked)}
+                onChange={(event) => {
+                  const checked = event.target.checked;
+                  setMetronomeEnabled(checked);
+                  if (session.isStudioActive) {
+                    session.syncMetronome(checked, Number(bpmInput) || 90);
+                  }
+                }}
                 className="accent-[var(--color-accent)]"
               />
               <Activity className="h-3.5 w-3.5" aria-hidden="true" />

@@ -6,6 +6,8 @@ import { Logo } from '../common/Logo.js';
 import { Button } from '../ui/Button.js';
 import { NavLink } from '../ui/NavLink.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useNotifications } from '../../context/NotificationsContext.js';
+import { NotificationBell } from '../notifications/NotificationBell.js';
 
 const NAV_LINKS = [
   { label: 'Écrire', href: '#ecrire' },
@@ -26,6 +28,7 @@ export function Navbar(): React.ReactElement {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const { isAuthenticated, user } = useAuth();
+  const { unreadCount, openDrawer, isOpen } = useNotifications();
 
   // Barre compacte + décalage sous le bandeau de vérification email.
   useEffect(() => {
@@ -80,7 +83,7 @@ export function Navbar(): React.ReactElement {
           : 'bg-transparent py-6'
       }`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 md:px-12">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 lg:px-12">
         {/* Logo Verso */}
         <Link
           to="/"
@@ -90,8 +93,11 @@ export function Navbar(): React.ReactElement {
           <Logo size="lg" title="Verso" />
         </Link>
 
-        {/* Liens Desktop */}
-        <nav className="hidden items-center gap-8 md:flex" aria-label="Sections de la page">
+        {/* Liens Desktop — la barre complète n'apparaît qu'à partir de `lg` : à 768 px,
+            logotype + cinq sections + sélecteur de thème + deux boutons ne tiennent pas
+            sur une ligne (le contenu débordait d'une soixantaine de pixels) ; le menu
+            déroulant prend alors le relais, sans rien perdre. */}
+        <nav className="hidden items-center gap-8 lg:flex" aria-label="Sections de la page">
           {NAV_LINKS.map((link) => (
             <NavLink
               key={link.href}
@@ -104,17 +110,21 @@ export function Navbar(): React.ReactElement {
         </nav>
 
         {/* Actions & Authentification */}
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-3 lg:flex">
           <ThemeToggle />
 
           {isAuthenticated && user ? (
             <>
+              <NotificationBell unreadCount={unreadCount} onClick={openDrawer} isOpen={isOpen} />
               <Button asChild variant="ghost" size="sm" iconLeft={<User className="h-4 w-4" />}>
                 <Link to="/app" title={displayName}>
                   <span className="inline-block max-w-[10rem] truncate align-bottom">
                     {displayName}
                   </span>
                 </Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/shared-with-me">Partagés</Link>
               </Button>
               <Button asChild variant="primary" size="sm">
                 <Link to="/app">Mon espace</Link>
@@ -133,7 +143,10 @@ export function Navbar(): React.ReactElement {
         </div>
 
         {/* Bouton Menu Mobile */}
-        <div className="flex items-center gap-3 md:hidden">
+        <div className="flex items-center gap-3 lg:hidden">
+          {isAuthenticated && user && (
+            <NotificationBell unreadCount={unreadCount} onClick={openDrawer} isOpen={isOpen} />
+          )}
           <ThemeToggle />
           <Button
             type="button"
@@ -150,7 +163,7 @@ export function Navbar(): React.ReactElement {
 
       {/* Menu Déroulant Mobile */}
       {mobileMenuOpen && (
-        <div className="animate-in fade-in slide-in-from-top-2 border-b border-paper-border bg-paper-surface px-6 py-6 shadow-paper-md duration-200 md:hidden">
+        <div className="animate-in fade-in slide-in-from-top-2 border-b border-paper-border bg-paper-surface px-6 py-6 shadow-paper-md duration-200 lg:hidden">
           <nav className="flex flex-col gap-4 text-base" aria-label="Sections de la page">
             {NAV_LINKS.map((link) => (
               <a
@@ -164,11 +177,18 @@ export function Navbar(): React.ReactElement {
             ))}
             <div className="flex flex-col gap-3 pt-4">
               {isAuthenticated && user ? (
-                <Button asChild variant="primary" fullWidth>
-                  <Link to="/app" onClick={() => setMobileMenuOpen(false)}>
-                    Mon espace ({displayName})
-                  </Link>
-                </Button>
+                <>
+                  <Button asChild variant="primary" fullWidth>
+                    <Link to="/app" onClick={() => setMobileMenuOpen(false)}>
+                      Mon espace ({displayName})
+                    </Link>
+                  </Button>
+                  <Button asChild variant="secondary" fullWidth>
+                    <Link to="/shared-with-me" onClick={() => setMobileMenuOpen(false)}>
+                      Partagés avec moi
+                    </Link>
+                  </Button>
+                </>
               ) : (
                 <>
                   <Button asChild variant="secondary" fullWidth>

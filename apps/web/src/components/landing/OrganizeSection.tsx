@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUp, ArrowDown, Disc, Layers } from 'lucide-react';
+import { ArrowUp, ArrowDown, Layers } from 'lucide-react';
 import { Tag } from '../ui/Tag.js';
 
 interface TrackItem {
@@ -58,9 +58,27 @@ export function OrganizeSection(): React.ReactElement {
   const [stackHovered, setStackHovered] = useState<boolean>(false);
 
   const albums = [
-    { title: 'Miroir Fumé', year: '2026', count: 12, genre: 'Album Studio' },
-    { title: 'Noctambule EP', year: '2025', count: 6, genre: 'EP 6 Titres' },
-    { title: 'Carnet d’Archives', year: '2024', count: 24, genre: 'Brouillons' },
+    {
+      title: 'Miroir Fumé',
+      year: '2026',
+      count: 12,
+      genre: 'Album Studio',
+      cover: 'cover-miroir-fume',
+    },
+    {
+      title: 'Noctambule EP',
+      year: '2025',
+      count: 6,
+      genre: 'EP 6 Titres',
+      cover: 'cover-noctambule',
+    },
+    {
+      title: 'Carnet d’Archives',
+      year: '2024',
+      count: 24,
+      genre: 'Brouillons',
+      cover: 'cover-archives',
+    },
   ];
 
   const moveTrack = (index: number, direction: 'up' | 'down'): void => {
@@ -94,9 +112,9 @@ export function OrganizeSection(): React.ReactElement {
             Survolez la pile pour voir les disques se déployer.
           </p>
 
-          {/* Démonstration de pile d'albums déployable */}
+          {/* Démonstration de pile d'albums déployable avec pochettes sérigraphiées */}
           <div
-            className="pt-6 relative min-h-[220px] cursor-pointer"
+            className="pt-4 relative min-h-[220px] cursor-pointer"
             onMouseEnter={() => setStackHovered(true)}
             onMouseLeave={() => setStackHovered(false)}
           >
@@ -115,7 +133,7 @@ export function OrganizeSection(): React.ReactElement {
                   }}
                   transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                   onClick={() => setSelectedAlbum(idx)}
-                  className={`absolute left-0 right-0 p-5 rounded-lg border bg-paper-surface shadow-paper-md transition-colors ${
+                  className={`absolute left-0 right-0 p-4 rounded-lg border bg-paper-surface shadow-paper-md transition-colors ${
                     selectedAlbum === idx
                       ? 'border-paper-accent'
                       : 'border-paper-border hover:border-paper-muted'
@@ -124,8 +142,20 @@ export function OrganizeSection(): React.ReactElement {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded bg-paper-bg flex items-center justify-center border border-paper-border text-paper-accent">
-                        <Disc className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded overflow-hidden border border-paper-border shrink-0 bg-paper-bg shadow-sm">
+                        <picture>
+                          <source srcSet={`/images/covers/${album.cover}.avif`} type="image/avif" />
+                          <source srcSet={`/images/covers/${album.cover}.webp`} type="image/webp" />
+                          <img
+                            src={`/images/covers/${album.cover}.jpg`}
+                            alt=""
+                            width={600}
+                            height={600}
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full h-full object-cover"
+                          />
+                        </picture>
                       </div>
                       <div>
                         <h4 className="font-serif text-lg text-paper-text">{album.title}</h4>
@@ -146,6 +176,26 @@ export function OrganizeSection(): React.ReactElement {
           <p className="text-xs font-mono text-paper-muted pt-28 italic">
             * Survolez la pile pour déployer la discographie
           </p>
+
+          {/* Photographie argentique 4:3 : carnets d'écriture et reliures cousues */}
+          <div className="pt-2">
+            <div className="relative group overflow-hidden rounded-lg border border-paper-border bg-paper-surface shadow-paper-sm">
+              <picture>
+                <source srcSet="/images/organize/organize-notebooks.avif" type="image/avif" />
+                <source srcSet="/images/organize/organize-notebooks.webp" type="image/webp" />
+                <img
+                  src="/images/organize/organize-notebooks.jpg"
+                  alt="Pile de carnets d'écriture vue de profil montrant la texture des tranches reliées"
+                  width={1024}
+                  height={768}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-auto aspect-[4/3] object-cover grayscale contrast-110 dark:brightness-85 transition-transform duration-700 ease-out group-hover:scale-105"
+                />
+              </picture>
+              <div className="absolute inset-0 bg-paper-accent/5 pointer-events-none" />
+            </div>
+          </div>
         </div>
 
         {/* Colonne droite : Tracklist interactive réordonnable */}

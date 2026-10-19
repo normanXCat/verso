@@ -12,9 +12,9 @@ interface LogoProps {
 
 /** Hauteur du wordmark ; la largeur suit le rapport du viewBox (1989 / 730). */
 const SIZE_CLASSES: Record<LogoSize, string> = {
-  sm: 'h-5',
-  md: 'h-6',
-  lg: 'h-7',
+  sm: 'h-6',
+  md: 'h-7',
+  lg: 'h-8',
 };
 
 /**

@@ -1,17 +1,36 @@
 import type { SongDetail, SongVersionItem } from '@verso/shared';
 import { prisma } from '../../config/prisma.js';
 import { findSongById } from './songs.repository.js';
+import { can } from '../permissions/permissions.service.js';
 
 /** Fenêtre d'inactivité au-delà de laquelle un enregistrement archive un instantané. */
 export const VERSION_IDLE_INTERVAL_MS = 5 * 60 * 1000;
+
+const USER_SUMMARY_SELECT = {
+  id: true,
+  displayName: true,
+  avatarUrl: true,
+};
 
 /**
  * Archive un instantané immuable de l'état courant d'un texte.
  * L'historique est conservé indéfiniment : aucune purge, aucun plafond (FR-029).
  */
-async function archiveSongSnapshot(songId: string, title: string, content: string): Promise<void> {
+export async function archiveSongSnapshot(
+  songId: string,
+  title: string,
+  content: string,
+  authorId?: string | null,
+  isConflict = false,
+): Promise<void> {
   await prisma.songVersion.create({
-    data: { songId, title, content },
+    data: {
+      songId,
+      title,
+      content,
+      authorId: authorId ?? null,
+      isConflict,
+    },
   });
 }
 
@@ -24,9 +43,10 @@ export async function maybeArchiveBeforeUpdate(
   songId: string,
   current: { title: string; content: string },
   createVersion: boolean | undefined,
+  authorId?: string | null,
 ): Promise<void> {
   if (createVersion) {
-    await archiveSongSnapshot(songId, current.title, current.content);
+    await archiveSongSnapshot(songId, current.title, current.content, authorId);
     return;
   }
 
@@ -38,7 +58,7 @@ export async function maybeArchiveBeforeUpdate(
 
   const isIdle = !last || Date.now() - last.createdAt.getTime() > VERSION_IDLE_INTERVAL_MS;
   if (isIdle) {
-    await archiveSongSnapshot(songId, current.title, current.content);
+    await archiveSongSnapshot(songId, current.title, current.content, authorId);
   }
 }
 
@@ -47,19 +67,27 @@ export async function listVersions(
   userId: string,
   songId: string,
 ): Promise<SongVersionItem[] | null> {
-  const song = await prisma.song.findFirst({
-    where: { id: songId, userId },
-    select: { id: true },
-  });
-  if (!song) {
+  const allowed = await can({ id: userId }, { type: 'song', id: songId }, 'read');
+  if (!allowed) {
     return null;
   }
 
   const versions = await prisma.songVersion.findMany({
     where: { songId },
     orderBy: { createdAt: 'desc' },
-    select: { id: true, title: true, content: true, createdAt: true },
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      authorId: true,
+      isConflict: true,
+      createdAt: true,
+      author: {
+        select: USER_SUMMARY_SELECT,
+      },
+    },
   });
+
   return versions;
 }
 
@@ -72,9 +100,14 @@ export async function restoreVersion(
   songId: string,
   versionId: string,
 ): Promise<SongDetail | null> {
-  const song = await prisma.song.findFirst({
-    where: { id: songId, userId },
-    select: { id: true, title: true, content: true },
+  const allowed = await can({ id: userId }, { type: 'song', id: songId }, 'edit_lyrics');
+  if (!allowed) {
+    return null;
+  }
+
+  const song = await prisma.song.findUnique({
+    where: { id: songId },
+    select: { id: true, title: true, content: true, revision: true },
   });
   if (!song) {
     return null;
@@ -90,13 +123,23 @@ export async function restoreVersion(
 
   await prisma.$transaction([
     prisma.songVersion.create({
-      data: { songId, title: song.title, content: song.content },
+      data: {
+        songId,
+        title: song.title,
+        content: song.content,
+        authorId: userId,
+        isConflict: false,
+      },
     }),
     prisma.song.update({
       where: { id: songId },
-      data: { title: version.title, content: version.content },
+      data: {
+        title: version.title,
+        content: version.content,
+        revision: { increment: 1 },
+      },
     }),
   ]);
 
-  return findSongById(userId, songId);
+  return findSongById(songId);
 }

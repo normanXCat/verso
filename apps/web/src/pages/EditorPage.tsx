@@ -1,9 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, BookOpen, History, Share2, Trash2 } from 'lucide-react';
+import {
+  Activity,
+  ArrowLeft,
+  Award,
+  BookOpen,
+  History,
+  MessageSquare,
+  Share2,
+  Trash2,
+  Users,
+} from 'lucide-react';
 import type { SongDetail, SongListItem, UpdateSongInput } from '@verso/shared';
+import { useAuth } from '../hooks/useAuth.js';
 import { songsClient, SongsApiError } from '../lib/songs-client.js';
+import { commentsClient } from '../lib/comments-client.js';
+import { collaborationClient } from '../lib/collaboration-client.js';
 import { readDraft } from '../lib/draft-storage.js';
 import { cacheSong, getDraft } from '../lib/offline-storage.js';
 import { useOfflineSync } from '../hooks/useOfflineSync.js';
@@ -19,6 +32,16 @@ import { ShareModal } from '../components/editor/ShareModal.js';
 import { RhymeSuggestionsDrawer } from '../components/editor/RhymeSuggestionsDrawer.js';
 import { AudioPlayerBar } from '../components/audio/AudioPlayerBar.js';
 import { VoiceRecorder } from '../components/audio/VoiceRecorder.js';
+import { CollaboratorsModal } from '../components/collaboration/CollaboratorsModal.js';
+import { CommentThreadDrawer } from '../components/comments/CommentThreadDrawer.js';
+import { ConflictDiffModal } from '../components/editor/ConflictDiffModal.js';
+import { CreditsEditorModal } from '../components/credits/CreditsEditorModal.js';
+import { RecentActivityDrawer } from '../components/collaboration/RecentActivityDrawer.js';
+import { AuthorProfileModal } from '../components/moderation/AuthorProfileModal.js';
+import { BlockUserModal } from '../components/moderation/BlockUserModal.js';
+import { AbuseReportModal } from '../components/moderation/AbuseReportModal.js';
+import { useRealtimeEditor } from '../lib/useRealtimeEditor.js';
+import { CollaboratorPresenceBadge } from '../components/realtime/CollaboratorPresenceBadge.js';
 
 /**
  * Espace d'écriture d'un texte : éditeur épuré avec sauvegarde automatique,
@@ -45,13 +68,83 @@ export function EditorPage(): React.ReactElement {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [initialised, setInitialised] = useState(false);
+  const { user } = useAuth();
+  const [isCollabOpen, setIsCollabOpen] = useState(false);
+  const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isActivityOpen, setIsActivityOpen] = useState(false);
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [blockTargetUser, setBlockTargetUser] = useState<{
+    id: string;
+    displayName: string | null;
+  } | null>(null);
+  const [reportTargetUser, setReportTargetUser] = useState<{
+    id: string;
+    displayName: string | null;
+  } | null>(null);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isRhymesOpen, setIsRhymesOpen] = useState(false);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
+  const [selectedLineRange, setSelectedLineRange] = useState<{
+    startLine: number;
+    endLine: number;
+  } | null>(null);
   const [selection, setSelection] = useState<{ text: string; from: number; to: number } | null>(
     null,
   );
   const [isZen, setIsZen] = useState(false);
+  const [conflictData, setConflictData] = useState<{
+    serverContent: string;
+    serverTitle: string;
+    localContent: string;
+    localTitle: string;
+  } | null>(null);
+
+  const { data: comments = [] } = useQuery({
+    queryKey: ['songs', id, 'comments'],
+    queryFn: () => commentsClient.listComments(id),
+    enabled: id.length > 0 && initialised,
+  });
+
+  const { data: collabData } = useQuery({
+    queryKey: ['collaborations', 'song', id],
+    queryFn: () => collaborationClient.getSongCollaborators(id),
+    enabled: id.length > 0 && initialised,
+  });
+
+  const mentionableUsers = [
+    ...(user ? [{ id: user.id, displayName: user.displayName, avatarUrl: null }] : []),
+    ...(collabData?.collaborators.map((c) => ({
+      id: c.userId,
+      displayName: c.user?.displayName || null,
+      avatarUrl: c.user?.avatarUrl || null,
+    })) || []),
+  ];
+
+  const openCommentsCount = comments.filter((c) => !c.isResolved).length;
+  const commentAnchors = comments.map((c) => ({
+    id: c.id,
+    startLine: c.startLine,
+    endLine: c.endLine,
+    isResolved: c.isResolved,
+  }));
+
+  const realtime = useRealtimeEditor({
+    songId: id,
+    enabled: id.length > 0 && initialised,
+    initialContent: song?.content ?? '',
+    onContentChange: (newContent) => {
+      setContent(newContent);
+    },
+  });
+
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent);
+    if (realtime.isConnected) {
+      realtime.updateContent(newContent);
+    }
+  };
 
   // Initialise depuis le serveur, en priorisant un brouillon local non synchronisé
   // (IndexedDB, puis `localStorage` en repli) et met le texte en cache hors ligne.
@@ -80,6 +173,7 @@ export function EditorPage(): React.ReactElement {
     title,
     content,
     enabled: initialised,
+    revision: song?.revision,
     baselineContent: song?.content,
     onConflict: (created, serverContent) => {
       toast(
@@ -88,6 +182,9 @@ export function EditorPage(): React.ReactElement {
       );
       setContent(serverContent);
       void queryClient.invalidateQueries({ queryKey: ['songs', 'search'] });
+    },
+    onOptimisticConflict: (details) => {
+      setConflictData(details);
     },
   });
 
@@ -202,6 +299,11 @@ export function EditorPage(): React.ReactElement {
               Mon carnet
             </Link>
             <div className="flex items-center gap-3">
+              <CollaboratorPresenceBadge
+                participants={realtime.participants}
+                isConnected={realtime.isConnected}
+                onSelectUser={(uid) => setProfileUserId(uid)}
+              />
               <SaveStatusIndicator
                 status={offlineSync.status}
                 pendingCount={offlineSync.pendingCount}
@@ -215,6 +317,38 @@ export function EditorPage(): React.ReactElement {
                 className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text disabled:opacity-40"
               >
                 <BookOpen className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCollabOpen(true)}
+                aria-label="Collaborateurs et accès"
+                title="Collaborateurs et accès"
+                className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+              >
+                <Users className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCreditsOpen(true)}
+                aria-label="Crédits artistiques"
+                title="Crédits artistiques & antériorité"
+                className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+              >
+                <Award className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCommentsOpen(true)}
+                aria-label="Discussions et commentaires"
+                title="Discussions et commentaires"
+                className="relative rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+              >
+                <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                {openCommentsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-bold text-white">
+                    {openCommentsCount}
+                  </span>
+                )}
               </button>
               <button
                 type="button"
@@ -233,6 +367,15 @@ export function EditorPage(): React.ReactElement {
                 className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
               >
                 <History className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsActivityOpen(true)}
+                aria-label="Activité récente du texte"
+                title="Activité récente (journal des modifications et notes)"
+                className="rounded p-1.5 text-paper-muted transition-colors hover:text-paper-text"
+              >
+                <Activity className="h-4 w-4" aria-hidden="true" />
               </button>
               <button
                 type="button"
@@ -295,8 +438,20 @@ export function EditorPage(): React.ReactElement {
               <div className="notebook-ruled mt-6 rounded-card border border-paper-border bg-paper-surface p-6 shadow-paper-sm">
                 <LyricEditor
                   value={content}
-                  onChange={setContent}
+                  onChange={handleContentChange}
                   onSelectionChange={handleSelectionChange}
+                  onCursorChange={(cursor) => {
+                    if (realtime.isConnected) {
+                      realtime.sendCursor(cursor.from, cursor.to);
+                    }
+                  }}
+                  remoteCursors={realtime.remoteCursors}
+                  commentAnchors={commentAnchors}
+                  onSelectComment={(commentId) => {
+                    setActiveCommentId(commentId);
+                    setIsCommentsOpen(true);
+                  }}
+                  onLineSelectionChange={setSelectedLineRange}
                   placeholder="Posez vos premières rimes…"
                   ariaLabel="Paroles du texte"
                   className={isZen ? 'min-h-[60vh]' : 'min-h-[22rem]'}
@@ -312,7 +467,7 @@ export function EditorPage(): React.ReactElement {
                     </span>
                   </div>
 
-                  <AudioPlayerBar songId={song.id} className="mt-6" />
+                  <AudioPlayerBar songId={song.id} realtime={realtime} className="mt-6" />
                   <VoiceRecorder songId={song.id} className="mt-4" />
                 </>
               )}
@@ -355,6 +510,125 @@ export function EditorPage(): React.ReactElement {
             setTitle(restored.title);
             setContent(restored.content);
             queryClient.setQueryData<SongDetail>(['songs', 'detail', id], restored);
+          }}
+        />
+      )}
+
+      {song && (
+        <CollaboratorsModal
+          isOpen={isCollabOpen}
+          onClose={() => setIsCollabOpen(false)}
+          resourceType="song"
+          resourceId={song.id}
+          resourceTitle={title || song.title}
+          isOwner={user?.id === song.userId}
+          onLeft={() => navigate('/app')}
+          onSelectProfile={(userId) => setProfileUserId(userId)}
+        />
+      )}
+
+      {song && (
+        <CreditsEditorModal
+          isOpen={isCreditsOpen}
+          onClose={() => setIsCreditsOpen(false)}
+          songId={song.id}
+          songTitle={title || song.title}
+          isEditable={
+            user?.id === song.userId ||
+            Boolean(
+              collabData?.collaborators.some(
+                (c) => c.userId === user?.id && c.role === 'CO_AUTHOR',
+              ),
+            )
+          }
+        />
+      )}
+
+      {song && (
+        <CommentThreadDrawer
+          songId={song.id}
+          isOpen={isCommentsOpen}
+          onClose={() => setIsCommentsOpen(false)}
+          collaborators={mentionableUsers}
+          activeCommentId={activeCommentId}
+          onActiveCommentChange={setActiveCommentId}
+          selectedLines={selectedLineRange}
+          currentUserId={user?.id}
+          isOwner={user?.id === song.userId}
+          onSelectAuthor={(userId) => setProfileUserId(userId)}
+        />
+      )}
+
+      {song && (
+        <RecentActivityDrawer
+          songId={song.id}
+          isOpen={isActivityOpen}
+          onClose={() => setIsActivityOpen(false)}
+          onSelectUser={(userId) => setProfileUserId(userId)}
+        />
+      )}
+
+      <AuthorProfileModal
+        isOpen={Boolean(profileUserId)}
+        onClose={() => setProfileUserId(null)}
+        userId={profileUserId}
+        onBlock={(bId, bName) => {
+          setProfileUserId(null);
+          setBlockTargetUser({ id: bId, displayName: bName });
+        }}
+        onReport={(rId, rName) => {
+          setProfileUserId(null);
+          setReportTargetUser({ id: rId, displayName: rName });
+        }}
+      />
+
+      <BlockUserModal
+        isOpen={Boolean(blockTargetUser)}
+        onClose={() => setBlockTargetUser(null)}
+        targetUser={blockTargetUser}
+        onBlocked={() => {
+          void queryClient.invalidateQueries({ queryKey: ['collaborations'] });
+          void queryClient.invalidateQueries({ queryKey: ['songs', id] });
+        }}
+      />
+
+      <AbuseReportModal
+        isOpen={Boolean(reportTargetUser)}
+        onClose={() => setReportTargetUser(null)}
+        targetUser={reportTargetUser}
+        songId={song?.id}
+      />
+
+      {conflictData && (
+        <ConflictDiffModal
+          isOpen={Boolean(conflictData)}
+          onClose={() => setConflictData(null)}
+          serverContent={conflictData.serverContent}
+          serverTitle={conflictData.serverTitle}
+          localContent={conflictData.localContent}
+          localTitle={conflictData.localTitle}
+          onKeepServer={() => {
+            setContent(conflictData.serverContent);
+            setTitle(conflictData.serverTitle);
+            setConflictData(null);
+            void queryClient.invalidateQueries({ queryKey: ['songs', 'detail', id] });
+            toast('Version distante conservée', 'info');
+          }}
+          onKeepLocal={async () => {
+            try {
+              const fresh = await songsClient.get(id);
+              await songsClient.update(id, {
+                content: conflictData.localContent,
+                title: conflictData.localTitle,
+                expectedRevision: fresh.revision,
+              });
+              setConflictData(null);
+              void queryClient.invalidateQueries({ queryKey: ['songs', 'detail', id] });
+              void queryClient.invalidateQueries({ queryKey: ['songs', 'versions', id] });
+              toast('Vos modifications ont été enregistrées avec succès', 'success');
+            } catch {
+              toast('Impossible d’appliquer vos modifications', 'error');
+            }
           }}
         />
       )}

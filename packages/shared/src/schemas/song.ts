@@ -29,20 +29,26 @@ export const updateSongSchema = z
   .object({
     title: songTitleSchema.optional(),
     content: songContentSchema.optional(),
+    lyrics: songContentSchema.optional(),
     status: songStatusSchema.optional(),
     isFavorite: z.boolean().optional(),
     albumId: z.string().uuid("Identifiant d'album invalide").nullable().optional(),
     tags: z.array(tagNameSchema).max(MAX_TAGS_PER_SONG).optional(),
+    expectedRevision: z.number().int().positive().optional(),
     // Force l'archivage d'un instantané immuable même sans intervalle d'inactivité.
     createVersion: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: 'Aucune modification fournie',
-  });
+  })
+  .transform((data) => ({
+    ...data,
+    content: data.content !== undefined ? data.content : data.lyrics,
+  }));
 
 export const songIdParamSchema = z.object({
   id: z.string().uuid('Identifiant de texte invalide'),
 });
 
 export type CreateSongInput = z.infer<typeof createSongSchema>;
-export type UpdateSongInput = z.infer<typeof updateSongSchema>;
+export type UpdateSongInput = z.input<typeof updateSongSchema>;
