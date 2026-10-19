@@ -113,6 +113,11 @@ L'architecture technique conçue lors du plan d'implémentation repose sur :
 # Installation des dépendances du monorepo
 pnpm install
 
+# Builds de production : compiler le package partagé avant chaque application
+pnpm --filter @verso/shared build
+pnpm --filter @verso/api build
+pnpm --filter @verso/web build
+
 # Contrôle qualité (ESLint 10 zéro warning et Prettier)
 pnpm run lint
 pnpm run format:check
