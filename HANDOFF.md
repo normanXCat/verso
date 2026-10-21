@@ -4,9 +4,17 @@
 
 - **Spécification en cours** : **`002-author-collaboration` — 100% TERMINÉE ET VALIDÉE.**
 - **Couverture des tâches** : **11 phases / 79 tâches implémentées et testées (T001 à T079)**.
-- **Suite de tests automatisés** : **34 fichiers de test, 278 tests au vert (100% de réussite)**.
-- **Qualité du code** : 0 erreur ESLint, 0 erreur Prettier, 0 erreur TypeScript strict (`tsc --noEmit`), build de production validé.
+- **Suite de tests automatisés** : **36 fichiers de test, 289 tests au vert (100% de réussite)**.
+- **Qualité du code** : 0 erreur ESLint, 0 erreur Prettier, 0 erreur TypeScript strict (`tsc --noEmit`), build de production validé (`apps/web`, `apps/api`, `packages/shared`).
 - **Ce qui est terminé** :
+  - **Correction robuste du renvoi d'email et requêtes sans corps (Fastify & Frontend)** :
+    - Résolution définitive du bug en production (Render + Vercel) : `Body cannot be empty when content-type is set to 'application/json'`.
+    - Client HTTP centralisé [`apps/web/src/lib/http-client.ts`](file:///home/normanxcat/Lab/verso/apps/web/src/lib/http-client.ts) (`buildRequestHeaders`) omettant l'en-tête `Content-Type` dès lors qu'aucun corps de requête n'est transmis, appliqué à l'ensemble des clients frontend (23 points d'appel).
+    - Parseur API Fastify [`apps/api/src/plugins/empty-body-parser.ts`](file:///home/normanxcat/Lab/verso/apps/api/src/plugins/empty-body-parser.ts) acceptant les corps vides sur les routes configurées avec `allowEmptyBody: true` (sans désactiver la validation JSON sur les routes à corps ni contourner la protection CSRF).
+    - Envoi d'email sécurisé dans [`apps/api/src/modules/auth/email.service.ts`](file:///home/normanxcat/Lab/verso/apps/api/src/modules/auth/email.service.ts) : détection et alerte si `CLIENT_URL` contient `localhost` en production, assainissement de `RESEND_API_KEY`, journalisation sécurisée avec occultation de secrets (`redactSecrets`), retour d'erreur 502 Bad Gateway propre avec message utilisateur explicite en cas d'échec du fournisseur (aucun 500 brut).
+    - Double rate limiting sur `/api/auth/resend-verification` : 1 renvoi par minute (avec calcul dynamique des secondes restantes et message `"Réessaie dans X secondes"`) et plafond de 5 renvois par heure.
+    - Bandeau de vérification réactif [`apps/web/src/components/common/EmailVerificationBanner.tsx`](file:///home/normanxcat/Lab/verso/apps/web/src/components/common/EmailVerificationBanner.tsx) : compte à rebours dynamique sur le bouton (`Renvoyer (Xs)`), état de chargement, confirmation `Email envoyé`, et messages de statut/erreur déportés sous le texte dans la palette Encre & Papier sobre (suppression du rouge agressif collé).
+    - Tests complets : tests unitaires client HTTP ([`apps/web/src/lib/http-client.test.ts`](file:///home/normanxcat/Lab/verso/apps/web/src/lib/http-client.test.ts) - 10 tests) et tests d'intégration API ([`apps/api/tests/integration/resend-verification.test.ts`](file:///home/normanxcat/Lab/verso/apps/api/tests/integration/resend-verification.test.ts) - 11 tests).
   - **Refonte photographique argentique "Encre & Papier" de la Landing Page et des flux connexes (100% terminée et validée)** :
     - Charte de style photographique argentique et éditoriale formalisée dans [`docs/IMAGE-STYLE.md`](file:///home/normanxcat/Lab/verso/docs/IMAGE-STYLE.md) avec bloc de prompt obligatoire et contraintes de prompt négatif (zéro visage, main, logo, texte parasite).
     - Registre de suivi et d'optimisation d'images dans [`docs/IMAGES.md`](file:///home/normanxcat/Lab/verso/docs/IMAGES.md) consignant le statut, le prompt, les ratios, les dimensions, les poids réels dans chaque format et l'avertissement légal IA.
@@ -134,9 +142,39 @@
 
 ## Dernière action
 
-- **Correction du renvoi d'email (21 octobre 2026)** : le client d'authentification envoyait `Content-Type: application/json` pour les requêtes POST sans corps, notamment `/api/auth/resend-verification`. Fastify les rejetait avec « Body cannot be empty when content-type is set to 'application/json' ». Le client n'ajoute désormais cet en-tête que lorsqu'un corps existe ; build web validé.
-- **Déploiement Render (19 octobre 2026)** : le build TypeScript API passait, mais le processus Node échouait car `@verso/shared` exportait ses fichiers TypeScript source, contenant des imports `.js` sans fichiers JS correspondants. Les exports du package pointent maintenant vers `dist/`. Il faut compiler `@verso/shared` avant l'API et le frontend dans les builds Render/Vercel.
-- **Commandes de production** : Render — `pnpm --filter @verso/shared build` puis `pnpm --filter @verso/api build` (après `prisma generate`) ; Vercel — `pnpm --filter @verso/shared build` puis `pnpm --filter @verso/web build`.
+- **Correction complète du renvoi d'email et robustesse Fastify / Frontend (21 octobre 2026)** :
+  - **Cause exacte identifiée** : Sur Render + Vercel, le bouton "Renvoyer l'email" échouait avec l'erreur Fastify 400 `FST_ERR_CTP_EMPTY_JSON_BODY` : `"Body cannot be empty when content-type is set to 'application/json'"`. Le client frontend ajoutait systématiquement l'en-tête `Content-Type: application/json` même lorsque le corps de la requête était omis ou vide, ce qui déclenchait le rejet strict du parseur JSON natif de Fastify.
+  - **Correction côté client (Frontend)** :
+    - Création du module centralisé [`apps/web/src/lib/http-client.ts`](file:///home/normanxcat/Lab/verso/apps/web/src/lib/http-client.ts) avec `buildRequestHeaders(options)` qui n'ajoute `Content-Type: application/json` que si `body !== undefined && body !== null && body.trim() !== ''`. Pour tout POST, PATCH ou DELETE sans données, aucun en-tête `Content-Type` n'est envoyé.
+    - Remplacement systématique dans les 23 points d'appels clients du frontend : `auth-client.ts`, `songs-client.ts`, `albums-client.ts`, `audio-client.ts`, `share-client.ts`, `collaboration-client.ts`, `comments-client.ts`, `credits-client.ts`, `moderation-client.ts`, `notifications-stream.ts`.
+    - Suite de 10 tests unitaires dédiée dans [`apps/web/src/lib/http-client.test.ts`](file:///home/normanxcat/Lab/verso/apps/web/src/lib/http-client.test.ts).
+  - **Robustesse côté serveur (API Fastify)** :
+    - Création du plugin [`apps/api/src/plugins/empty-body-parser.ts`](file:///home/normanxcat/Lab/verso/apps/api/src/plugins/empty-body-parser.ts) enregistrant un parseur `application/json` tolérant aux corps vides ou blancs lorsque la route est annotée avec `{ config: { allowEmptyBody: true } }` ou pour la méthode DELETE, tout en préservant le rejet strict (400) sur les routes exigeant un corps JSON (`login`, `register`, etc.).
+    - Aucune désactivation globale et maintien intégral de la protection CSRF (`csrfGuard`) placée en amont.
+    - Routes configurées avec `allowEmptyBody: true` : `/api/auth/logout`, `/api/auth/resend-verification`, `/api/invitations/:token/accept`, `/api/invitations/:token/decline`, `/api/notifications/:id/read`, `/api/notifications/read-all`, `/api/comments/:id/resolve`, `/api/comments/:id/reopen`, `/api/users/:id/block`, `/api/songs/:id/versions/:versionId/restore`.
+  - **Envoi d'email & Fiabilité Resend** :
+    - Dans [`apps/api/src/modules/auth/email.service.ts`](file:///home/normanxcat/Lab/verso/apps/api/src/modules/auth/email.service.ts) : avertissement explicite journalisé si `CLIENT_URL` contient `localhost` en production, assainissement par `.trim()` de `RESEND_API_KEY`, et journalisation sécurisée des réponses d'erreur de l'API Resend et des erreurs réseau via `redactSecrets` (aucun secret ni token fuité).
+    - Gestion d'erreur sans 500 brut : en cas de défaillance du transport Resend (erreur 4xx/5xx de l'API ou timeout réseau), l'API renvoie un statut HTTP 502 Bad Gateway propre avec `{ error: "Impossible d'envoyer l'email pour le moment. Réessaie dans quelques minutes." }`.
+  - **Rate Limiting & Cooldown** :
+    - Cooldown de 60 secondes entre deux renvois, calculé dynamiquement depuis la date du dernier jeton en base de données, retournant un statut HTTP 429 avec l'en-tête `Retry-After: <secondes>` et le message `"Réessaie dans X secondes"`.
+    - Plafond horaire de 5 renvois par heure pour prévenir les abus, renvoyant un statut HTTP 429 avec `Retry-After: 3600`.
+    - Aucune fuite d'informations : la réponse ne révèle rien d'autre que l'état de l'utilisateur connecté.
+  - **Interface utilisateur du bandeau** :
+    - Dans [`apps/web/src/components/common/EmailVerificationBanner.tsx`](file:///home/normanxcat/Lab/verso/apps/web/src/components/common/EmailVerificationBanner.tsx) : suppression du texte rouge brut collé au texte. Les retours de statut s'affichent sur une sous-ligne dédiée dans la palette sobre `text-paper-muted` ou `text-paper-text`.
+    - Bouton interactif avec état de chargement (`isPending`), compte à rebours dynamique (`Renvoyer (${cooldown}s)` tant que `cooldown > 0`), et libellé de succès (`Email envoyé`).
+  - **Tests d'intégration complets** :
+    - [`apps/api/tests/integration/resend-verification.test.ts`](file:///home/normanxcat/Lab/verso/apps/api/tests/integration/resend-verification.test.ts) (11 tests au vert) :
+      - POST sans corps avec et sans `Content-Type: application/json` sur route `allowEmptyBody` (/api/auth/logout).
+      - POST avec whitespace et `Content-Type: application/json` sur route `allowEmptyBody`.
+      - Rejet 400 pour POST sans corps avec `Content-Type: application/json` sur route exigeant un corps (/api/auth/login).
+      - Rejet 401 si non authentifié.
+      - Rejet 400 si l'email est déjà vérifié.
+      - Succès 200 avec génération de jeton et appel simulé du transport.
+      - Limitation 429 sous 60 secondes avec message `"Réessaie dans X secondes"` et `Retry-After`.
+      - Limitation 429 au-delà de 5 envois par heure.
+      - Échec du fournisseur renvoyant 502 Bad Gateway avec message clair (sans 500 brut).
+      - Exception inattendue du fournisseur renvoyant 502 Bad Gateway.
+  - **Validation qualité globale** : 0 erreur Prettier, 0 erreur ESLint, 0 erreur TypeScript strict (`tsc --noEmit`), suite de tests complète validée (36 fichiers de tests, 289 tests au vert), builds de production validés (`@verso/shared`, `@verso/api`, `@verso/web`).
 - **Action exécutée** : Refonte photographique argentique en noir et blanc "Encre & Papier" de la Landing Page et des flux connexes (10 images générées, optimisées en AVIF/WebP/JPG, intégrées sous contraintes WCAG AA et outillées par un script de contrôle CI/CD).
 - **Détails de l'implémentation** :
   - **Charte et registre** : Création de [`docs/IMAGE-STYLE.md`](file:///home/normanxcat/Lab/verso/docs/IMAGE-STYLE.md) (bloc textuel de prompt obligatoire, contraintes négatives : zéro visage, main, typographie parasite, marque) et [`docs/IMAGES.md`](file:///home/normanxcat/Lab/verso/docs/IMAGES.md) (inventaire exhaustif, formats, dimensions, ratios, poids réels et avertissement légal IA).
