@@ -134,6 +134,7 @@
 
 ## Dernière action
 
+- **Correction du renvoi d'email (21 octobre 2026)** : le client d'authentification envoyait `Content-Type: application/json` pour les requêtes POST sans corps, notamment `/api/auth/resend-verification`. Fastify les rejetait avec « Body cannot be empty when content-type is set to 'application/json' ». Le client n'ajoute désormais cet en-tête que lorsqu'un corps existe ; build web validé.
 - **Déploiement Render (19 octobre 2026)** : le build TypeScript API passait, mais le processus Node échouait car `@verso/shared` exportait ses fichiers TypeScript source, contenant des imports `.js` sans fichiers JS correspondants. Les exports du package pointent maintenant vers `dist/`. Il faut compiler `@verso/shared` avant l'API et le frontend dans les builds Render/Vercel.
 - **Commandes de production** : Render — `pnpm --filter @verso/shared build` puis `pnpm --filter @verso/api build` (après `prisma generate`) ; Vercel — `pnpm --filter @verso/shared build` puis `pnpm --filter @verso/web build`.
 - **Action exécutée** : Refonte photographique argentique en noir et blanc "Encre & Papier" de la Landing Page et des flux connexes (10 images générées, optimisées en AVIF/WebP/JPG, intégrées sous contraintes WCAG AA et outillées par un script de contrôle CI/CD).
