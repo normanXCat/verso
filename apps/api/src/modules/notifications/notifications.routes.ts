@@ -49,32 +49,40 @@ export const notificationsRoutes: FastifyPluginAsync = async (app: FastifyInstan
    * PATCH /api/notifications/:id/read
    * Marquer une notification comme lue
    */
-  app.patch('/notifications/:id/read', { preHandler: requireAuth }, async (request, reply) => {
-    const params = idParamSchema.safeParse(request.params);
-    if (!params.success) {
-      return reply.status(400).send({ message: 'Identifiant invalide' });
-    }
+  app.patch(
+    '/notifications/:id/read',
+    { preHandler: requireAuth, config: { allowEmptyBody: true } },
+    async (request, reply) => {
+      const params = idParamSchema.safeParse(request.params);
+      if (!params.success) {
+        return reply.status(400).send({ message: 'Identifiant invalide' });
+      }
 
-    try {
-      const result = await notificationsService.markAsRead(request.user!, params.data.id);
-      return reply.send(result);
-    } catch (error) {
-      return handleNotificationError(reply, error);
-    }
-  });
+      try {
+        const result = await notificationsService.markAsRead(request.user!, params.data.id);
+        return reply.send(result);
+      } catch (error) {
+        return handleNotificationError(reply, error);
+      }
+    },
+  );
 
   /**
    * POST /api/notifications/read-all
    * Marquer toutes les notifications comme lues
    */
-  app.post('/notifications/read-all', { preHandler: requireAuth }, async (request, reply) => {
-    try {
-      const result = await notificationsService.markAllAsRead(request.user!);
-      return reply.send(result);
-    } catch (error) {
-      return handleNotificationError(reply, error);
-    }
-  });
+  app.post(
+    '/notifications/read-all',
+    { preHandler: requireAuth, config: { allowEmptyBody: true } },
+    async (request, reply) => {
+      try {
+        const result = await notificationsService.markAllAsRead(request.user!);
+        return reply.send(result);
+      } catch (error) {
+        return handleNotificationError(reply, error);
+      }
+    },
+  );
 
   /**
    * GET /api/notifications/settings

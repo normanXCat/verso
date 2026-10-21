@@ -45,6 +45,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { csrfGuard } = await import('./plugins/csrf.plugin.js');
   app.addHook('onRequest', csrfGuard);
 
+  // Parseur JSON tolérant aux corps vides sur les routes déclarées `allowEmptyBody`
+  const { registerEmptyBodyParser } = await import('./plugins/empty-body-parser.js');
+  registerEmptyBodyParser(app);
+
   // Stockage d'objets compatible S3 (URLs présignées)
   const { s3Plugin } = await import('./plugins/s3.plugin.js');
   await app.register(s3Plugin);

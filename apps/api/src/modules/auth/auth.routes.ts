@@ -211,7 +211,7 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   });
 
   // Déconnexion
-  app.post('/logout', async (request, reply) => {
+  app.post('/logout', { config: { allowEmptyBody: true } }, async (request, reply) => {
     const sessionId = request.cookies[SESSION_COOKIE_NAME];
     if (sessionId) {
       await deleteSession(sessionId);
@@ -274,6 +274,7 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
     {
       preHandler: requireAuth,
       config: {
+        allowEmptyBody: true,
         rateLimit:
           process.env.NODE_ENV === 'test'
             ? false
@@ -291,6 +292,48 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
         });
       }
 
+      // Limitation de fréquence : maximum 1 envoi par minute
+      const lastToken = await prisma.emailToken.findFirst({
+        where: {
+          email: user.email,
+          type: 'VERIFY_EMAIL',
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      if (lastToken) {
+        const elapsedMs = Date.now() - lastToken.createdAt.getTime();
+        const cooldownMs = 60 * 1000;
+        if (elapsedMs < cooldownMs) {
+          const secondsRemaining = Math.max(1, Math.ceil((cooldownMs - elapsedMs) / 1000));
+          reply.header('retry-after', String(secondsRemaining));
+          return reply.status(429).send({
+            message: `Réessaie dans ${secondsRemaining} secondes`,
+            retryAfterSeconds: secondsRemaining,
+          });
+        }
+      }
+
+      // Limitation horaire : maximum 5 envois par heure
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const recentTokensCount = await prisma.emailToken.count({
+        where: {
+          email: user.email,
+          type: 'VERIFY_EMAIL',
+          createdAt: { gte: oneHourAgo },
+        },
+      });
+
+      if (recentTokensCount >= 5) {
+        reply.header('retry-after', '3600');
+        return reply.status(429).send({
+          message: 'Trop de tentatives de renvoi. Réessaie dans une heure.',
+          retryAfterSeconds: 3600,
+        });
+      }
+
       const { rawToken, tokenHash } = generateEmailToken();
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
@@ -305,10 +348,14 @@ export const authRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
 
       const emailSent = await trySendVerificationEmail(request, user.email, rawToken);
 
+      if (!emailSent) {
+        return reply.status(502).send({
+          message: "Impossible d'envoyer l'email pour le moment. Réessaie dans quelques minutes.",
+        });
+      }
+
       return reply.status(200).send({
-        message: emailSent
-          ? 'Un nouvel email de vérification vous a été envoyé.'
-          : "L'envoi de l'email de vérification a échoué. Réessayez dans un instant.",
+        message: 'Un nouvel email de vérification vous a été envoyé.',
       });
     },
   );

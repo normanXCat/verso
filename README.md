@@ -239,6 +239,16 @@ Un 500 global signifie presque toujours que la base de données est injoignable 
 6. **Emails en développement (sans Docker ni SMTP)** : sans `RESEND_API_KEY` et hors production, l'API affiche dans la console l'email complet — destinataire, objet, contenu et **lien de vérification** — encadré par un bandeau `EMAIL SIMULÉ`, et l'inscription n'échoue jamais (le compte est créé, l'envoi peut être redemandé). En **production**, l'absence de transport d'email empêche le démarrage de l'API (message nommant `RESEND_API_KEY`) : aucun lien de vérification n'est jamais journalisé en production.
 7. **Proxy Vite, CORS et CSRF** : le frontend appelle `/api/*`, redirigé vers l'API par le proxy de développement Vite. `CLIENT_URL` doit correspondre à l'origine du frontend (défaut `http://localhost:5173`) pour le CORS et la protection CSRF.
 
+### Renvoi d'email de vérification et requêtes sans corps
+
+- **Gestion des corps vides** : le client HTTP frontend centralisé ([`apps/web/src/lib/http-client.ts`](file:///home/normanxcat/Lab/verso/apps/web/src/lib/http-client.ts)) n'ajoute `Content-Type: application/json` que si la requête contient un corps non vide. Côté serveur, les routes sans corps (déconnexion, renvoi d'email, acceptation d'invitations, etc.) sont configurées avec `allowEmptyBody: true` via le plugin Fastify dédié, évitant le rejet `FST_ERR_CTP_EMPTY_JSON_BODY` sans affaiblir la validation des autres routes.
+- **Rate limiting du renvoi** : limité à 1 renvoi par minute (calcul dynamique du temps restant renvoyant un statut 429 avec `Retry-After: <secondes>` et le message `"Réessaie dans X secondes"`) et à 5 renvois par heure.
+- **Configuration de production (Render / Vercel)** :
+  - `RESEND_API_KEY` : clé API Resend valide.
+  - `EMAIL_FROM` : adresse d'expédition avec un domaine vérifié sur Resend (ex. `Verso <noreply@mondomaine.fr>`). Par défaut en sandbox sans domaine personnalisé : `onboarding@resend.dev` (limité à l'adresse du propriétaire de compte).
+  - `CLIENT_URL` : URL de production du frontend (ex. `https://verso.vercel.app`). En production, l'API journalise un avertissement critique si cette variable contient `localhost`, car le lien de vérification envoyé à l'utilisateur pointerait vers sa propre machine.
+- **En cas d'échec du fournisseur d'email** : l'API intercepte les erreurs réseau ou d'API Resend, consigne les détails dans les journaux de Render de manière sécurisée (secrets et clés masqués), et renvoie un statut HTTP 502 Bad Gateway propre avec le message `"Impossible d'envoyer l'email pour le moment. Réessaie dans quelques minutes."`. Le bandeau affiche ce libellé sans altérer l'interface.
+
 ---
 
 ## Règles de fin de tâche obligatoires

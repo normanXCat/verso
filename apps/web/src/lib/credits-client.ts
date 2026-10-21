@@ -1,4 +1,5 @@
 import type { CreditRole, UpdateSongCreditsInput } from '@verso/shared';
+import { buildRequestHeaders } from './http-client.js';
 
 export interface SongCreditItem {
   id?: string;
@@ -40,13 +41,14 @@ export const creditsClient = {
   },
 
   async updateCredits(songId: string, data: UpdateSongCreditsInput): Promise<SongCreditsResponse> {
-    const res = await fetch(`${API_BASE_URL}/songs/${encodeURIComponent(songId)}/credits`, {
+    const options: RequestInit = {
       method: 'PUT',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(data),
+    };
+    const res = await fetch(`${API_BASE_URL}/songs/${encodeURIComponent(songId)}/credits`, {
+      ...options,
+      headers: buildRequestHeaders(options),
     });
     if (!res.ok) {
       const err = (await res.json().catch(() => ({}))) as { message?: string };

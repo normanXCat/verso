@@ -4,6 +4,7 @@ import type {
   SongActivityItem,
   UpdateProfileInput,
 } from '@verso/shared';
+import { buildRequestHeaders } from './http-client.js';
 
 export interface AuthorProfile {
   id: string;
@@ -34,12 +35,9 @@ export class ModerationApiError extends Error {
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
     ...options,
+    credentials: 'include',
+    headers: buildRequestHeaders(options),
   });
 
   if (response.status === 204) {
