@@ -1,4 +1,5 @@
 import { env } from '../../config/env.js';
+import { redactSecrets } from '../../plugins/error-handler.js';
 
 export interface SentEmail {
   to: string;
@@ -59,6 +60,11 @@ export function formatSimulatedEmail({
  * Envoie un email de vérification d'adresse avec le lien contenant le token brut.
  */
 export async function sendVerificationEmail(to: string, rawToken: string): Promise<boolean> {
+  if (env.NODE_ENV === 'production' && env.CLIENT_URL.includes('localhost')) {
+    console.warn(
+      '[EmailService] Attention : CLIENT_URL pointe vers localhost en environnement de production !',
+    );
+  }
   const verificationUrl = `${env.CLIENT_URL}/verify-email?token=${encodeURIComponent(rawToken)}`;
   const subject = 'Vérifiez votre adresse email — Verso';
   const text = `Bienvenue sur Verso !\n\nCliquez sur le lien suivant pour vérifier votre adresse email :\n${verificationUrl}\n\nCe lien expire dans 24 heures.\n\nL'équipe Verso`;
@@ -156,7 +162,8 @@ async function sendEmail({
 
   sentEmailsHistory.push(emailRecord);
 
-  const delivery = resolveEmailDelivery(env.NODE_ENV, Boolean(env.RESEND_API_KEY));
+  const resendApiKey = env.RESEND_API_KEY?.trim();
+  const delivery = resolveEmailDelivery(env.NODE_ENV, Boolean(resendApiKey));
 
   // Configuration d'envoi absente alors qu'on est en production : on n'écrit JAMAIS le
   // contenu de l'email (donc jamais le lien de vérification) dans les journaux.
@@ -183,7 +190,7 @@ async function sendEmail({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
         from: env.EMAIL_FROM,
@@ -194,8 +201,21 @@ async function sendEmail({
       }),
     });
 
-    return response.ok;
-  } catch {
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(
+        `[EmailService] Échec de l'envoi via Resend (${response.status}) :`,
+        redactSecrets(JSON.stringify(errorData)),
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error(
+      "[EmailService] Erreur réseau lors de l'appel à Resend :",
+      redactSecrets(error instanceof Error ? error.message : String(error)),
+    );
     return false;
   }
 }
