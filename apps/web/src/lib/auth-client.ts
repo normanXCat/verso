@@ -7,6 +7,7 @@ import {
   UserPublic,
   SessionInfo,
 } from '@verso/shared';
+import { buildRequestHeaders } from './http-client.js';
 
 const API_BASE_URL = '/api/auth';
 
@@ -35,10 +36,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     response = await fetch(url, {
       ...options,
       credentials: 'include',
-      headers: {
-        ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-        ...options.headers,
-      },
+      headers: buildRequestHeaders(options),
     });
   } catch {
     // Panne réseau : le serveur est injoignable (statut 0 conventionnel).
