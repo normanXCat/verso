@@ -2,11 +2,22 @@
 
 ## État actuel
 
-- **Spécification en cours** : **Refonte complète des emails transactionnels « Encre & Papier » — 100% TERMINÉE ET VALIDÉE.**
-- **Couverture des tâches** : **11 phases / 79 tâches collaboration (T001 à T079) + Refonte emails transactionnels (6 gabarits + atelier dev + script CLI + assets retina)**.
-- **Suite de tests automatisés** : **39 fichiers de test, 333 tests au vert (100% de réussite)**.
+- **Spécification en cours** : **Navigation intégrale par cartes étirées, nettoyage d'extraits et badges Encre & Papier — 100% TERMINÉE ET VALIDÉE.**
+- **Couverture des tâches** : **11 phases / 79 tâches collaboration (T001 à T079) + Refonte emails transactionnels + Navigation cartes étirées & extraits propres**.
+- **Suite de tests automatisés** : **41 fichiers de test, 341 tests au vert (100% de réussite)**.
 - **Qualité du code** : 0 erreur ESLint (`eslint .`), 0 erreur Prettier (`prettier --check`), 0 erreur TypeScript strict (`tsc --noEmit`), build de production validé (`apps/web`, `apps/api`, `packages/shared`).
 - **Ce qui est terminé** :
+  - **Navigation par cartes étirées & correction d'extraits (100% terminée et validée)** :
+    - Diagnostic initial résolu : `SongCard.tsx` utilisait un `<Card interactive>` purement visuel (effet de survol et curseur pointer sans balise `<Link>` ni gestionnaire `onClick`).
+    - Implémentation de la technique du « lien étiré » conforme aux standards W3C (`Link` de React Router sur le titre avec pseudo-élément `after:absolute after:inset-0 after:z-0`) sur `SongCard`, `AlbumCard` et la liste de pistes d'un album `SortableTracklist`.
+    - Boutons d'actions secondaires (étoile favori, badge statut, poignée de glisser-déposer, bouton de retrait) surélevés en `relative z-10` avec arrêt de propagation d'événements (`stopPropagation`), empêchant tout nesting invalide de boutons dans un lien.
+    - Curseur pointer intégral, préservation des micro-interactions de survol Framer Motion, focus clavier visible (`focus-within:ring-2 focus-within:ring-paper-accent`), et support natif de l'ouverture en nouvel onglet (clic molette et Ctrl/Cmd+clic).
+    - Décorations et réglures neutralisées en `pointer-events-none` pour que tout clic sur l'extrait, le pied de carte ou l'espace vide déclenche la navigation.
+    - Création du module de nettoyage d'extraits `cleanExcerpt()` dans [`packages/shared/src/lyrics-engine/excerpt.ts`](file:///home/normanxcat/Lab/verso/packages/shared/src/lyrics-engine/excerpt.ts) : élimination des titres Markdown (`#`), des en-têtes de sections (`[Couplet 1]`, `[Refrain]`), des puces, du gras/italique et des balises HTML avec coupure propre à une frontière de mot (~140 caractères).
+    - Normalisation des badges de statut dans [`apps/web/src/components/ui/Tag.tsx`](file:///home/normanxcat/Lab/verso/apps/web/src/components/ui/Tag.tsx) : suppression des couleurs externes (vert émeraude et ambre), remplacement par les tokens officiels Encre & Papier (`paper-border`, `paper-muted`, `paper-accent`) avec contraste WCAG AA certifié.
+    - Sécurité API confirmée : accès direct à l'identifiant d'un texte tiers non partagé retournant un HTTP 404 strict avec le message `"Texte introuvable"`.
+    - Suite de 7 tests de composants React Testing Library dans [`apps/web/src/components/dashboard/SongCard.test.tsx`](file:///home/normanxcat/Lab/verso/apps/web/src/components/dashboard/SongCard.test.tsx) et 5 tests unitaires dans [`packages/shared/tests/excerpt.test.ts`](file:///home/normanxcat/Lab/verso/packages/shared/tests/excerpt.test.ts).
+    - Validation visuelle et comportementale Playwright dans [`scripts/verify-card-playwright.mjs`](file:///home/normanxcat/Lab/verso/scripts/verify-card-playwright.mjs) testant tous les points de clics et archivant les captures responsives dans `docs/screenshots/cards/`.
   - **Refonte intégrale des emails transactionnels « Encre & Papier » (100% terminée et validée)** :
     - Architecture modulaire TypeScript pure dans [`apps/api/src/emails/`](file:///home/normanxcat/Lab/verso/apps/api/src/emails/) sans dépendances lourdes (zéro MJML, zéro SSR React backend) : génération synchrone, styles en ligne, tableaux HTML compatibles Microsoft Outlook (mso bulletproof) et version texte brut soignée pour chaque gabarit.
     - 6 gabarits rédigés au tutoiement direct en français, basés uniquement sur des fonctionnalités réelles de Verso :
@@ -160,6 +171,37 @@
 
 ## Dernière action
 
+- **Cartes cliquables par lien étiré, assainissement d'extraits et badges Encre & Papier (29 octobre 2026)** :
+  - **Diagnostic du problème initial** : Les cartes de textes (`SongCard.tsx`) utilisaient un conteneur `<Card interactive>` avec un effet de survol CSS et un curseur `pointer`, mais ne contenaient aucun élément `<a>`, composant `<Link>` ni gestionnaire `onClick`. Les textes et métadonnées étant des nœuds texte statiques, le clic ne déclenchait aucune action. La page de visualisation et d'édition existait pourtant bel et bien sous [`apps/web/src/pages/EditorPage.tsx`](file:///home/normanxcat/Lab/verso/apps/web/src/pages/EditorPage.tsx), montée sur `/app/songs/:id` et `/songs/:id`.
+  - **Technique du « lien étiré » W3C** :
+    - Le titre du texte ou de l'album devient un `<Link to="...">` de React Router doté du pseudo-élément `after:absolute after:inset-0 after:z-0 after:content-['']`.
+    - Le conteneur parent (`Card.tsx` ou `SortableRow`) étant en `relative`, l'ensemble de la surface de la carte capte les clics et déclenche la navigation vers l'éditeur de texte ou le détail de l'album.
+    - Toutes les couches de texte ou décoratives intermédiaires (extrait, tags, réglure `notebook-ruled`, pied de carte) sont neutralisées avec `pointer-events-none` pour laisser passer les clics vers le lien étiré.
+  - **Actions secondaires surélevées (aucun nesting invalide de boutons dans des liens)** :
+    - Les actions interactives (étoile de favori, badge de changement de statut, poignée de drag-and-drop `@dnd-kit`, bouton de suppression `X`) sont isolées dans des balises `<button>` indépendantes dotées de `relative z-10`.
+    - Grâce à leur contexte d'empilement supérieur (`z-index: 10`), ces boutons captent directement les événements de souris sans heurter le lien étiré en arrière-plan (`z-index: 0`).
+    - Les gestionnaires de clics secondaires appellent `e.preventDefault()` et `e.stopPropagation()`, garantissant qu'aucune navigation intempestive n'est déclenchée lors de la mise en favori ou du réordonnancement.
+    - Conformité stricte aux règles d'accessibilité W3C : aucun `<button>` imbriqué dans une balise `<a>`, focus clavier visible (`focus-within:ring-2 focus-within:ring-paper-accent`), et préservation du clic molette / Ctrl+clic pour l'ouverture en nouvel onglet.
+  - **Nettoyage d'extrait Markdown (`cleanExcerpt`)** :
+    - Création du module dédié [`packages/shared/src/lyrics-engine/excerpt.ts`](file:///home/normanxcat/Lab/verso/packages/shared/src/lyrics-engine/excerpt.ts).
+    - Élimine systématiquement les lignes de titres Markdown (`#`, `##`, `###`), les balises de section courantes en rap (`[Couplet 1]`, `[Refrain]`, `[Intro]`, `[Pont]`), les marqueurs de listes (`-`, `*`, `1.`), les styles gras/italique (`**`, `*`, `_`), le code en ligne (`` ` ``) et toute balise HTML.
+    - Réduction des blancs multiples et coupure propre à une frontière de mot (~140 caractères) avec ellipse `…`.
+    - Intégration côté backend (`songs.repository.ts`, `albums.repository.ts`) et côté frontend (`SongCard.tsx`, `SortableTracklist.tsx`).
+  - **Refonte des badges de statut aux tokens du design system** :
+    - Dans [`apps/web/src/components/ui/Tag.tsx`](file:///home/normanxcat/Lab/verso/apps/web/src/components/ui/Tag.tsx) : élimination intégrale des couleurs externes `emerald` et `amber`.
+    - `success` (« Terminé ») : bordure et texte en couleur secondaire `border-paper-border text-paper-muted bg-paper-bg/60` (contraste AA garanti > 4.5:1 sur thèmes clair et sombre).
+    - `draft` (« Brouillon ») : accent de la plateforme `border-paper-accent/40 text-paper-accent bg-paper-accent/10`.
+  - **Sécurité anti-IDOR confirmée** :
+    - Route `GET /api/songs/:id` protégée par `can(user, song, 'read')`.
+    - Tout accès à un identifiant n'appartenant pas à l'utilisateur authentifié (et non partagé) retourne strictement un HTTP 404 neutre avec `{ message: "Texte introuvable" }`, sans aucune fuite d'existence.
+  - **Vérifications automatisées & Playwright** :
+    - 7 nouveaux tests de composants dans [`apps/web/src/components/dashboard/SongCard.test.tsx`](file:///home/normanxcat/Lab/verso/apps/web/src/components/dashboard/SongCard.test.tsx) validant le lien étiré, l'absence de navigation sur clic favori, la navigation clavier (Tab + Entrée), l'extrait nettoyé et le badge non émeraude.
+    - 5 nouveaux tests unitaires dans [`packages/shared/tests/excerpt.test.ts`](file:///home/normanxcat/Lab/verso/packages/shared/tests/excerpt.test.ts).
+    - Script Playwright Chromium [`scripts/verify-card-playwright.mjs`](file:///home/normanxcat/Lab/verso/scripts/verify-card-playwright.mjs) simulant les clics réels sur chaque zone (titre, extrait, pied de page, espace vide) avec navigation confirmée vers `/app/songs/:id`, clic étoile sans navigation, et génération de captures Desktop (1440px) et Mobile (375px) dans `docs/screenshots/cards/`.
+  - **Suite totale** : 41 fichiers de tests, 341 tests au vert (100% de succès), 0 erreur de format/lint/typecheck, builds de production validés.
+
+### Action précédente
+
 - **Correction complète du renvoi d'email et robustesse Fastify / Frontend (21 octobre 2026)** :
   - **Cause exacte identifiée** : Sur Render + Vercel, le bouton "Renvoyer l'email" échouait avec l'erreur Fastify 400 `FST_ERR_CTP_EMPTY_JSON_BODY` : `"Body cannot be empty when content-type is set to 'application/json'"`. Le client frontend ajoutait systématiquement l'en-tête `Content-Type: application/json` même lorsque le corps de la requête était omis ou vide, ce qui déclenchait le rejet strict du parseur JSON natif de Fastify.
   - **Correction côté client (Frontend)** :
@@ -285,7 +327,38 @@
   - **Tests et Quality Gates** : Exigence de tests exhaustifs pour la fonction centrale d'autorisation `can`, renforcement des standards techniques et enrichissement du palier P3.
 - **Résultat** : Constitution mise à jour en version `2.0.0` (incrément MAJOR), `README.md` et `HANDOFF.md` synchronisés.
 
-### Dernière action exécutée
+### Dernière action
+
+- **Cartes cliquables par lien étiré, assainissement d'extraits et badges Encre & Papier (29 octobre 2026)** :
+  - **Diagnostic du problème initial** : Les cartes de textes (`SongCard.tsx`) utilisaient un conteneur `<Card interactive>` avec un effet de survol CSS et un curseur `pointer`, mais ne contenaient aucun élément `<a>`, composant `<Link>` ni gestionnaire `onClick`. Les textes et métadonnées étant des nœuds texte statiques, le clic ne déclenchait aucune action. La page de visualisation et d'édition existait pourtant bel et bien sous [`apps/web/src/pages/EditorPage.tsx`](file:///home/normanxcat/Lab/verso/apps/web/src/pages/EditorPage.tsx), montée sur `/app/songs/:id` et `/songs/:id`.
+  - **Technique du « lien étiré » W3C** :
+    - Le titre du texte ou de l'album devient un `<Link to="...">` de React Router doté du pseudo-élément `after:absolute after:inset-0 after:z-0 after:content-['']`.
+    - Le conteneur parent (`Card.tsx` ou `SortableRow`) étant en `relative`, l'ensemble de la surface de la carte capte les clics et déclenche la navigation vers l'éditeur de texte ou le détail de l'album.
+    - Toutes les couches de texte ou décoratives intermédiaires (extrait, tags, réglure `notebook-ruled`, pied de carte) sont neutralisées avec `pointer-events-none` pour laisser passer les clics vers le lien étiré.
+  - **Actions secondaires surélevées (aucun nesting invalide de boutons dans des liens)** :
+    - Les actions interactives (étoile de favori, badge de changement de statut, poignée de drag-and-drop `@dnd-kit`, bouton de suppression `X`) sont isolées dans des balises `<button>` indépendantes dotées de `relative z-10`.
+    - Grâce à leur contexte d'empilement supérieur (`z-index: 10`), ces boutons captent directement les événements de souris sans heurter le lien étiré en arrière-plan (`z-index: 0`).
+    - Les gestionnaires de clics secondaires appellent `e.preventDefault()` et `e.stopPropagation()`, garantissant qu'aucune navigation intempestive n'est déclenchée lors de la mise en favori ou du réordonnancement.
+    - Conformité stricte aux règles d'accessibilité W3C : aucun `<button>` imbriqué dans une balise `<a>`, focus clavier visible (`focus-within:ring-2 focus-within:ring-paper-accent`), et préservation du clic molette / Ctrl+clic pour l'ouverture en nouvel onglet.
+  - **Nettoyage d'extrait Markdown (`cleanExcerpt`)** :
+    - Création du module dédié [`packages/shared/src/lyrics-engine/excerpt.ts`](file:///home/normanxcat/Lab/verso/packages/shared/src/lyrics-engine/excerpt.ts).
+    - Élimine systématiquement les lignes de titres Markdown (`#`, `##`, `###`), les balises de section courantes en rap (`[Couplet 1]`, `[Refrain]`, `[Intro]`, `[Pont]`), les marqueurs de listes (`-`, `*`, `1.`), les styles gras/italique (`**`, `*`, `_`), le code en ligne (`` ` ``) et toute balise HTML.
+    - Réduction des blancs multiples et coupure propre à une frontière de mot (~140 caractères) avec ellipse `…`.
+    - Intégration côté backend (`songs.repository.ts`, `albums.repository.ts`) et côté frontend (`SongCard.tsx`, `SortableTracklist.tsx`).
+  - **Refonte des badges de statut aux tokens du design system** :
+    - Dans [`apps/web/src/components/ui/Tag.tsx`](file:///home/normanxcat/Lab/verso/apps/web/src/components/ui/Tag.tsx) : élimination intégrale des couleurs externes `emerald` et `amber`.
+    - `success` (« Terminé ») : bordure et texte en couleur secondaire `border-paper-border text-paper-muted bg-paper-bg/60` (contraste AA garanti > 4.5:1 sur thèmes clair et sombre).
+    - `draft` (« Brouillon ») : accent de la plateforme `border-paper-accent/40 text-paper-accent bg-paper-accent/10`.
+  - **Sécurité anti-IDOR confirmée** :
+    - Route `GET /api/songs/:id` protégée par `can(user, song, 'read')`.
+    - Tout accès à un identifiant n'appartenant pas à l'utilisateur authentifié (et non partagé) retourne strictement un HTTP 404 neutre avec `{ message: "Texte introuvable" }`, sans aucune fuite d'existence.
+  - **Vérifications automatisées & Playwright** :
+    - 7 nouveaux tests de composants dans [`apps/web/src/components/dashboard/SongCard.test.tsx`](file:///home/normanxcat/Lab/verso/apps/web/src/components/dashboard/SongCard.test.tsx) validant le lien étiré, l'absence de navigation sur clic favori, la navigation clavier (Tab + Entrée), l'extrait nettoyé et le badge non émeraude.
+    - 5 nouveaux tests unitaires dans [`packages/shared/tests/excerpt.test.ts`](file:///home/normanxcat/Lab/verso/packages/shared/tests/excerpt.test.ts).
+    - Script Playwright Chromium [`scripts/verify-card-playwright.mjs`](file:///home/normanxcat/Lab/verso/scripts/verify-card-playwright.mjs) simulant les clics réels sur chaque zone (titre, extrait, pied de page, espace vide) avec navigation confirmée vers `/app/songs/:id`, clic étoile sans navigation, et génération de captures Desktop (1440px) et Mobile (375px) dans `docs/screenshots/cards/`.
+  - **Suite totale** : 41 fichiers de tests, 341 tests au vert (100% de succès), 0 erreur de format/lint/typecheck, builds de production validés.
+
+### Action précédente exécutée
 
 - **Action exécutée** : Refonte intégrale des emails transactionnels aux couleurs de Verso (« Encre & Papier ») avec typographies éditoriales, logos retina et atelier de prévisualisation.
 - **Détails de l'implémentation** :
