@@ -4,6 +4,7 @@ import { assertCan, NotFoundAccessError } from '../permissions/permissions.servi
 import type { ResourceTarget } from '../permissions/permissions.types.js';
 import { collaborationRepository, userSummarySelect } from './collaboration.repository.js';
 import { notificationsService } from '../notifications/notifications.service.js';
+import { sendCollaborationInviteEmail } from '../auth/email.service.js';
 import {
   MAX_ACTIVE_COLLABORATORS_PER_SONG,
   type CollaboratorRole,
@@ -89,12 +90,13 @@ export const collaborationService = {
     const expiresInDays = input.expiresInDays || 7;
     const expiresAt = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000);
 
+    const invitedEmail = !targetUser && isEmail ? recipientInput.toLowerCase() : null;
     const invitation = await collaborationRepository.createInvitation({
       tokenHash,
       role: input.role,
       inviterId: inviter.id,
       invitedUserId: targetUser?.id,
-      invitedEmail: !targetUser && isEmail ? recipientInput.toLowerCase() : null,
+      invitedEmail,
       songId,
       expiresAt,
     });
@@ -107,6 +109,35 @@ export const collaborationService = {
         actorId: inviter.id,
         songId,
         invitationId: invitation.id,
+      });
+    }
+
+    // Envoi d'un email d'invitation (vers l'utilisateur existant ou vers l'adresse externe)
+    let recipientEmail: string | null = invitedEmail;
+    if (targetUser) {
+      const u = await prisma.user.findUnique({
+        where: { id: targetUser.id },
+        select: { email: true },
+      });
+      recipientEmail = u?.email ?? null;
+    }
+
+    if (recipientEmail) {
+      const inviterUser = await prisma.user.findUnique({
+        where: { id: inviter.id },
+        select: { displayName: true },
+      });
+      const song = await prisma.song.findUnique({
+        where: { id: songId },
+        select: { title: true },
+      });
+      void sendCollaborationInviteEmail(recipientEmail, {
+        inviterName: inviterUser?.displayName || 'Un collaborateur',
+        targetTitle: song?.title || 'Texte sans titre',
+        targetType: 'song',
+        role: input.role,
+        rawToken,
+        expiresAt,
       });
     }
 
@@ -157,12 +188,13 @@ export const collaborationService = {
     const expiresInDays = input.expiresInDays || 7;
     const expiresAt = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000);
 
+    const invitedEmail = !targetUser && isEmail ? recipientInput.toLowerCase() : null;
     const invitation = await collaborationRepository.createInvitation({
       tokenHash,
       role: input.role,
       inviterId: inviter.id,
       invitedUserId: targetUser?.id,
-      invitedEmail: !targetUser && isEmail ? recipientInput.toLowerCase() : null,
+      invitedEmail,
       albumId,
       expiresAt,
     });
@@ -174,6 +206,35 @@ export const collaborationService = {
         actorId: inviter.id,
         albumId,
         invitationId: invitation.id,
+      });
+    }
+
+    // Envoi d'un email d'invitation (vers l'utilisateur existant ou vers l'adresse externe)
+    let recipientEmail: string | null = invitedEmail;
+    if (targetUser) {
+      const u = await prisma.user.findUnique({
+        where: { id: targetUser.id },
+        select: { email: true },
+      });
+      recipientEmail = u?.email ?? null;
+    }
+
+    if (recipientEmail) {
+      const inviterUser = await prisma.user.findUnique({
+        where: { id: inviter.id },
+        select: { displayName: true },
+      });
+      const album = await prisma.album.findUnique({
+        where: { id: albumId },
+        select: { title: true },
+      });
+      void sendCollaborationInviteEmail(recipientEmail, {
+        inviterName: inviterUser?.displayName || 'Un collaborateur',
+        targetTitle: album?.title || 'Album sans titre',
+        targetType: 'album',
+        role: input.role,
+        rawToken,
+        expiresAt,
       });
     }
 

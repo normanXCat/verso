@@ -10,12 +10,18 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "pnpm --filter \"@verso/*\" typecheck"
+    "typecheck": "pnpm --filter \"@verso/*\" typecheck",
+    "email:preview": "echo 'Ouvrez http://localhost:4000/dev/emails dans votre navigateur (lancer pnpm dev en parallèle)'",
+    "email:send-test": "tsx scripts/send-test-email.ts",
+    "email:assets": "node scripts/generate-email-assets.mjs",
+    "email:capture": "pnpm exec tsx scripts/capture-email-previews.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.11.0",
     "prettier": "^3.9.9",
+    "sharp": "^0.35.5",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.71.0",
     "vitest": "^5.0.3"

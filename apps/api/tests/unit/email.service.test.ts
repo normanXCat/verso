@@ -21,7 +21,7 @@ describe("Service d'emails transactionnels (email.service)", () => {
     const sent = getSentEmailsForTesting();
     expect(sent).toHaveLength(1);
     expect(sent[0].to).toBe('artiste@verso.fr');
-    expect(sent[0].subject).toContain('Vérifiez votre adresse');
+    expect(sent[0].subject).toContain('Vérifie ton adresse email');
     expect(sent[0].text).toContain(rawToken);
     expect(sent[0].text).toContain('/verify-email?token=');
   });
@@ -74,7 +74,7 @@ describe("Aperçu de l'email simulé en développement", () => {
 
     expect(preview).toContain('EMAIL SIMULÉ');
     expect(preview).toContain('artiste@verso.fr');
-    expect(preview).toContain('Vérifiez votre adresse email');
+    expect(preview).toContain('Vérifie ton adresse email');
     expect(preview).toContain('/verify-email?token=token-preview-42');
     expect(preview).not.toContain('undefined');
   });

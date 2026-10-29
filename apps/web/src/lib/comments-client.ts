@@ -1,4 +1,5 @@
 import type { CreateCommentInput, ReplyCommentInput } from '@verso/shared';
+import { buildRequestHeaders } from './http-client.js';
 
 const API_BASE_URL = '/api';
 
@@ -14,12 +15,9 @@ export class CommentsApiError extends Error {
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
     ...options,
+    credentials: 'include',
+    headers: buildRequestHeaders(options),
   });
 
   if (response.status === 204) {

@@ -217,6 +217,108 @@ Seuls les noms des variables prévues par l'architecture sont documentés (aucun
 | `ORCID_CLIENT_SECRET` | Secret client de l'application OAuth ORCID |
 | `RESEND_API_KEY` | Clé API du transport d'emails transactionnels (Resend) — **obligatoire en production** |
 | `EMAIL_FROM` | Expéditeur des emails transactionnels (défaut `Verso <noreply@verso.fr>`) |
+| `EMAIL_REPLY_TO` | Adresse de réponse optionnelle transmise à Resend et insérée dans le pied de page des emails |
+| `EMAIL_ASSETS_URL` | URL de base servant les logos et images des emails (défaut `https://verso-lyrics.vercel.app`, jamais localhost en production) |
+
+---
+
+## Emails Transactionnels
+
+Verso intègre un moteur d'emails transactionnels sur mesure respectant rigoureusement la charte éditoriale « Encre & Papier », les contraintes des clients de messagerie stricts (notamment Microsoft Outlook / mso) et les normes d'accessibilité WCAG AA.
+
+### 1. Architecture du module (`apps/api/src/emails`)
+
+Le module ne dépend d'aucune bibliothèque externe lourde (ni compilateur MJML, ni rendu React côté serveur). Il repose sur du HTML tabulaire éprouvé avec styles en ligne, assurant une compatibilité universelle et une exécution synchrone instantanée.
+
+- **Composants et fondations communes (`apps/api/src/emails/common/`)** :
+  - `palette.ts` : Palette de couleurs explicites en mode sombre (fond `#0E0D0B`, carte `#171512`, texte `#EDE6D8`, accent `#FF5A2E`, texte de bouton sombre `#14110F` certifié AA 6.5:1) et repli clair via `@media (prefers-color-scheme: light)` (fond `#F4EFE6`, carte `#FFFFFF`, texte `#14110F`, accent `#CD3711` certifié AA 5.06:1, texte de bouton blanc `#FFFFFF`).
+  - `components.ts` : Composants composables : preheader masqué, logotype adaptatif retina avec swap automatique clair/sombre, bandeau hero photographique, titres en police Georgia sérif, paragraphes, bouton bulletproof Outlook (cellule de tableau colorée + lien plein cadre), infobox, séparateur, lien de secours monospace et note de sécurité.
+  - `layout.ts` : Layout XHTML 1.0 Strict enveloppant les gabarits avec métadonnées `color-scheme` / `supported-color-schemes`, conteneur de largeur maximale 600 px centré, et adaptabilité mobile complète (< 620 px : boutons pleine largeur, texte agrandi, marges optimisées).
+  - `text-layout.ts` : Générateur de version texte brut épurée et lisible.
+  - `escape.ts` : Fonctions d'échappement HTML strict et d'assainissement d'URLs (`sanitizeUrl`) bloquant les protocoles malicieux (`javascript:`, `data:`).
+- **Gabarits disponibles (`apps/api/src/emails/templates/`)** :
+  1. `verification.ts` : Vérification de l'adresse email lors de l'inscription ou d'un renvoi, avec bouton, lien de secours et rappel des 3 fonctionnalités de base.
+  2. `welcome.ts` : Bienvenue et déverrouillage de l'espace après vérification d'email réussie.
+  3. `forgot-password.ts` : Demande de réinitialisation de mot de passe avec lien sécurisé temporaire (1 heure) et avertissement de sécurité.
+  4. `password-changed.ts` : Alerte de sécurité immédiate après modification de mot de passe (date, appareil approximatif, lien « Ce n'était pas moi »).
+  5. `collaboration-invite.ts` : Invitation nominative ou par email à collaborer sur un texte ou un album (rôle explicite, délai d'expiration de 7 jours, boutons Accepter et Consulter). Aucune fuite d'adresse email tierce.
+  6. `activity-notification.ts` : Récapitulatif groupé des activités collaboratives (mentions, nouveaux commentaires, réponses).
+- **Point d'entrée unifié (`apps/api/src/emails/index.ts`)** :
+  Exporte la fonction centrale `generateEmail(type, props)` retournant `{ subject, html, text }`, les types de props et la fonction `getSampleEmailProps(type, baseUrl)` fournissant des jeux de données d'exemple réalistes.
+- **Assets graphiques (`apps/web/public/email/`)** :
+  Logos générés en haute définition retina 2x (320 px réels pour un affichage 160 px, < 20 Ko) et bandeau photographique (< 60 Ko), servis publiquement par Vercel :
+  - `logo-wordmark-dark.png` (7.5 Ko) & `logo-wordmark-light.png` (7.3 Ko)
+  - `logo-mark-dark.png` (1.9 Ko) & `logo-mark-light.png` (1.9 Ko)
+  - `header-banner.jpg` (11.5 Ko)
+
+### 2. Variables d'environnement
+
+| Variable | Environnement | Rôle |
+| :--- | :--- | :--- |
+| `CLIENT_URL` | Développement & Production | URL publique du frontend (liens dans les emails). En production, `localhost` et `127.0.0.1` sont formellement rejetés par la validation Zod. |
+| `EMAIL_ASSETS_URL` | Développement & Production | URL de base d'accès aux images servies par le frontend (défaut `https://verso-lyrics.vercel.app`). Évite les images cassées dans Gmail et les webmails qui refusent de charger les images depuis `localhost`. |
+| `EMAIL_FROM` | Développement & Production | Adresse d'expédition des messages (ex. `Verso <noreply@verso.fr>`). |
+| `EMAIL_REPLY_TO` | Optionnelle | Adresse de contact direct de l'équipe insérée dans le pied de page et transmise à Resend en en-tête `reply_to`. |
+| `RESEND_API_KEY` | Obligatoire en production | Clé secrète de l'API Resend pour l'envoi effectif des messages. |
+
+### 3. Atelier de prévisualisation local (`/dev/emails`)
+
+En environnement de développement (`NODE_ENV !== 'production'`), un atelier visuel interactif complet est disponible sur le serveur API :
+- **Accès** : `http://localhost:4000/dev/emails`
+- **Fonctionnalités** :
+  - Sélecteur instantané parmi les 6 gabarits d'emails.
+  - Bascule de thème d'aperçu : Thème Sombre (« Encre ») ou Thème Clair (« Papier »).
+  - Contrôle de format : Rendu visuel dans iframe isolée, Code source HTML, ou Version texte brut.
+  - Test responsive : Bascule en largeur Desktop 600 px, Mobile 375 px, ou 100% pleine largeur.
+- **Raccourci npm** :
+  ```bash
+  pnpm email:preview
+  ```
+
+### 4. Envoi d'email de test en ligne de commande
+
+Un script CLI dédié permet d'envoyer immédiatement un gabarit réel vers une adresse de test via votre transport configuré :
+
+```bash
+pnpm email:send-test <type> <adresse-destinataire>
+```
+
+**Exemples** :
+```bash
+# Vérification d'adresse email
+pnpm email:send-test verification mon-email@exemple.com
+
+# Bienvenue
+pnpm email:send-test welcome mon-email@exemple.com
+
+# Mot de passe oublié
+pnpm email:send-test forgot-password mon-email@exemple.com
+
+# Invitation de collaboration
+pnpm email:send-test collaboration-invite mon-email@exemple.com
+```
+
+*Note* : Si `RESEND_API_KEY` est omise dans votre fichier `.env`, le script affiche directement dans votre terminal la version texte brut ainsi que le sujet généré sans envoyer de requête externe.
+
+### 5. Procédure d'ajout d'un nouvel email transactionnel
+
+Pour ajouter un nouveau gabarit au système, suivre ces 5 étapes :
+
+1. **Créer le template** dans `apps/api/src/emails/templates/<nouveau-type>.ts` :
+   - Définir l'interface `NouveauTypeEmailProps`.
+   - Écrire la fonction `buildNouveauTypeEmail(props)` en combinant `renderHeading`, `renderParagraph`, `renderBulletproofButton`, etc.
+   - Assembler le HTML avec `renderEmailLayout({ ... })` et le texte avec `renderTextLayout({ ... })`.
+2. **Enregistrer le template** dans `apps/api/src/emails/index.ts` :
+   - Exporter le template et ses types.
+   - Ajouter la clé à l'union `EmailType` et `AnyEmailProps`.
+   - Compléter `getSampleEmailProps()` avec des données représentatives réalistes.
+   - Brancher l'aiguillage dans `generateEmail()`.
+3. **Exposer la méthode d'envoi** dans `apps/api/src/modules/auth/email.service.ts` :
+   - Exporter `sendNouveauTypeEmail(to, options)`.
+4. **Enregistrer l'email dans l'atelier** dans `apps/api/src/modules/dev/email-preview.routes.ts` :
+   - Ajouter son entrée dans la constante `AVAILABLE_EMAILS`.
+5. **Couvrir par les tests automatisés** dans `apps/api/tests/unit/emails.test.ts` :
+   - Vérifier la génération non vide, le bon usage de `CLIENT_URL` / `EMAIL_ASSETS_URL`, l'échappement XSS et l'absence de `localhost` en production.
 
 ---
 
@@ -238,6 +340,16 @@ Un 500 global signifie presque toujours que la base de données est injoignable 
 5. **Régénérer le client Prisma** si nécessaire : `pnpm --filter @verso/api exec prisma generate`.
 6. **Emails en développement (sans Docker ni SMTP)** : sans `RESEND_API_KEY` et hors production, l'API affiche dans la console l'email complet — destinataire, objet, contenu et **lien de vérification** — encadré par un bandeau `EMAIL SIMULÉ`, et l'inscription n'échoue jamais (le compte est créé, l'envoi peut être redemandé). En **production**, l'absence de transport d'email empêche le démarrage de l'API (message nommant `RESEND_API_KEY`) : aucun lien de vérification n'est jamais journalisé en production.
 7. **Proxy Vite, CORS et CSRF** : le frontend appelle `/api/*`, redirigé vers l'API par le proxy de développement Vite. `CLIENT_URL` doit correspondre à l'origine du frontend (défaut `http://localhost:5173`) pour le CORS et la protection CSRF.
+
+### Renvoi d'email de vérification et requêtes sans corps
+
+- **Gestion des corps vides** : le client HTTP frontend centralisé ([`apps/web/src/lib/http-client.ts`](file:///home/normanxcat/Lab/verso/apps/web/src/lib/http-client.ts)) n'ajoute `Content-Type: application/json` que si la requête contient un corps non vide. Côté serveur, les routes sans corps (déconnexion, renvoi d'email, acceptation d'invitations, etc.) sont configurées avec `allowEmptyBody: true` via le plugin Fastify dédié, évitant le rejet `FST_ERR_CTP_EMPTY_JSON_BODY` sans affaiblir la validation des autres routes.
+- **Rate limiting du renvoi** : limité à 1 renvoi par minute (calcul dynamique du temps restant renvoyant un statut 429 avec `Retry-After: <secondes>` et le message `"Réessaie dans X secondes"`) et à 5 renvois par heure.
+- **Configuration de production (Render / Vercel)** :
+  - `RESEND_API_KEY` : clé API Resend valide.
+  - `EMAIL_FROM` : adresse d'expédition avec un domaine vérifié sur Resend (ex. `Verso <noreply@mondomaine.fr>`). Par défaut en sandbox sans domaine personnalisé : `onboarding@resend.dev` (limité à l'adresse du propriétaire de compte).
+  - `CLIENT_URL` : URL de production du frontend (ex. `https://verso.vercel.app`). En production, l'API journalise un avertissement critique si cette variable contient `localhost`, car le lien de vérification envoyé à l'utilisateur pointerait vers sa propre machine.
+- **En cas d'échec du fournisseur d'email** : l'API intercepte les erreurs réseau ou d'API Resend, consigne les détails dans les journaux de Render de manière sécurisée (secrets et clés masqués), et renvoie un statut HTTP 502 Bad Gateway propre avec le message `"Impossible d'envoyer l'email pour le moment. Réessaie dans quelques minutes."`. Le bandeau affiche ce libellé sans altérer l'interface.
 
 ---
 

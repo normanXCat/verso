@@ -25,7 +25,7 @@ export const versionsRoutes: FastifyPluginAsync = async (app: FastifyInstance) =
   // Restauration d'une version antérieure sans écraser l'historique
   app.post(
     '/:id/versions/:versionId/restore',
-    { preHandler: requireAuth },
+    { preHandler: requireAuth, config: { allowEmptyBody: true } },
     async (request, reply) => {
       const params = versionIdParamSchema.safeParse(request.params);
       if (!params.success) {

@@ -129,34 +129,42 @@ export const commentsRoutes: FastifyPluginAsync = async (app: FastifyInstance) =
   );
 
   // Résoudre un commentaire
-  app.patch('/comments/:id/resolve', { preHandler: requireAuth }, async (request, reply) => {
-    const params = idParamSchema.safeParse(request.params);
-    if (!params.success) {
-      return reply.status(400).send({ message: 'Identifiant invalide' });
-    }
+  app.patch(
+    '/comments/:id/resolve',
+    { preHandler: requireAuth, config: { allowEmptyBody: true } },
+    async (request, reply) => {
+      const params = idParamSchema.safeParse(request.params);
+      if (!params.success) {
+        return reply.status(400).send({ message: 'Identifiant invalide' });
+      }
 
-    try {
-      const comment = await commentsService.resolveComment(request.user!, params.data.id);
-      return reply.send({ comment });
-    } catch (error) {
-      return handleCommentError(reply, error);
-    }
-  });
+      try {
+        const comment = await commentsService.resolveComment(request.user!, params.data.id);
+        return reply.send({ comment });
+      } catch (error) {
+        return handleCommentError(reply, error);
+      }
+    },
+  );
 
   // Rouvrir un commentaire
-  app.patch('/comments/:id/reopen', { preHandler: requireAuth }, async (request, reply) => {
-    const params = idParamSchema.safeParse(request.params);
-    if (!params.success) {
-      return reply.status(400).send({ message: 'Identifiant invalide' });
-    }
+  app.patch(
+    '/comments/:id/reopen',
+    { preHandler: requireAuth, config: { allowEmptyBody: true } },
+    async (request, reply) => {
+      const params = idParamSchema.safeParse(request.params);
+      if (!params.success) {
+        return reply.status(400).send({ message: 'Identifiant invalide' });
+      }
 
-    try {
-      const comment = await commentsService.reopenComment(request.user!, params.data.id);
-      return reply.send({ comment });
-    } catch (error) {
-      return handleCommentError(reply, error);
-    }
-  });
+      try {
+        const comment = await commentsService.reopenComment(request.user!, params.data.id);
+        return reply.send({ comment });
+      } catch (error) {
+        return handleCommentError(reply, error);
+      }
+    },
+  );
 
   // Supprimer un commentaire
   app.delete('/comments/:id', { preHandler: requireAuth }, async (request, reply) => {

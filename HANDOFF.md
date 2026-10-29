@@ -2,11 +2,37 @@
 
 ## État actuel
 
-- **Spécification en cours** : **`002-author-collaboration` — 100% TERMINÉE ET VALIDÉE.**
-- **Couverture des tâches** : **11 phases / 79 tâches implémentées et testées (T001 à T079)**.
-- **Suite de tests automatisés** : **34 fichiers de test, 278 tests au vert (100% de réussite)**.
-- **Qualité du code** : 0 erreur ESLint, 0 erreur Prettier, 0 erreur TypeScript strict (`tsc --noEmit`), build de production validé.
+- **Spécification en cours** : **Refonte complète des emails transactionnels « Encre & Papier » — 100% TERMINÉE ET VALIDÉE.**
+- **Couverture des tâches** : **11 phases / 79 tâches collaboration (T001 à T079) + Refonte emails transactionnels (6 gabarits + atelier dev + script CLI + assets retina)**.
+- **Suite de tests automatisés** : **39 fichiers de test, 333 tests au vert (100% de réussite)**.
+- **Qualité du code** : 0 erreur ESLint (`eslint .`), 0 erreur Prettier (`prettier --check`), 0 erreur TypeScript strict (`tsc --noEmit`), build de production validé (`apps/web`, `apps/api`, `packages/shared`).
 - **Ce qui est terminé** :
+  - **Refonte intégrale des emails transactionnels « Encre & Papier » (100% terminée et validée)** :
+    - Architecture modulaire TypeScript pure dans [`apps/api/src/emails/`](file:///home/normanxcat/Lab/verso/apps/api/src/emails/) sans dépendances lourdes (zéro MJML, zéro SSR React backend) : génération synchrone, styles en ligne, tableaux HTML compatibles Microsoft Outlook (mso bulletproof) et version texte brut soignée pour chaque gabarit.
+    - 6 gabarits rédigés au tutoiement direct en français, basés uniquement sur des fonctionnalités réelles de Verso :
+      1. `verification` : activation du carnet, bouton d'action principal, lien de secours monospace avec expiration 24h, rappel des 3 fonctionnalités de base (écrire un texte, créer un album, inviter un co-auteur) et bloc sécurité « Tu n'as pas créé de compte ? ».
+      2. `welcome` : déverrouillage de l'espace personnel avec lien direct vers `/app` et découverte du carnet.
+      3. `forgot-password` : lien de réinitialisation temporaire (1 heure) à usage unique et rappel de sécurité.
+      4. `password-changed` : alerte de sécurité immédiate horodatée avec appareil approximatif et bouton de secours « Ce n'était pas moi ».
+      5. `collaboration-invite` : invitation sur texte ou album avec rôle explicite (co-auteur, commentateur, lecteur), expiration à 7 jours, boutons Accepter et Voir invitations, sans aucune fuite d'adresse email tierce.
+      6. `activity-notification` : récapitulatif groupé des activités récentes (mentions, commentaires, réponses).
+    - Palette « Encre & Papier » explicite et certifiée WCAG 2.1 AA :
+      - Thème sombre par défaut : fond `#0E0D0B`, carte `#171512`, texte `#EDE6D8`, texte secondaire `#9A9183`, bordures `#2A2621`, accent `#FF5A2E`, texte du bouton sombre `#14110F` (ratio 6.5:1, niveau AA garanti).
+      - Repli clair automatique via `@media (prefers-color-scheme: light)` : fond `#F4EFE6`, carte `#FFFFFF`, texte `#14110F`, texte secondaire `#666158`, bordures `#DDD5C6`, accent `#CD3711` (ratio 5.06:1 avec texte de bouton blanc `#FFFFFF`, niveau AA garanti).
+    - Typographie : titres en Georgia (repli serif élégant), corps en polices système sans-serif (`-apple-system`, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif), liens de secours en police monospace système.
+    - Assets retina 2x générés avec Sharp dans [`apps/web/public/email/`](file:///home/normanxcat/Lab/verso/apps/web/public/email/) : `logo-wordmark-dark.png` (7.5 Ko), `logo-wordmark-light.png` (7.3 Ko), `logo-mark-dark.png` (1.9 Ko), `logo-mark-light.png` (1.9 Ko) et `header-banner.jpg` (11.5 Ko). Tous contrôlés à chaque build de production par `scripts/check-images.mjs`.
+    - Sécurité et délivrabilité : fonction `escapeHtml` sur tous les paramètres utilisateur, assainissement `sanitizeUrl` (protocoles `http:` et `https:` stricts), en-tête `Reply-To` (`EMAIL_REPLY_TO`), preheader masqué, interdiction stricte de `localhost` et `127.0.0.1` en production via validation Zod (`CLIENT_URL` et `EMAIL_ASSETS_URL`).
+    - Atelier de prévisualisation interactif [`apps/api/src/modules/dev/email-preview.routes.ts`](file:///home/normanxcat/Lab/verso/apps/api/src/modules/dev/email-preview.routes.ts) accessible sur `http://localhost:4000/dev/emails` (désactivé en production) avec sélecteurs de gabarit, bascule sombre/clair, largeurs 600px / 375px / 100%, et vues Rendu / HTML / Texte brut.
+    - Scripts utilitaires : `pnpm email:preview`, `pnpm email:send-test <type> <destinataire>`, `pnpm email:assets`, `pnpm email:capture`.
+    - Suite de 30 tests unitaires et d'intégration validant les 6 gabarits, les ratios de contraste mathématiques, les balises `<img>` (`alt`, `width`, `height`, `border="0"`), l'échappement XSS et l'atelier de prévisualisation.
+  - **Correction robuste du renvoi d'email et requêtes sans corps (Fastify & Frontend)** :
+    - Résolution définitive du bug en production (Render + Vercel) : `Body cannot be empty when content-type is set to 'application/json'`.
+    - Client HTTP centralisé [`apps/web/src/lib/http-client.ts`](file:///home/normanxcat/Lab/verso/apps/web/src/lib/http-client.ts) (`buildRequestHeaders`) omettant l'en-tête `Content-Type` dès lors qu'aucun corps de requête n'est transmis, appliqué à l'ensemble des clients frontend (23 points d'appel).
+    - Parseur API Fastify [`apps/api/src/plugins/empty-body-parser.ts`](file:///home/normanxcat/Lab/verso/apps/api/src/plugins/empty-body-parser.ts) acceptant les corps vides sur les routes configurées avec `allowEmptyBody: true` (sans désactiver la validation JSON sur les routes à corps ni contourner la protection CSRF).
+    - Envoi d'email sécurisé dans [`apps/api/src/modules/auth/email.service.ts`](file:///home/normanxcat/Lab/verso/apps/api/src/modules/auth/email.service.ts) : détection et alerte si `CLIENT_URL` contient `localhost` en production, assainissement de `RESEND_API_KEY`, journalisation sécurisée avec occultation de secrets (`redactSecrets`), retour d'erreur 502 Bad Gateway propre avec message utilisateur explicite en cas d'échec du fournisseur (aucun 500 brut).
+    - Double rate limiting sur `/api/auth/resend-verification` : 1 renvoi par minute (avec calcul dynamique des secondes restantes et message `"Réessaie dans X secondes"`) et plafond de 5 renvois par heure.
+    - Bandeau de vérification réactif [`apps/web/src/components/common/EmailVerificationBanner.tsx`](file:///home/normanxcat/Lab/verso/apps/web/src/components/common/EmailVerificationBanner.tsx) : compte à rebours dynamique sur le bouton (`Renvoyer (Xs)`), état de chargement, confirmation `Email envoyé`, et messages de statut/erreur déportés sous le texte dans la palette Encre & Papier sobre (suppression du rouge agressif collé).
+    - Tests complets : tests unitaires client HTTP ([`apps/web/src/lib/http-client.test.ts`](file:///home/normanxcat/Lab/verso/apps/web/src/lib/http-client.test.ts) - 10 tests) et tests d'intégration API ([`apps/api/tests/integration/resend-verification.test.ts`](file:///home/normanxcat/Lab/verso/apps/api/tests/integration/resend-verification.test.ts) - 11 tests).
   - **Refonte photographique argentique "Encre & Papier" de la Landing Page et des flux connexes (100% terminée et validée)** :
     - Charte de style photographique argentique et éditoriale formalisée dans [`docs/IMAGE-STYLE.md`](file:///home/normanxcat/Lab/verso/docs/IMAGE-STYLE.md) avec bloc de prompt obligatoire et contraintes de prompt négatif (zéro visage, main, logo, texte parasite).
     - Registre de suivi et d'optimisation d'images dans [`docs/IMAGES.md`](file:///home/normanxcat/Lab/verso/docs/IMAGES.md) consignant le statut, le prompt, les ratios, les dimensions, les poids réels dans chaque format et l'avertissement légal IA.
@@ -134,9 +160,39 @@
 
 ## Dernière action
 
-- **Correction du renvoi d'email (21 octobre 2026)** : le client d'authentification envoyait `Content-Type: application/json` pour les requêtes POST sans corps, notamment `/api/auth/resend-verification`. Fastify les rejetait avec « Body cannot be empty when content-type is set to 'application/json' ». Le client n'ajoute désormais cet en-tête que lorsqu'un corps existe ; build web validé.
-- **Déploiement Render (19 octobre 2026)** : le build TypeScript API passait, mais le processus Node échouait car `@verso/shared` exportait ses fichiers TypeScript source, contenant des imports `.js` sans fichiers JS correspondants. Les exports du package pointent maintenant vers `dist/`. Il faut compiler `@verso/shared` avant l'API et le frontend dans les builds Render/Vercel.
-- **Commandes de production** : Render — `pnpm --filter @verso/shared build` puis `pnpm --filter @verso/api build` (après `prisma generate`) ; Vercel — `pnpm --filter @verso/shared build` puis `pnpm --filter @verso/web build`.
+- **Correction complète du renvoi d'email et robustesse Fastify / Frontend (21 octobre 2026)** :
+  - **Cause exacte identifiée** : Sur Render + Vercel, le bouton "Renvoyer l'email" échouait avec l'erreur Fastify 400 `FST_ERR_CTP_EMPTY_JSON_BODY` : `"Body cannot be empty when content-type is set to 'application/json'"`. Le client frontend ajoutait systématiquement l'en-tête `Content-Type: application/json` même lorsque le corps de la requête était omis ou vide, ce qui déclenchait le rejet strict du parseur JSON natif de Fastify.
+  - **Correction côté client (Frontend)** :
+    - Création du module centralisé [`apps/web/src/lib/http-client.ts`](file:///home/normanxcat/Lab/verso/apps/web/src/lib/http-client.ts) avec `buildRequestHeaders(options)` qui n'ajoute `Content-Type: application/json` que si `body !== undefined && body !== null && body.trim() !== ''`. Pour tout POST, PATCH ou DELETE sans données, aucun en-tête `Content-Type` n'est envoyé.
+    - Remplacement systématique dans les 23 points d'appels clients du frontend : `auth-client.ts`, `songs-client.ts`, `albums-client.ts`, `audio-client.ts`, `share-client.ts`, `collaboration-client.ts`, `comments-client.ts`, `credits-client.ts`, `moderation-client.ts`, `notifications-stream.ts`.
+    - Suite de 10 tests unitaires dédiée dans [`apps/web/src/lib/http-client.test.ts`](file:///home/normanxcat/Lab/verso/apps/web/src/lib/http-client.test.ts).
+  - **Robustesse côté serveur (API Fastify)** :
+    - Création du plugin [`apps/api/src/plugins/empty-body-parser.ts`](file:///home/normanxcat/Lab/verso/apps/api/src/plugins/empty-body-parser.ts) enregistrant un parseur `application/json` tolérant aux corps vides ou blancs lorsque la route est annotée avec `{ config: { allowEmptyBody: true } }` ou pour la méthode DELETE, tout en préservant le rejet strict (400) sur les routes exigeant un corps JSON (`login`, `register`, etc.).
+    - Aucune désactivation globale et maintien intégral de la protection CSRF (`csrfGuard`) placée en amont.
+    - Routes configurées avec `allowEmptyBody: true` : `/api/auth/logout`, `/api/auth/resend-verification`, `/api/invitations/:token/accept`, `/api/invitations/:token/decline`, `/api/notifications/:id/read`, `/api/notifications/read-all`, `/api/comments/:id/resolve`, `/api/comments/:id/reopen`, `/api/users/:id/block`, `/api/songs/:id/versions/:versionId/restore`.
+  - **Envoi d'email & Fiabilité Resend** :
+    - Dans [`apps/api/src/modules/auth/email.service.ts`](file:///home/normanxcat/Lab/verso/apps/api/src/modules/auth/email.service.ts) : avertissement explicite journalisé si `CLIENT_URL` contient `localhost` en production, assainissement par `.trim()` de `RESEND_API_KEY`, et journalisation sécurisée des réponses d'erreur de l'API Resend et des erreurs réseau via `redactSecrets` (aucun secret ni token fuité).
+    - Gestion d'erreur sans 500 brut : en cas de défaillance du transport Resend (erreur 4xx/5xx de l'API ou timeout réseau), l'API renvoie un statut HTTP 502 Bad Gateway propre avec `{ error: "Impossible d'envoyer l'email pour le moment. Réessaie dans quelques minutes." }`.
+  - **Rate Limiting & Cooldown** :
+    - Cooldown de 60 secondes entre deux renvois, calculé dynamiquement depuis la date du dernier jeton en base de données, retournant un statut HTTP 429 avec l'en-tête `Retry-After: <secondes>` et le message `"Réessaie dans X secondes"`.
+    - Plafond horaire de 5 renvois par heure pour prévenir les abus, renvoyant un statut HTTP 429 avec `Retry-After: 3600`.
+    - Aucune fuite d'informations : la réponse ne révèle rien d'autre que l'état de l'utilisateur connecté.
+  - **Interface utilisateur du bandeau** :
+    - Dans [`apps/web/src/components/common/EmailVerificationBanner.tsx`](file:///home/normanxcat/Lab/verso/apps/web/src/components/common/EmailVerificationBanner.tsx) : suppression du texte rouge brut collé au texte. Les retours de statut s'affichent sur une sous-ligne dédiée dans la palette sobre `text-paper-muted` ou `text-paper-text`.
+    - Bouton interactif avec état de chargement (`isPending`), compte à rebours dynamique (`Renvoyer (${cooldown}s)` tant que `cooldown > 0`), et libellé de succès (`Email envoyé`).
+  - **Tests d'intégration complets** :
+    - [`apps/api/tests/integration/resend-verification.test.ts`](file:///home/normanxcat/Lab/verso/apps/api/tests/integration/resend-verification.test.ts) (11 tests au vert) :
+      - POST sans corps avec et sans `Content-Type: application/json` sur route `allowEmptyBody` (/api/auth/logout).
+      - POST avec whitespace et `Content-Type: application/json` sur route `allowEmptyBody`.
+      - Rejet 400 pour POST sans corps avec `Content-Type: application/json` sur route exigeant un corps (/api/auth/login).
+      - Rejet 401 si non authentifié.
+      - Rejet 400 si l'email est déjà vérifié.
+      - Succès 200 avec génération de jeton et appel simulé du transport.
+      - Limitation 429 sous 60 secondes avec message `"Réessaie dans X secondes"` et `Retry-After`.
+      - Limitation 429 au-delà de 5 envois par heure.
+      - Échec du fournisseur renvoyant 502 Bad Gateway avec message clair (sans 500 brut).
+      - Exception inattendue du fournisseur renvoyant 502 Bad Gateway.
+  - **Validation qualité globale** : 0 erreur Prettier, 0 erreur ESLint, 0 erreur TypeScript strict (`tsc --noEmit`), suite de tests complète validée (36 fichiers de tests, 289 tests au vert), builds de production validés (`@verso/shared`, `@verso/api`, `@verso/web`).
 - **Action exécutée** : Refonte photographique argentique en noir et blanc "Encre & Papier" de la Landing Page et des flux connexes (10 images générées, optimisées en AVIF/WebP/JPG, intégrées sous contraintes WCAG AA et outillées par un script de contrôle CI/CD).
 - **Détails de l'implémentation** :
   - **Charte et registre** : Création de [`docs/IMAGE-STYLE.md`](file:///home/normanxcat/Lab/verso/docs/IMAGE-STYLE.md) (bloc textuel de prompt obligatoire, contraintes négatives : zéro visage, main, typographie parasite, marque) et [`docs/IMAGES.md`](file:///home/normanxcat/Lab/verso/docs/IMAGES.md) (inventaire exhaustif, formats, dimensions, ratios, poids réels et avertissement légal IA).
@@ -228,6 +284,24 @@
   - **Contenu collaboratif sans injection HTML** : Tout contenu collaboratif (commentaires, noms) est affiché sans injection de HTML (neutralisation XSS stricte).
   - **Tests et Quality Gates** : Exigence de tests exhaustifs pour la fonction centrale d'autorisation `can`, renforcement des standards techniques et enrichissement du palier P3.
 - **Résultat** : Constitution mise à jour en version `2.0.0` (incrément MAJOR), `README.md` et `HANDOFF.md` synchronisés.
+
+### Dernière action exécutée
+
+- **Action exécutée** : Refonte intégrale des emails transactionnels aux couleurs de Verso (« Encre & Papier ») avec typographies éditoriales, logos retina et atelier de prévisualisation.
+- **Détails de l'implémentation** :
+  - **Module d'emails TypeScript pur** (`apps/api/src/emails/`) : architecture modulaire sans dépendance externe lourde (zéro MJML, zéro SSR React backend) générant du HTML tabulaire avec styles en ligne (bulletproof Outlook `mso`) et texte brut épuré.
+  - **6 gabarits conformes à la charte et au ton Verso (tutoiement direct en français)** :
+    1. `verification` : activation du carnet, bouton principal, lien de secours monospace (24h, usage unique), rappel des fonctionnalités réelles et bloc sécurité.
+    2. `welcome` : déverrouillage de l'espace personnel avec lien direct vers `/app`.
+    3. `forgot-password` : lien de réinitialisation temporaire (1 heure) et rappel de sécurité.
+    4. `password-changed` : alerte de sécurité horodatée avec appareil et action « Ce n'était pas moi ».
+    5. `collaboration-invite` : invitation sur texte ou album avec rôle explicite (co-auteur, commentateur, lecteur), expiration 7 jours, boutons Accepter et Consulter, zéro fuite d'email tiers.
+    6. `activity-notification` : récapitulatif groupé des activités récentes (mentions, nouveaux commentaires, réponses).
+  - **Palette et accessibilité WCAG AA** : mode sombre par défaut (`#0E0D0B`, `#171512`, `#EDE6D8`, accent `#FF5A2E`, texte bouton sombre `#14110F` certifié 6.5:1) et repli clair via `@media (prefers-color-scheme: light)` (fond `#F4EFE6`, accent `#CD3711` certifié 5.06:1, texte bouton blanc `#FFFFFF`).
+  - **Assets logos et bandeau retina 2x** générés avec Sharp dans `apps/web/public/email/` (`logo-wordmark-dark.png`, `logo-wordmark-light.png`, `logo-mark-dark.png`, `logo-mark-light.png`, `header-banner.jpg`), tous validés par `scripts/check-images.mjs`.
+  - **Atelier de prévisualisation local** (`/dev/emails`) : route Fastify interactive pour inspecter chaque gabarit en mode sombre/clair, 600px/375px/100%, et vues Rendu visuel / Code HTML / Texte brut (désactivée en production).
+  - **Scripts utilitaires** : `pnpm email:preview`, `pnpm email:send-test <type> <destinataire>`, `pnpm email:assets`, `pnpm email:capture`.
+  - **Validation qualité** : 333 tests au vert (dont 30 nouveaux tests unitaires et contrastes WCAG), lint zéro warning, typecheck strict, build de production validé.
 
 ### Action précédente
 

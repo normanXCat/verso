@@ -344,8 +344,8 @@ describe("Tests d'intégration : Notifications collaboratives (/api/notification
       expect(sentEmails.length).toBe(1);
       expect(sentEmails[0].to).toBe('recipient-batch@verso.fr');
       expect(sentEmails[0].subject).toContain('2 nouvelles notifications');
-      expect(sentEmails[0].text).toContain('Oxmo vous a invité à collaborer');
-      expect(sentEmails[0].text).toContain('Oxmo vous a mentionné dans une discussion');
+      expect(sentEmails[0].text).toContain('Oxmo t’a invité à collaborer');
+      expect(sentEmails[0].text).toContain('Oxmo t’a mentionné dans une discussion');
 
       // File d'attente vidée
       expect(notificationsService.getPendingEmailsCount(recipientId)).toBe(0);

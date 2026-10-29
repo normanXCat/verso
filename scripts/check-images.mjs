@@ -8,6 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 const publicDir = path.join(rootDir, 'apps/web/public/images');
+const emailDir = path.join(rootDir, 'apps/web/public/email');
 
 const EXPECTED_IMAGES = [
   // Hero (max 200 Ko)
@@ -68,6 +69,19 @@ const EXPECTED_IMAGES = [
   { path: 'og-preview.png', maxKb: 250 },
 ];
 
+const EXPECTED_EMAIL_ASSETS = [
+  // Logos Wordmark (max 20 Ko)
+  { path: 'logo-wordmark-dark.png', maxKb: 20 },
+  { path: 'logo-wordmark-light.png', maxKb: 20 },
+
+  // Logos Mark "V" (max 20 Ko)
+  { path: 'logo-mark-dark.png', maxKb: 20 },
+  { path: 'logo-mark-light.png', maxKb: 20 },
+
+  // Bandeau d'en-tête email (max 60 Ko)
+  { path: 'header-banner.jpg', maxKb: 60 },
+];
+
 console.log('🔍 Contrôle de présence et d’intégrité des images Verso...');
 let hasError = false;
 
@@ -86,6 +100,24 @@ for (const img of EXPECTED_IMAGES) {
     hasError = true;
   } else {
     console.log(`✅ ${img.path} : ${sizeKb} Ko (limite ${img.maxKb} Ko)`);
+  }
+}
+
+for (const img of EXPECTED_EMAIL_ASSETS) {
+  const fullPath = path.join(emailDir, img.path);
+  if (!fs.existsSync(fullPath)) {
+    console.error(`❌ Asset email MANQUANT : ${img.path}`);
+    hasError = true;
+    continue;
+  }
+
+  const stat = fs.statSync(fullPath);
+  const sizeKb = Math.round(stat.size / 1024);
+  if (sizeKb > img.maxKb) {
+    console.error(`⚠️ Asset email TROP LOURD : ${img.path} (${sizeKb} Ko > max ${img.maxKb} Ko)`);
+    hasError = true;
+  } else {
+    console.log(`✅ email/${img.path} : ${sizeKb} Ko (limite ${img.maxKb} Ko)`);
   }
 }
 

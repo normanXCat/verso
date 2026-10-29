@@ -114,19 +114,23 @@ export const moderationRoutes: FastifyPluginAsync = async (app: FastifyInstance)
    * POST /api/users/:id/block
    * Bloquer un utilisateur avec rupture bilatérale immédiate (FR-032)
    */
-  app.post('/users/:id/block', { preHandler: requireAuth }, async (request, reply) => {
-    const params = idParamSchema.safeParse(request.params);
-    if (!params.success) {
-      return reply.status(400).send({ message: 'Identifiant invalide' });
-    }
+  app.post(
+    '/users/:id/block',
+    { preHandler: requireAuth, config: { allowEmptyBody: true } },
+    async (request, reply) => {
+      const params = idParamSchema.safeParse(request.params);
+      if (!params.success) {
+        return reply.status(400).send({ message: 'Identifiant invalide' });
+      }
 
-    try {
-      const result = await moderationService.blockUser(request.user!.id, params.data.id);
-      return reply.send(result);
-    } catch (error) {
-      return handleModerationError(reply, error);
-    }
-  });
+      try {
+        const result = await moderationService.blockUser(request.user!.id, params.data.id);
+        return reply.send(result);
+      } catch (error) {
+        return handleModerationError(reply, error);
+      }
+    },
+  );
 
   /**
    * DELETE /api/users/:id/block

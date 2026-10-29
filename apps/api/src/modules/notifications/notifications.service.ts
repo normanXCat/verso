@@ -211,35 +211,10 @@ export const notificationsService = {
       return false;
     }
 
-    const count = itemsToSend.length;
-    const subject =
-      count === 1
-        ? `Nouvelle notification collaborative — Verso`
-        : `Vous avez ${count} nouvelles notifications — Verso`;
-
-    const lines = itemsToSend.map((item) => {
-      const actor = item.actorName ?? 'Un collaborateur';
-      const target = item.targetTitle ? ` sur « ${item.targetTitle} »` : '';
-      switch (item.type) {
-        case 'INVITATION_RECEIVED':
-          return `• ${actor} vous a invité à collaborer${target}.`;
-        case 'MENTION':
-          return `• ${actor} vous a mentionné dans une discussion${target}.`;
-        case 'COMMENT_ADDED':
-          return `• ${actor} a laissé un nouveau commentaire${target}.`;
-        case 'COMMENT_REPLY':
-          return `• ${actor} a répondu à votre commentaire${target}.`;
-        default:
-          return `• Nouvelle activité de ${actor}${target}.`;
-      }
-    });
-
-    const text = `Bonjour ${user.displayName ?? ''},\n\nVoici le récapitulatif de vos activités récentes sur Verso :\n\n${lines.join('\n')}\n\nÀ très vite sur Verso,\nL'équipe Verso`;
-
     return sendNotificationEmail({
       to: user.email,
-      subject,
-      text,
+      items: itemsToSend,
+      displayName: user.displayName,
     });
   },
 

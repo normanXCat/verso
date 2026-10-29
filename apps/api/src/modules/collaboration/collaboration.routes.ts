@@ -285,8 +285,16 @@ export const collaborationRoutes: FastifyPluginAsync = async (app: FastifyInstan
     }
   };
 
-  app.post('/invitations/:token/accept', { preHandler: requireAuth }, acceptHandler);
-  app.post('/collaborations/invitations/:token/accept', { preHandler: requireAuth }, acceptHandler);
+  app.post(
+    '/invitations/:token/accept',
+    { preHandler: requireAuth, config: { allowEmptyBody: true } },
+    acceptHandler,
+  );
+  app.post(
+    '/collaborations/invitations/:token/accept',
+    { preHandler: requireAuth, config: { allowEmptyBody: true } },
+    acceptHandler,
+  );
 
   const declineHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     const params = tokenParamSchema.safeParse(request.params);
@@ -302,10 +310,14 @@ export const collaborationRoutes: FastifyPluginAsync = async (app: FastifyInstan
     }
   };
 
-  app.post('/invitations/:token/decline', { preHandler: requireAuth }, declineHandler);
+  app.post(
+    '/invitations/:token/decline',
+    { preHandler: requireAuth, config: { allowEmptyBody: true } },
+    declineHandler,
+  );
   app.post(
     '/collaborations/invitations/:token/decline',
-    { preHandler: requireAuth },
+    { preHandler: requireAuth, config: { allowEmptyBody: true } },
     declineHandler,
   );
 

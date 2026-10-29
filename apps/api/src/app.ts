@@ -45,6 +45,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { csrfGuard } = await import('./plugins/csrf.plugin.js');
   app.addHook('onRequest', csrfGuard);
 
+  // Parseur JSON tolérant aux corps vides sur les routes déclarées `allowEmptyBody`
+  const { registerEmptyBodyParser } = await import('./plugins/empty-body-parser.js');
+  registerEmptyBodyParser(app);
+
   // Stockage d'objets compatible S3 (URLs présignées)
   const { s3Plugin } = await import('./plugins/s3.plugin.js');
   await app.register(s3Plugin);
@@ -108,6 +112,12 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Routes de synchronisation temps réel Yjs, présence et sessions studio
   const { realtimeRoutes } = await import('./modules/realtime/realtime.ws.js');
   await app.register(realtimeRoutes, { prefix: '/api/realtime' });
+
+  // Atelier de prévisualisation des emails transactionnels (développement uniquement)
+  if (process.env.NODE_ENV !== 'production') {
+    const { emailPreviewRoutes } = await import('./modules/dev/email-preview.routes.js');
+    await app.register(emailPreviewRoutes);
+  }
 
   // Contrôle de santé : vérifie explicitement la connexion à la base de données.
   app.get('/health', async (request, reply) => {
