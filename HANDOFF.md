@@ -2,11 +2,29 @@
 
 ## État actuel
 
-- **Spécification en cours** : **`002-author-collaboration` — 100% TERMINÉE ET VALIDÉE.**
-- **Couverture des tâches** : **11 phases / 79 tâches implémentées et testées (T001 à T079)**.
-- **Suite de tests automatisés** : **36 fichiers de test, 289 tests au vert (100% de réussite)**.
-- **Qualité du code** : 0 erreur ESLint, 0 erreur Prettier, 0 erreur TypeScript strict (`tsc --noEmit`), build de production validé (`apps/web`, `apps/api`, `packages/shared`).
+- **Spécification en cours** : **Refonte complète des emails transactionnels « Encre & Papier » — 100% TERMINÉE ET VALIDÉE.**
+- **Couverture des tâches** : **11 phases / 79 tâches collaboration (T001 à T079) + Refonte emails transactionnels (6 gabarits + atelier dev + script CLI + assets retina)**.
+- **Suite de tests automatisés** : **39 fichiers de test, 333 tests au vert (100% de réussite)**.
+- **Qualité du code** : 0 erreur ESLint (`eslint .`), 0 erreur Prettier (`prettier --check`), 0 erreur TypeScript strict (`tsc --noEmit`), build de production validé (`apps/web`, `apps/api`, `packages/shared`).
 - **Ce qui est terminé** :
+  - **Refonte intégrale des emails transactionnels « Encre & Papier » (100% terminée et validée)** :
+    - Architecture modulaire TypeScript pure dans [`apps/api/src/emails/`](file:///home/normanxcat/Lab/verso/apps/api/src/emails/) sans dépendances lourdes (zéro MJML, zéro SSR React backend) : génération synchrone, styles en ligne, tableaux HTML compatibles Microsoft Outlook (mso bulletproof) et version texte brut soignée pour chaque gabarit.
+    - 6 gabarits rédigés au tutoiement direct en français, basés uniquement sur des fonctionnalités réelles de Verso :
+      1. `verification` : activation du carnet, bouton d'action principal, lien de secours monospace avec expiration 24h, rappel des 3 fonctionnalités de base (écrire un texte, créer un album, inviter un co-auteur) et bloc sécurité « Tu n'as pas créé de compte ? ».
+      2. `welcome` : déverrouillage de l'espace personnel avec lien direct vers `/app` et découverte du carnet.
+      3. `forgot-password` : lien de réinitialisation temporaire (1 heure) à usage unique et rappel de sécurité.
+      4. `password-changed` : alerte de sécurité immédiate horodatée avec appareil approximatif et bouton de secours « Ce n'était pas moi ».
+      5. `collaboration-invite` : invitation sur texte ou album avec rôle explicite (co-auteur, commentateur, lecteur), expiration à 7 jours, boutons Accepter et Voir invitations, sans aucune fuite d'adresse email tierce.
+      6. `activity-notification` : récapitulatif groupé des activités récentes (mentions, commentaires, réponses).
+    - Palette « Encre & Papier » explicite et certifiée WCAG 2.1 AA :
+      - Thème sombre par défaut : fond `#0E0D0B`, carte `#171512`, texte `#EDE6D8`, texte secondaire `#9A9183`, bordures `#2A2621`, accent `#FF5A2E`, texte du bouton sombre `#14110F` (ratio 6.5:1, niveau AA garanti).
+      - Repli clair automatique via `@media (prefers-color-scheme: light)` : fond `#F4EFE6`, carte `#FFFFFF`, texte `#14110F`, texte secondaire `#666158`, bordures `#DDD5C6`, accent `#CD3711` (ratio 5.06:1 avec texte de bouton blanc `#FFFFFF`, niveau AA garanti).
+    - Typographie : titres en Georgia (repli serif élégant), corps en polices système sans-serif (`-apple-system`, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif), liens de secours en police monospace système.
+    - Assets retina 2x générés avec Sharp dans [`apps/web/public/email/`](file:///home/normanxcat/Lab/verso/apps/web/public/email/) : `logo-wordmark-dark.png` (7.5 Ko), `logo-wordmark-light.png` (7.3 Ko), `logo-mark-dark.png` (1.9 Ko), `logo-mark-light.png` (1.9 Ko) et `header-banner.jpg` (11.5 Ko). Tous contrôlés à chaque build de production par `scripts/check-images.mjs`.
+    - Sécurité et délivrabilité : fonction `escapeHtml` sur tous les paramètres utilisateur, assainissement `sanitizeUrl` (protocoles `http:` et `https:` stricts), en-tête `Reply-To` (`EMAIL_REPLY_TO`), preheader masqué, interdiction stricte de `localhost` et `127.0.0.1` en production via validation Zod (`CLIENT_URL` et `EMAIL_ASSETS_URL`).
+    - Atelier de prévisualisation interactif [`apps/api/src/modules/dev/email-preview.routes.ts`](file:///home/normanxcat/Lab/verso/apps/api/src/modules/dev/email-preview.routes.ts) accessible sur `http://localhost:4000/dev/emails` (désactivé en production) avec sélecteurs de gabarit, bascule sombre/clair, largeurs 600px / 375px / 100%, et vues Rendu / HTML / Texte brut.
+    - Scripts utilitaires : `pnpm email:preview`, `pnpm email:send-test <type> <destinataire>`, `pnpm email:assets`, `pnpm email:capture`.
+    - Suite de 30 tests unitaires et d'intégration validant les 6 gabarits, les ratios de contraste mathématiques, les balises `<img>` (`alt`, `width`, `height`, `border="0"`), l'échappement XSS et l'atelier de prévisualisation.
   - **Correction robuste du renvoi d'email et requêtes sans corps (Fastify & Frontend)** :
     - Résolution définitive du bug en production (Render + Vercel) : `Body cannot be empty when content-type is set to 'application/json'`.
     - Client HTTP centralisé [`apps/web/src/lib/http-client.ts`](file:///home/normanxcat/Lab/verso/apps/web/src/lib/http-client.ts) (`buildRequestHeaders`) omettant l'en-tête `Content-Type` dès lors qu'aucun corps de requête n'est transmis, appliqué à l'ensemble des clients frontend (23 points d'appel).
@@ -266,6 +284,24 @@
   - **Contenu collaboratif sans injection HTML** : Tout contenu collaboratif (commentaires, noms) est affiché sans injection de HTML (neutralisation XSS stricte).
   - **Tests et Quality Gates** : Exigence de tests exhaustifs pour la fonction centrale d'autorisation `can`, renforcement des standards techniques et enrichissement du palier P3.
 - **Résultat** : Constitution mise à jour en version `2.0.0` (incrément MAJOR), `README.md` et `HANDOFF.md` synchronisés.
+
+### Dernière action exécutée
+
+- **Action exécutée** : Refonte intégrale des emails transactionnels aux couleurs de Verso (« Encre & Papier ») avec typographies éditoriales, logos retina et atelier de prévisualisation.
+- **Détails de l'implémentation** :
+  - **Module d'emails TypeScript pur** (`apps/api/src/emails/`) : architecture modulaire sans dépendance externe lourde (zéro MJML, zéro SSR React backend) générant du HTML tabulaire avec styles en ligne (bulletproof Outlook `mso`) et texte brut épuré.
+  - **6 gabarits conformes à la charte et au ton Verso (tutoiement direct en français)** :
+    1. `verification` : activation du carnet, bouton principal, lien de secours monospace (24h, usage unique), rappel des fonctionnalités réelles et bloc sécurité.
+    2. `welcome` : déverrouillage de l'espace personnel avec lien direct vers `/app`.
+    3. `forgot-password` : lien de réinitialisation temporaire (1 heure) et rappel de sécurité.
+    4. `password-changed` : alerte de sécurité horodatée avec appareil et action « Ce n'était pas moi ».
+    5. `collaboration-invite` : invitation sur texte ou album avec rôle explicite (co-auteur, commentateur, lecteur), expiration 7 jours, boutons Accepter et Consulter, zéro fuite d'email tiers.
+    6. `activity-notification` : récapitulatif groupé des activités récentes (mentions, nouveaux commentaires, réponses).
+  - **Palette et accessibilité WCAG AA** : mode sombre par défaut (`#0E0D0B`, `#171512`, `#EDE6D8`, accent `#FF5A2E`, texte bouton sombre `#14110F` certifié 6.5:1) et repli clair via `@media (prefers-color-scheme: light)` (fond `#F4EFE6`, accent `#CD3711` certifié 5.06:1, texte bouton blanc `#FFFFFF`).
+  - **Assets logos et bandeau retina 2x** générés avec Sharp dans `apps/web/public/email/` (`logo-wordmark-dark.png`, `logo-wordmark-light.png`, `logo-mark-dark.png`, `logo-mark-light.png`, `header-banner.jpg`), tous validés par `scripts/check-images.mjs`.
+  - **Atelier de prévisualisation local** (`/dev/emails`) : route Fastify interactive pour inspecter chaque gabarit en mode sombre/clair, 600px/375px/100%, et vues Rendu visuel / Code HTML / Texte brut (désactivée en production).
+  - **Scripts utilitaires** : `pnpm email:preview`, `pnpm email:send-test <type> <destinataire>`, `pnpm email:assets`, `pnpm email:capture`.
+  - **Validation qualité** : 333 tests au vert (dont 30 nouveaux tests unitaires et contrastes WCAG), lint zéro warning, typecheck strict, build de production validé.
 
 ### Action précédente
 
