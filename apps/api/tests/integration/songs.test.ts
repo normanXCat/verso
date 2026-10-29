@@ -142,6 +142,7 @@ describe("Tests d'intégration : CRUD des textes (/api/songs)", () => {
       });
 
       expect(response.statusCode).toBe(404);
+      expect(response.json().message).toBe('Texte introuvable');
     });
 
     it('rejette un identifiant non UUID avec un statut 400', async () => {
@@ -256,6 +257,7 @@ describe("Tests d'intégration : CRUD des textes (/api/songs)", () => {
       });
 
       expect(response.statusCode).toBe(404);
+      expect(response.json().message).toBe('Texte introuvable');
     });
   });
 
@@ -302,6 +304,7 @@ describe("Tests d'intégration : CRUD des textes (/api/songs)", () => {
       });
 
       expect(response.statusCode).toBe(404);
+      expect(response.json().message).toBe('Texte introuvable');
       expect(await prisma.song.count()).toBe(1);
     });
   });

@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import {
+  cleanExcerpt,
   SONG_EXCERPT_MAX_LENGTH,
   type AlbumDetail,
   type AlbumListItem,
@@ -29,11 +30,7 @@ type AlbumListRow = Prisma.AlbumGetPayload<{ include: typeof ALBUM_LIST_INCLUDE 
 type AlbumDetailRow = Prisma.AlbumGetPayload<{ include: typeof ALBUM_DETAIL_INCLUDE }>;
 
 function buildExcerpt(content: string): string {
-  const normalized = content.replace(/\s+/g, ' ').trim();
-  if (normalized.length <= SONG_EXCERPT_MAX_LENGTH) {
-    return normalized;
-  }
-  return `${normalized.slice(0, SONG_EXCERPT_MAX_LENGTH).trimEnd()}…`;
+  return cleanExcerpt(content, SONG_EXCERPT_MAX_LENGTH);
 }
 
 function toAlbumListItem(album: AlbumListRow): AlbumListItem {

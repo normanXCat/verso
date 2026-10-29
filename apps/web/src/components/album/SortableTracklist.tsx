@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   DndContext,
   KeyboardSensor,
@@ -17,7 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, X } from 'lucide-react';
-import type { AlbumTrack } from '@verso/shared';
+import { cleanExcerpt, type AlbumTrack } from '@verso/shared';
 import { Tag } from '../ui/Tag.js';
 
 interface SortableRowProps {
@@ -39,19 +40,21 @@ function SortableRow({ track, index, onRemove, disabled }: SortableRowProps): Re
     zIndex: isDragging ? 10 : undefined,
   };
 
+  const excerptText = cleanExcerpt(track.excerpt);
+
   return (
     <li
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-3 rounded-paper border px-3 py-2.5 transition-colors ${
+      className={`group relative flex items-center gap-3 rounded-paper border px-3 py-2.5 transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-paper-accent focus-within:ring-offset-2 focus-within:ring-offset-paper-bg ${
         isDragging
           ? 'border-paper-accent bg-paper-accent/5 shadow-paper-md'
-          : 'border-paper-border bg-paper-surface'
+          : 'border-paper-border bg-paper-surface hover:border-paper-muted hover:shadow-paper-sm'
       }`}
     >
       <button
         type="button"
-        className="cursor-grab touch-none rounded p-1 text-paper-muted transition-colors hover:text-paper-accent active:cursor-grabbing disabled:opacity-40"
+        className="relative z-10 cursor-grab touch-none rounded p-1 text-paper-muted transition-colors hover:text-paper-accent active:cursor-grabbing disabled:opacity-40"
         aria-label={`Réordonner « ${track.title} »`}
         disabled={disabled}
         {...attributes}
@@ -60,32 +63,44 @@ function SortableRow({ track, index, onRemove, disabled }: SortableRowProps): Re
         <GripVertical className="h-4 w-4" aria-hidden="true" />
       </button>
 
-      <span className="w-6 shrink-0 text-right font-mono text-xs text-paper-muted">
+      <span className="pointer-events-none w-6 shrink-0 text-right font-mono text-xs text-paper-muted">
         {index + 1}
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate font-serif text-lg leading-tight text-paper-text">{track.title}</p>
-        {track.excerpt ? (
-          <p className="truncate text-xs text-paper-muted">{track.excerpt}</p>
+        <p className="truncate font-serif text-lg leading-tight text-paper-text group-hover:text-paper-accent transition-colors">
+          <Link
+            to={`/app/songs/${track.id}`}
+            className="rounded-xs focus:outline-none after:absolute after:inset-0 after:z-0 after:content-['']"
+          >
+            {track.title}
+          </Link>
+        </p>
+        {excerptText ? (
+          <p className="pointer-events-none truncate text-xs text-paper-muted">{excerptText}</p>
         ) : (
-          <p className="text-xs italic text-paper-muted/70">Texte encore vierge.</p>
+          <p className="pointer-events-none text-xs italic text-paper-muted/70">
+            Texte encore vierge.
+          </p>
         )}
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="relative z-10 flex shrink-0 items-center gap-2">
         {track.status === 'COMPLETED' && (
-          <Tag variant="success" mono>
+          <Tag variant="success" mono className="pointer-events-none">
             Terminé
           </Tag>
         )}
         <button
           type="button"
-          onClick={() => onRemove(track.id)}
+          onClick={(event) => {
+            event.stopPropagation();
+            onRemove(track.id);
+          }}
           disabled={disabled}
           aria-label={`Retirer « ${track.title} » de l'album`}
           title="Retirer de l'album (le texte est conservé)"
-          className="rounded p-1 text-paper-muted transition-colors hover:text-paper-accent disabled:opacity-40"
+          className="rounded p-1 text-paper-muted transition-colors hover:text-paper-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-paper-accent disabled:opacity-40"
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </button>

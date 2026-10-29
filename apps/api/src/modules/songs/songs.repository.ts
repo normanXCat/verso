@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import {
+  cleanExcerpt,
   SONG_EXCERPT_MAX_LENGTH,
   type SearchSongsQuery,
   type SongDetail,
@@ -58,14 +59,10 @@ function buildOrderBy(sort: SearchSongsQuery['sort']): Prisma.SongOrderByWithRel
 }
 
 /**
- * Produit un extrait de paroles normalisé et tronqué pour les listes.
+ * Produit un extrait de paroles nettoyé (Markdown et sections retirés) et tronqué pour les listes.
  */
 function buildExcerpt(content: string): string {
-  const normalized = content.replace(/\s+/g, ' ').trim();
-  if (normalized.length <= SONG_EXCERPT_MAX_LENGTH) {
-    return normalized;
-  }
-  return `${normalized.slice(0, SONG_EXCERPT_MAX_LENGTH).trimEnd()}…`;
+  return cleanExcerpt(content, SONG_EXCERPT_MAX_LENGTH);
 }
 
 export function toSongDetail(song: SongWithRelations): SongDetail {

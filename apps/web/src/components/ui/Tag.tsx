@@ -18,8 +18,8 @@ export function Tag({
   const variants: Record<TagVariant, string> = {
     neutral: 'border-paper-border text-paper-muted bg-paper-surface',
     accent: 'border-paper-accent/40 text-paper-accent bg-paper-accent/5',
-    success: 'border-emerald-700/40 text-emerald-600 dark:text-emerald-400 bg-emerald-950/10',
-    draft: 'border-amber-700/40 text-amber-600 dark:text-amber-400 bg-amber-950/10',
+    success: 'border-paper-border text-paper-muted bg-paper-bg/60',
+    draft: 'border-paper-accent/40 text-paper-accent bg-paper-accent/10',
   };
 
   return (
