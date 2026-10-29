@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../../src/app.js';
 import { prisma } from '../../src/config/prisma.js';
+import { clearDatabase } from '../helpers/db.js';
 import { createSession } from '../../src/modules/auth/session.service.js';
 import * as emailService from '../../src/modules/auth/email.service.js';
 
@@ -22,9 +23,7 @@ describe(
     beforeAll(async () => {
       app = await buildApp();
       await app.ready();
-      await prisma.emailToken.deleteMany();
-      await prisma.session.deleteMany();
-      await prisma.user.deleteMany();
+      await clearDatabase();
     }, 30000);
 
     afterAll(async () => {
@@ -33,9 +32,7 @@ describe(
     });
 
     beforeEach(async () => {
-      await prisma.emailToken.deleteMany();
-      await prisma.session.deleteMany();
-      await prisma.user.deleteMany();
+      await clearDatabase();
       vi.mocked(emailService.sendVerificationEmail).mockClear();
     }, 30000);
 

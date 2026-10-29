@@ -37,15 +37,53 @@ describe('Validation Zod des variables d environnement (env.ts)', () => {
   });
 
   it("doit refuser la production sans transport d'email configuré", () => {
-    const invalidEnv = { ...validMockEnv, NODE_ENV: 'production' };
+    const invalidEnv = {
+      ...validMockEnv,
+      NODE_ENV: 'production',
+      CLIENT_URL: 'https://verso-lyrics.vercel.app',
+    };
     expect(() => validateEnv(invalidEnv)).toThrowError(/RESEND_API_KEY/);
   });
 
-  it("doit accepter la production dès qu'un transport d'email est configuré", () => {
-    const prodEnv = { ...validMockEnv, NODE_ENV: 'production', RESEND_API_KEY: 're_cle_de_test' };
+  it('doit refuser la production si CLIENT_URL pointe vers localhost', () => {
+    const invalidEnv = {
+      ...validMockEnv,
+      NODE_ENV: 'production',
+      RESEND_API_KEY: 're_cle_de_test',
+      CLIENT_URL: 'http://localhost:5173',
+    };
+    expect(() => validateEnv(invalidEnv)).toThrowError(
+      /CLIENT_URL est requise et ne peut pas pointer vers localhost/,
+    );
+  });
+
+  it('doit refuser la production si EMAIL_ASSETS_URL pointe vers localhost', () => {
+    const invalidEnv = {
+      ...validMockEnv,
+      NODE_ENV: 'production',
+      RESEND_API_KEY: 're_cle_de_test',
+      CLIENT_URL: 'https://verso-lyrics.vercel.app',
+      EMAIL_ASSETS_URL: 'http://localhost:4000',
+    };
+    expect(() => validateEnv(invalidEnv)).toThrowError(
+      /EMAIL_ASSETS_URL ne peut pas pointer vers localhost/,
+    );
+  });
+
+  it("doit accepter la production dès qu'un transport et des URLs de prod sont configurés", () => {
+    const prodEnv = {
+      ...validMockEnv,
+      NODE_ENV: 'production',
+      RESEND_API_KEY: 're_cle_de_test',
+      CLIENT_URL: 'https://verso-lyrics.vercel.app',
+      EMAIL_REPLY_TO: 'contact@verso-lyrics.vercel.app',
+    };
     const config = validateEnv(prodEnv);
     expect(config.NODE_ENV).toBe('production');
     expect(config.RESEND_API_KEY).toBe('re_cle_de_test');
+    expect(config.CLIENT_URL).toBe('https://verso-lyrics.vercel.app');
+    expect(config.EMAIL_ASSETS_URL).toBe('https://verso-lyrics.vercel.app');
+    expect(config.EMAIL_REPLY_TO).toBe('contact@verso-lyrics.vercel.app');
   });
 
   it("n'exige aucun transport d'email hors production", () => {
