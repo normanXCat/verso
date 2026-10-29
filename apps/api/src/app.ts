@@ -113,6 +113,12 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { realtimeRoutes } = await import('./modules/realtime/realtime.ws.js');
   await app.register(realtimeRoutes, { prefix: '/api/realtime' });
 
+  // Atelier de prévisualisation des emails transactionnels (développement uniquement)
+  if (process.env.NODE_ENV !== 'production') {
+    const { emailPreviewRoutes } = await import('./modules/dev/email-preview.routes.js');
+    await app.register(emailPreviewRoutes);
+  }
+
   // Contrôle de santé : vérifie explicitement la connexion à la base de données.
   app.get('/health', async (request, reply) => {
     const { checkDatabaseConnection } = await import('./config/prisma.js');

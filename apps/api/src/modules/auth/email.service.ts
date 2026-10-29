@@ -1,5 +1,15 @@
 import { env } from '../../config/env.js';
 import { redactSecrets } from '../../plugins/error-handler.js';
+import {
+  buildVerificationEmail,
+  buildWelcomeEmail,
+  buildForgotPasswordEmail,
+  buildPasswordChangedEmail,
+  buildCollaborationInviteEmail,
+  buildActivityNotificationEmail,
+  type NotificationActivityItem,
+  type CollaboratorEmailRole,
+} from '../../emails/index.js';
 
 export interface SentEmail {
   to: string;
@@ -59,28 +69,39 @@ export function formatSimulatedEmail({
 /**
  * Envoie un email de vérification d'adresse avec le lien contenant le token brut.
  */
-export async function sendVerificationEmail(to: string, rawToken: string): Promise<boolean> {
+export async function sendVerificationEmail(
+  to: string,
+  rawToken: string,
+  displayName?: string | null,
+): Promise<boolean> {
   if (env.NODE_ENV === 'production' && env.CLIENT_URL.includes('localhost')) {
     console.warn(
       '[EmailService] Attention : CLIENT_URL pointe vers localhost en environnement de production !',
     );
   }
-  const verificationUrl = `${env.CLIENT_URL}/verify-email?token=${encodeURIComponent(rawToken)}`;
-  const subject = 'Vérifiez votre adresse email — Verso';
-  const text = `Bienvenue sur Verso !\n\nCliquez sur le lien suivant pour vérifier votre adresse email :\n${verificationUrl}\n\nCe lien expire dans 24 heures.\n\nL'équipe Verso`;
-  const html = `
-    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2>Bienvenue sur Verso</h2>
-      <p>Cliquez sur le bouton ci-dessous pour confirmer votre adresse email :</p>
-      <p style="margin: 30px 0;">
-        <a href="${verificationUrl}" style="background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-          Vérifier mon adresse email
-        </a>
-      </p>
-      <p style="color: #666; font-size: 14px;">Ou copiez ce lien dans votre navigateur : ${verificationUrl}</p>
-      <p style="color: #999; font-size: 12px;">Ce lien expire dans 24 heures.</p>
-    </div>
-  `;
+  const { subject, html, text } = buildVerificationEmail({
+    displayName,
+    rawToken,
+    clientUrl: env.CLIENT_URL,
+    assetsUrl: env.EMAIL_ASSETS_URL,
+    replyToEmail: env.EMAIL_REPLY_TO,
+    showBanner: true,
+  });
+
+  return sendEmail({ to, subject, text, html });
+}
+
+/**
+ * Envoie un email de bienvenue une fois l'adresse confirmée.
+ */
+export async function sendWelcomeEmail(to: string, displayName?: string | null): Promise<boolean> {
+  const { subject, html, text } = buildWelcomeEmail({
+    displayName,
+    clientUrl: env.CLIENT_URL,
+    assetsUrl: env.EMAIL_ASSETS_URL,
+    replyToEmail: env.EMAIL_REPLY_TO,
+    showBanner: true,
+  });
 
   return sendEmail({ to, subject, text, html });
 }
@@ -88,23 +109,73 @@ export async function sendVerificationEmail(to: string, rawToken: string): Promi
 /**
  * Envoie un email de réinitialisation de mot de passe avec le token brut.
  */
-export async function sendPasswordResetEmail(to: string, rawToken: string): Promise<boolean> {
-  const resetUrl = `${env.CLIENT_URL}/reset-password?token=${encodeURIComponent(rawToken)}`;
-  const subject = 'Réinitialisation de votre mot de passe — Verso';
-  const text = `Vous avez demandé la réinitialisation de votre mot de passe sur Verso.\n\nCliquez sur ce lien pour en définir un nouveau :\n${resetUrl}\n\nCe lien expire dans 1 heure. Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.\n\nL'équipe Verso`;
-  const html = `
-    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2>Réinitialisation de mot de passe</h2>
-      <p>Vous avez demandé la réinitialisation de votre mot de passe Verso :</p>
-      <p style="margin: 30px 0;">
-        <a href="${resetUrl}" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-          Changer mon mot de passe
-        </a>
-      </p>
-      <p style="color: #666; font-size: 14px;">Ou copiez ce lien dans votre navigateur : ${resetUrl}</p>
-      <p style="color: #999; font-size: 12px;">Ce lien expire dans 1 heure.</p>
-    </div>
-  `;
+export async function sendPasswordResetEmail(
+  to: string,
+  rawToken: string,
+  displayName?: string | null,
+): Promise<boolean> {
+  const { subject, html, text } = buildForgotPasswordEmail({
+    displayName,
+    rawToken,
+    clientUrl: env.CLIENT_URL,
+    assetsUrl: env.EMAIL_ASSETS_URL,
+    replyToEmail: env.EMAIL_REPLY_TO,
+    showBanner: false,
+  });
+
+  return sendEmail({ to, subject, text, html });
+}
+
+/**
+ * Envoie un email de confirmation après modification réussie du mot de passe.
+ */
+export async function sendPasswordChangedEmail(
+  to: string,
+  options?: {
+    displayName?: string | null;
+    changedAt?: Date;
+    deviceInfo?: string;
+  },
+): Promise<boolean> {
+  const { subject, html, text } = buildPasswordChangedEmail({
+    displayName: options?.displayName,
+    changedAt: options?.changedAt,
+    deviceInfo: options?.deviceInfo,
+    clientUrl: env.CLIENT_URL,
+    assetsUrl: env.EMAIL_ASSETS_URL,
+    replyToEmail: env.EMAIL_REPLY_TO,
+    showBanner: false,
+  });
+
+  return sendEmail({ to, subject, text, html });
+}
+
+/**
+ * Envoie un email d'invitation à collaborer sur un texte ou un album.
+ */
+export async function sendCollaborationInviteEmail(
+  to: string,
+  options: {
+    inviterName: string;
+    targetTitle: string;
+    targetType: 'song' | 'album';
+    role: CollaboratorEmailRole;
+    rawToken: string;
+    expiresAt?: Date;
+  },
+): Promise<boolean> {
+  const { subject, html, text } = buildCollaborationInviteEmail({
+    inviterName: options.inviterName,
+    targetTitle: options.targetTitle,
+    targetType: options.targetType,
+    role: options.role,
+    rawToken: options.rawToken,
+    expiresAt: options.expiresAt,
+    clientUrl: env.CLIENT_URL,
+    assetsUrl: env.EMAIL_ASSETS_URL,
+    replyToEmail: env.EMAIL_REPLY_TO,
+    showBanner: false,
+  });
 
   return sendEmail({ to, subject, text, html });
 }
@@ -114,28 +185,48 @@ export async function sendPasswordResetEmail(to: string, rawToken: string): Prom
  */
 export async function sendNotificationEmail({
   to,
-  subject,
-  text,
-  html,
+  subject: customSubject,
+  text: customText,
+  html: customHtml,
+  items,
+  displayName,
 }: {
   to: string;
-  subject: string;
-  text: string;
+  subject?: string;
+  text?: string;
   html?: string;
+  items?: NotificationActivityItem[];
+  displayName?: string | null;
 }): Promise<boolean> {
-  return sendEmail({
-    to,
-    subject,
-    text,
-    html:
-      html ??
-      `
+  if (items && items.length > 0) {
+    const generated = buildActivityNotificationEmail({
+      displayName,
+      items,
+      clientUrl: env.CLIENT_URL,
+      assetsUrl: env.EMAIL_ASSETS_URL,
+      replyToEmail: env.EMAIL_REPLY_TO,
+      showBanner: false,
+    });
+    return sendEmail({
+      to,
+      subject: generated.subject,
+      text: generated.text,
+      html: generated.html,
+    });
+  }
+
+  const subject = customSubject || 'Activité sur Verso';
+  const text = customText || '';
+  const html =
+    customHtml ||
+    `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2>Activité sur Verso</h2>
       <p style="white-space: pre-line;">${text}</p>
     </div>
-  `,
-  });
+  `;
+
+  return sendEmail({ to, subject, text, html });
 }
 
 /**
@@ -198,6 +289,7 @@ async function sendEmail({
         subject,
         text,
         html,
+        ...(env.EMAIL_REPLY_TO ? { reply_to: env.EMAIL_REPLY_TO } : {}),
       }),
     });
 
