@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Star } from 'lucide-react';
 import { cleanExcerpt, type SongListItem } from '@verso/shared';
@@ -26,7 +26,8 @@ function formatDate(value: Date | string): string {
 
 /**
  * Carte d'un texte :
- * - Entièrement cliquable via la technique du « lien étiré » (pseudo-élément ::after sur le titre).
+ * - Entièrement cliquable via la technique du « lien étiré » (pseudo-élément ::after sur le titre)
+ *   ET gestionnaire onClick de secours sur la carte (avec protection contre les boutons).
  * - Actions secondaires (favori, statut) en boutons au-dessus (z-index supérieur) sans déclencher la navigation.
  * - Extrait nettoyé du Markdown brut et exempt de tout HTML injecté.
  * - Respect des tokens du design system et du contraste WCAG AA.
@@ -36,6 +37,7 @@ export function SongCard({
   onToggleFavorite,
   onToggleStatus,
 }: SongCardProps): React.ReactElement {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const isCompleted = song.status === 'COMPLETED';
 
@@ -75,24 +77,37 @@ export function SongCard({
     }
   };
 
+  const handleCardClick = (event: React.MouseEvent<HTMLDivElement>): void => {
+    // Si le clic provient d'un bouton d'action secondaire, ne pas naviguer
+    if ((event.target as HTMLElement).closest('button, [role="button"]')) {
+      return;
+    }
+    // Si le clic a déjà activé le lien (ou son pseudo-élément ::after), laisser le Link natif agir
+    if ((event.target as HTMLElement).closest('a')) {
+      return;
+    }
+    navigate(`/app/songs/${song.id}`);
+  };
+
   const excerptText = cleanExcerpt(song.excerpt);
 
   return (
     <Card
       interactive
-      className="group relative flex h-full flex-col gap-3 notebook-ruled focus-within:ring-2 focus-within:ring-paper-accent focus-within:ring-offset-2 focus-within:ring-offset-paper-bg"
+      onClick={handleCardClick}
+      className="group relative flex h-full flex-col gap-3 notebook-ruled cursor-pointer focus-within:ring-2 focus-within:ring-paper-accent focus-within:ring-offset-2 focus-within:ring-offset-paper-bg"
     >
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="font-serif text-xl leading-snug text-paper-text group-hover:text-paper-accent transition-colors">
+      <div className="pointer-events-none flex items-start justify-between gap-3">
+        <h3 className="pointer-events-auto font-serif text-xl leading-snug text-paper-text group-hover:text-paper-accent transition-colors">
           <Link
             to={`/app/songs/${song.id}`}
-            className="rounded-xs focus:outline-none after:absolute after:inset-0 after:z-0 after:content-['']"
+            className="rounded-xs focus:outline-none after:block after:absolute after:inset-0 after:z-0 after:cursor-pointer after:content-['']"
           >
             {song.title}
           </Link>
         </h3>
 
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="pointer-events-auto flex shrink-0 items-center gap-1.5">
           <button
             type="button"
             onClick={handleFavoriteClick}

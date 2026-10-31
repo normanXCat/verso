@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   DndContext,
   KeyboardSensor,
@@ -29,6 +29,7 @@ interface SortableRowProps {
 }
 
 function SortableRow({ track, index, onRemove, disabled }: SortableRowProps): React.ReactElement {
+  const navigate = useNavigate();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: track.id,
     disabled,
@@ -40,12 +41,23 @@ function SortableRow({ track, index, onRemove, disabled }: SortableRowProps): Re
     zIndex: isDragging ? 10 : undefined,
   };
 
+  const handleRowClick = (event: React.MouseEvent<HTMLLIElement>): void => {
+    if ((event.target as HTMLElement).closest('button, [role="button"]')) {
+      return;
+    }
+    if ((event.target as HTMLElement).closest('a')) {
+      return;
+    }
+    navigate(`/app/songs/${track.id}`);
+  };
+
   const excerptText = cleanExcerpt(track.excerpt);
 
   return (
     <li
       ref={setNodeRef}
       style={style}
+      onClick={handleRowClick}
       className={`group relative flex items-center gap-3 rounded-paper border px-3 py-2.5 transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-paper-accent focus-within:ring-offset-2 focus-within:ring-offset-paper-bg ${
         isDragging
           ? 'border-paper-accent bg-paper-accent/5 shadow-paper-md'
@@ -71,7 +83,7 @@ function SortableRow({ track, index, onRemove, disabled }: SortableRowProps): Re
         <p className="truncate font-serif text-lg leading-tight text-paper-text group-hover:text-paper-accent transition-colors">
           <Link
             to={`/app/songs/${track.id}`}
-            className="rounded-xs focus:outline-none after:absolute after:inset-0 after:z-0 after:content-['']"
+            className="rounded-xs focus:outline-none after:block after:absolute after:inset-0 after:z-0 after:cursor-pointer after:content-['']"
           >
             {track.title}
           </Link>
