@@ -64,6 +64,18 @@ describe('SongCard', () => {
     expect(link.className).toContain('after:inset-0');
   });
 
+  it('navigue vers le texte lors du clic sur le corps de la carte', () => {
+    const song = createTestSong({ id: 'song-body-click', title: 'Clic Corps' });
+    const { container } = renderWithProviders(<SongCard song={song} />);
+
+    // Trouver le conteneur de carte
+    const cardEl = container.firstChild as HTMLElement;
+    expect(cardEl).not.toBeNull();
+
+    fireEvent.click(cardEl);
+    expect(screen.getByTestId('song-editor-page')).not.toBeNull();
+  });
+
   it('permet de cliquer sur le bouton favori sans naviguer', () => {
     const onToggleFavorite = vi.fn();
     const song = createTestSong({ id: 'song-fav-1', isFavorite: false });
